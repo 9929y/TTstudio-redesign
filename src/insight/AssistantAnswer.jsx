@@ -36,7 +36,6 @@ export function AssistantWelcome({ onAsk, data = ASSISTANT_DEMO.welcome }) {
           ))}
         </div>
       </div>
-      <span className="cax-w-notice cax-in cax-in2">{data.notice[0]}<u>{data.notice[1]}</u>{data.notice[2]}</span>
     </>
   );
 }

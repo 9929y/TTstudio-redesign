@@ -109,13 +109,11 @@ export function CuratedForMe({ place = 'home', insight = CURATED, onCreate, onMo
   const [host, setHost] = useState(null);
   const ref = useRef(null);
 
-  // A card's Create starts creating: from Home it goes to the Create tab (as "Start creating" did);
-  // on the Create page it opens the media picker (as Upload does).
+  // Create 直接进入选照片页（媒体选择器），首页卡片、详情抽屉和 Create 页的行都一样（2026-11-26 按反馈）
   const create = (card) => {
     setOpen(-1);
     if (onCreate) return onCreate(card);
-    const st = useApp.getState();
-    if (place === 'home') st.switchTab('create'); else st.openModal('picker', { mode: 'upload' });
+    useApp.getState().openModal('picker', { mode: 'upload' });
   };
 
   if (!cards.length) return null;

@@ -594,6 +594,11 @@ test('12 子流程：Creator Assistant（Analytics 内嵌卡 → 欢迎页 → �
   await expect(act(page, 'assistant-input')).toHaveAttribute('placeholder', 'Ask about your account');
   expect(await deadCheck(page, 'creator assistant')).toEqual([]);
   await shot(page, 'd3_assistant_answer');
+  // 自己输入的问题：回复说明需要后端和 agent 编排，原型只展示 mock data
+  await act(page, 'assistant-input').fill('How do I grow faster?');
+  await act(page, 'assistant-input').press('Enter');
+  await page.waitForTimeout(1200);
+  await expect(phone(page)).toContainText('needs a backend and agent orchestration');
   await tap(page, 'assistant-more');
   await tap(page, 'assistant-more-cancel');
   // 新的回答带一个模块，比一屏长，点赞按钮要先滚到可见

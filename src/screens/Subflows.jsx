@@ -246,6 +246,8 @@ function placeholderFor(params) {
 // 设计稿没有模块的问题：没问过的现有问题 + 两个设计稿里有回答的问题
 const CA_MORE = [CA_KINDS.next.question, summaryAnswer()?.question].filter(Boolean);
 
+const TYPED_REPLY = 'Answering your own questions needs a backend and agent orchestration, so this prototype shows mock data only. Tap one of the suggested questions to see a full answer.';
+
 export function CreatorAssistantScreen({ params }) {
   const thread = useApp((s) => s.assistantThread);
   const pop = useApp((s) => s.pop);
@@ -260,7 +262,9 @@ export function CreatorAssistantScreen({ params }) {
   // 新的一轮（提问 / 入口说明）滚到顶部，回答从上往下读
   useEffect(() => {
     const sc = scrollRef.current; if (!sc) return;
-    sc.scrollTop = anchorRef.current ? Math.max(0, anchorRef.current.offsetTop - sc.offsetTop - 12) : 0;
+    const top = anchorRef.current ? Math.max(0, anchorRef.current.offsetTop - sc.offsetTop - 12) : 0;
+    const reduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (sc.scrollTo) sc.scrollTo({ top, behavior: reduce ? 'auto' : 'smooth' }); else sc.scrollTop = top;
   }, [thread.length, busy]);
 
   // 回答先出「…」，再整条出现
@@ -272,10 +276,12 @@ export function CreatorAssistantScreen({ params }) {
     }, delay));
   };
   const sayKind = (kind, extra, delay) => say({ kind, postId: params?.postId, text: kindData(kind, params?.postId).headline, ...extra }, delay);
-  const ask = (q, from) => {
+  const ask = (q, from, typed = false) => {
     if (!q.trim() || busyRef.current) return;
     useApp.setState((s) => ({ assistantThread: [...s.assistantThread, { me: true, text: q.trim(), ...(from ? { from } : {}) }] }));
     setInput('');
+    // 用户在输入框里自己打的问题：回答需要后端和 agent 编排，原型只放 mock data，直接说明；示例问题和各入口带来的问题照常回答
+    if (typed) return say({ text: TYPED_REPLY, cards: [] });
     const kind = kindFor(q);
     if (kind) sayKind(kind); else say(answer(q, { postId: params?.postId, itemId: params?.itemId }));
   };
@@ -283,7 +289,8 @@ export function CreatorAssistantScreen({ params }) {
     useApp.setState({ assistantOpened: true });
     if (booted.current) return;
     booted.current = true;
-    if (params?.prompt) { ask(params.prompt, fromLabel(params)); return; }
+    // 带着问题进来：先让 onboarding 第一屏入场（约 0.7s），再发出问题、平滑滚到这一轮
+    if (params?.prompt) { timers.current.push(setTimeout(() => ask(params.prompt, fromLabel(params)), 700)); return; }
     const kind = params?.kind || CA_CONTEXT_KIND[params?.from] || (params?.postId ? 'video' : null);
     const K = kind && kindData(kind, params?.postId);
     if (!K) return;
@@ -305,7 +312,6 @@ export function CreatorAssistantScreen({ params }) {
   // 这一轮从哪条开始：最后一条提问；没有提问（周报入口）就是最后一条回答
   let anchor = thread.length - 1;
   while (anchor > 0 && !thread[anchor].me && thread[anchor - 1]?.me) anchor -= 1;
-  const contextStart = thread[0] && (thread[0].from || thread[0].ctx);
   return (
     <div className="screen ca-screen cax-screen">
       <div className="ca-head">
@@ -315,13 +321,15 @@ export function CreatorAssistantScreen({ params }) {
       </div>
       <div className="cax-body">
         <Scroll className="cax-scroll" innerRef={scrollRef}>
-          {!contextStart && <div className="cax-bubble hello cax-in">{ASSISTANT_DEMO.welcome.greeting}</div>}
-          {!thread.length && !busy && <AssistantWelcome onAsk={ask} />}
+          {/* Final W2（画板 IMY-CA-Welcome，已选）：onboarding 就是对话的第一屏——问候语 + 「Feel free to ask me questions like」问题卡，
+              从任何入口进来都在对话顶部；问候 260ms 上浮淡入，问题卡晚 80ms */}
+          <div className="cax-bubble hello cax-in">{ASSISTANT_DEMO.welcome.greeting}</div>
+          <AssistantWelcome onAsk={ask} />
           {thread.map((m, i) => {
             const ref = i === anchor ? anchorRef : undefined;
             if (m.me) return [
-              m.from && <span key={`f${i}`} className="cax-from" ref={ref}>{m.from}</span>,
-              <span key={i} className="cax-me" ref={m.from ? undefined : ref}>{m.text}</span>,
+              m.from && <span key={`f${i}`} className="cax-from cax-in" ref={ref}>{m.from}</span>,
+              <span key={i} className="cax-me cax-in" ref={m.from ? undefined : ref}>{m.text}</span>,
             ];
             return [
               m.from && <span key={`f${i}`} className="cax-from bot" ref={ref}>{m.from}</span>,
@@ -343,11 +351,10 @@ export function CreatorAssistantScreen({ params }) {
         {showChips && <div className="cax-chips">{follow.map((q) => <button key={q} className="cax-chip cax-press" data-act="assistant-follow" onClick={() => ask(q)}>{q}</button>)}</div>}
       </div>
       <div className="cax-composer">
-        <input data-act="assistant-input" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && ask(input)} placeholder={placeholderFor(params)} />
-        <button className={`cax-send ${input.trim() ? 'on' : ''}`} data-act="assistant-send" aria-label="Send" onClick={() => ask(input)}><I.send size={16} /></button>
+        <input data-act="assistant-input" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && ask(input, undefined, true)} placeholder={placeholderFor(params)} />
+        <button className={`cax-send ${input.trim() ? 'on' : ''}`} data-act="assistant-send" aria-label="Send" onClick={() => ask(input, undefined, true)}><I.send size={16} /></button>
       </div>
-      {/* 原型说明（2026-11-26）：放在原生 AI 声明那一行的位置，替换原文（原文说「由 AI 生成」，和原型不符）；点 Learn more 看原因 */}
-      <span className="cax-disc">UI preview: replies are scripted, not live AI. <button type="button" className="cax-disc-more" data-act="assistant-preview-info" onClick={() => openSheet('assistantPreview')}>Learn more</button></span>
+      {/* 输入框下方不放说明（2026-11-26 按反馈删掉）；用户自己输入的问题在对话里说明只是 mock data */}
     </div>
   );
 }

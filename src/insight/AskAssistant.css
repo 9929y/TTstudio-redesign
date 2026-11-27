@@ -17,12 +17,27 @@
   background: conic-gradient(from 200deg, #25f4ee, #1e7ce8 22%, #2f62f2 42%, #7b61ff 58%, #1e7ce8 76%, #25f4ee);
   transform: translate(-50%, -50%) rotate(0deg);
 }
-.ask-pill.sweep::before { animation: ask-spin 2.2s cubic-bezier(0.45, 0, 0.2, 1) 0.25s 1 both; }
-.ask-pill.sweep { animation: ask-glow 2.4s ease-out 0.25s 1 both; }
-@keyframes ask-spin { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+.ask-pill::after { content: none; }
+/* 出场（2026-11-26 加强，按反馈「首页看不到」）：一道亮光沿边框跑一圈半，同时外圈泛起柔和蓝光，再退成静止的渐变边。
+   原来只是把本来就是渐变的 1.5px 外圈原地转一圈，几乎看不出变化。 */
+.ask-pill.sweep { animation: ask-glow 2.2s ease-out 0.35s 1 both; }
+.ask-pill.sweep::after {
+  content: ''; position: absolute; left: 50%; top: 50%; width: 130%; aspect-ratio: 1; z-index: -1; pointer-events: none;
+  background: conic-gradient(from 0deg, rgba(255, 255, 255, 0) 0deg, rgba(255, 255, 255, 0) 250deg, #7b61ff 290deg, #25f4ee 330deg, #ffffff 350deg, rgba(255, 255, 255, 0) 360deg);
+  transform: translate(-50%, -50%) rotate(0deg); opacity: 0;
+  animation: ask-comet 1.8s cubic-bezier(0.65, 0, 0.35, 1) 0.35s 1 both;
+}
+.ask-pill.sweep { padding: 1.5px; }
+@keyframes ask-comet {
+  0% { opacity: 0; transform: translate(-50%, -50%) rotate(0deg); }
+  12% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(540deg); }
+}
 @keyframes ask-glow {
   0% { box-shadow: 0 0 0 0 rgba(47, 98, 242, 0); }
-  35% { box-shadow: 0 0 18px 1px rgba(47, 98, 242, 0.55), 0 0 6px 0 rgba(37, 244, 238, 0.45); }
+  30% { box-shadow: 0 0 22px 2px rgba(47, 98, 242, 0.45), 0 0 8px 0 rgba(37, 244, 238, 0.5); }
+  70% { box-shadow: 0 0 16px 1px rgba(47, 98, 242, 0.3), 0 0 6px 0 rgba(37, 244, 238, 0.3); }
   100% { box-shadow: 0 0 0 0 rgba(47, 98, 242, 0); }
 }
 .ask-pill-in {
@@ -60,5 +75,6 @@
 /* 选中图上某一项后，文案停在这一项的问题上；颜色不变（只换文字） */
 
 @media (prefers-reduced-motion: reduce) {
-  .ask-pill.sweep::before, .ask-pill.sweep, .ask-row.sweep::before { animation: none; }
+  .ask-pill.sweep::before, .ask-pill.sweep::after, .ask-pill.sweep, .ask-row.sweep::before { animation: none; }
+  .ask-pill.sweep::after { opacity: 0; }
 }

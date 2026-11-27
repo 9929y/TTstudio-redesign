@@ -42,7 +42,7 @@
 .cax-screen .cax-w-row { position: relative; width: 100%; padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
 .cax-w-row > svg { flex: none; }
 .cax-w-ic { flex: none; width: 36px; height: 36px; border-radius: 10px; background: #e8f2fe; display: grid; place-items: center; }
-.cax-w-t { flex: 1; font-size: 16px; line-height: 22px; font-weight: 400; color: #161823; }
+.cax-w-t { flex: 1; font-size: 15px; line-height: 22px; font-weight: 400; color: #161823; }
 .cax-w-line { position: absolute; left: 62px; right: 0; bottom: 0; height: .5px; background: #e3e3e5; }
 .cax-w-notice { padding: 0 14px; font-size: 12px; line-height: 17px; color: #6d6e75; }
 .cax-w-notice u { text-decoration: underline; }
