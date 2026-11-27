@@ -18,30 +18,10 @@
   transform: translate(-50%, -50%) rotate(0deg);
 }
 .ask-pill::after { content: none; }
-/* 出场（2026-11-26 加强，按反馈「首页看不到」）：一道亮光沿边框跑一圈半，同时外圈泛起柔和蓝光，再退成静止的渐变边。
-   原来只是把本来就是渐变的 1.5px 外圈原地转一圈，几乎看不出变化。 */
-/* 2026-11-26 按反馈：不要外圈光晕，只留沿边框走的一道亮光，放慢到 3.2s 走一圈 */
-.ask-pill.sweep::after {
-  content: ''; position: absolute; left: 50%; top: 50%; width: 130%; aspect-ratio: 1; z-index: -1; pointer-events: none;
-  background: conic-gradient(from 0deg, rgba(255, 255, 255, 0) 0deg, rgba(255, 255, 255, 0) 250deg, #7b61ff 290deg, #25f4ee 330deg, #ffffff 350deg, rgba(255, 255, 255, 0) 360deg);
-  transform: translate(-50%, -50%) rotate(0deg); opacity: 0;
-  animation: ask-comet 3.2s cubic-bezier(0.45, 0, 0.55, 1) 0.4s 1 both;
-}
-.ask-pill.sweep { padding: 1.5px; }
-@keyframes ask-comet {
-  0% { opacity: 0; transform: translate(-50%, -50%) rotate(0deg); }
-  10% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { opacity: 0; transform: translate(-50%, -50%) rotate(360deg); }
-}
-@keyframes ask-glow {
-  0% { box-shadow: 0 0 0 0 rgba(47, 98, 242, 0); }
-  30% { box-shadow: 0 0 22px 2px rgba(47, 98, 242, 0.45), 0 0 8px 0 rgba(37, 244, 238, 0.5); }
-  70% { box-shadow: 0 0 16px 1px rgba(47, 98, 242, 0.3), 0 0 6px 0 rgba(37, 244, 238, 0.3); }
-  100% { box-shadow: 0 0 0 0 rgba(47, 98, 242, 0); }
-}
+/* 出场描画层（2026-11-26 评审选定）：SVG 描边盖在渐变环上、白色内层下面，只露出 1.5px 的边；描完即移除 */
+.ask-pill-draw { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; overflow: visible; }
 .ask-pill-in {
-  display: flex; align-items: center; gap: 10px; height: 41px; padding: 0 12px 0 12px; border-radius: 8.5px; background: #ffffff;
+  position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; height: 41px; padding: 0 12px 0 12px; border-radius: 8.5px; background: #ffffff;
   color: #161823; font-family: var(--font); font-size: 15px; line-height: 20px; font-weight: 400;
 }
 .ask-pill-in .ca-ic { flex: none; }
@@ -75,6 +55,5 @@
 /* 选中图上某一项后，文案停在这一项的问题上；颜色不变（只换文字） */
 
 @media (prefers-reduced-motion: reduce) {
-  .ask-pill.sweep::before, .ask-pill.sweep::after, .ask-pill.sweep, .ask-row.sweep::before { animation: none; }
-  .ask-pill.sweep::after { opacity: 0; }
+  .ask-row.sweep::before { animation: none; }
 }

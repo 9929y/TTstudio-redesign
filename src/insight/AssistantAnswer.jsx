@@ -35,6 +35,8 @@ export function AssistantWelcome({ onAsk, data = ASSISTANT_DEMO.welcome }) {
             </button>
           ))}
         </div>
+        {/* 原型说明（2026-11-26 按要求）：第一屏直接写明这条流程在原型里没有做完整 */}
+        <span className="cax-w-note">This workflow isn’t fully developed in this prototype.</span>
       </div>
     </>
   );
