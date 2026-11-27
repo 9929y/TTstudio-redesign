@@ -131,7 +131,28 @@ input, textarea { font: inherit; color: inherit; }
 .kd-abs { color: #6d6e73; font-variant-numeric: tabular-nums; }
 .kpi-delta.flat { color: var(--c-text-3); }
 .kpi-sub { font-size: 11.5px; color: var(--c-text-3); }
-.semi-skeleton-image { background: #ededf0 !important; }
+.skel { position: relative; display: block; overflow: hidden; background: #ededf0; isolation: isolate; }
+.skel::after {
+  content: ''; position: absolute; top: 0; bottom: 0; left: calc(-1 * var(--sx, 0px)); width: var(--sw, 393px); pointer-events: none;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 70%);
+  transform: translateX(-100%); animation: skel-sweep 1.6s linear infinite; animation-delay: calc(-1 * var(--st, 0ms)); will-change: transform;
+}
+@keyframes skel-sweep { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+.page-hidden .skel::after, .page-hidden .skel { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .skel::after { display: none; }
+  .skel { animation: skel-breathe 2s ease-in-out infinite; }
+}
+@keyframes skel-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.72; } }
+.skel-kpi { pointer-events: none; }
+.skel-card { box-sizing: border-box; background: #fff; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.skel-row { display: flex; align-items: center; gap: 6px; min-height: 24px; }
+.skel-key { padding: 12px; border-radius: 8px; background: #f6f7f9; }
+.skel-chart { display: grid; place-items: center; }
+.skel-ring { position: relative; display: grid; place-items: center; }
+.skel-ring > .skel-hole { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; }
+.skel-ring.half > .skel-hole { top: auto; bottom: 0; transform: translateX(-50%); }
+.skel-ask { display: flex; align-items: center; gap: 10px; min-height: 44px; border-top: 0.5px solid #e8e8ea; padding-top: 4px; margin-bottom: -8px; }
 .chart-wrap { margin-top: 10px; }
 .chart-empty { height: 120px; display: grid; place-items: center; color: var(--c-text-3); font-size: 13px; }
 .big-num { font-size: 26px; font-weight: 700; }

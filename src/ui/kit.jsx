@@ -1,7 +1,6 @@
 // 共享组件。每个组件注明对应录屏帧与 Semi 复用方式（见 COVERAGE「复用组件」列）
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Skeleton as SemiSkeleton } from '@douyinfe/semi-ui';
 import { useApp } from '../store.js';
 import { useRoute } from '../shell/Navigator.jsx';
 import { I } from './Icons.jsx';
@@ -198,13 +197,56 @@ export function KpiCard({ k, selected, onPress, delay = 0, empty }) {
 const fmtFull0 = (v) => fmtStat(v);
 
 // ---------- 骨架屏：直接复用 Semi Skeleton（只改颜色/圆角 token） ----------
-export function Skel({ w = '100%', h = 16, r = 4, style }) {
-  return <SemiSkeleton loading active={false} placeholder={<SemiSkeleton.Image style={{ width: w, height: h, borderRadius: r, ...style }} />} />;
+// ---------- 骨架屏（2026-11-26 重做）：一道很淡的微光从左往右扫过 ----------
+// 全页同步：每块的高光按「手机屏幕的 x 坐标」对齐（--sx），动画相位按全局时钟对齐（--st），
+// 看起来是一束光同时扫过整页，而不是几十个块各闪各的。只动 transform（伪元素平移），减弱动态效果时改成缓慢明暗。
+const SKEL_MS = 1600;
+if (typeof document !== 'undefined' && !window.__skelVis) {
+  window.__skelVis = true;
+  const sync = () => document.documentElement.classList.toggle('page-hidden', document.hidden);
+  document.addEventListener('visibilitychange', sync); sync();
 }
+export function Skel({ w = '100%', h = 16, r = 4, style }) {
+  const ref = useRef(null);
+  useLayoutEffect(() => {
+    const el = ref.current; if (!el) return;
+    const screen = el.closest('.screen-root') || document.body;
+    const sb = screen.getBoundingClientRect(), b = el.getBoundingClientRect();
+    el.style.setProperty('--sx', `${Math.round(b.left - sb.left)}px`);
+    el.style.setProperty('--sw', `${Math.round(sb.width) || 393}px`);
+    el.style.setProperty('--st', `${Math.round(performance.now() % SKEL_MS)}ms`);
+  }, []);
+  return <div ref={ref} className="skel" aria-hidden="true" style={{ width: w, height: h, borderRadius: r, flexShrink: typeof w === 'number' ? 0 : undefined, ...style }} />;
+}
+// Key metrics 的骨架：和成品卡一样的框，里面三条（标签 / 数字 / 涨跌胶囊）
 export function KpiSkeleton({ n = 6 }) {
   return (
     <div className="kpi-grid">
-      {Array.from({ length: n }).map((_, i) => <Skel key={i} h={66} r={6} />)}
+      {Array.from({ length: n }).map((_, i) => (
+        <div key={i} className="kpi skel-kpi">
+          <Skel w="55%" h={12} />
+          <Skel w="45%" h={22} r={5} style={{ marginTop: 6 }} />
+          <Skel w={64} h={16} r={8} style={{ marginTop: 8 }} />
+        </div>
+      ))}
+    </div>
+  );
+}
+// AI 卡的骨架：和成品同形状（标题行 + 浅色洞察块两行 + 圆环 + Ask 行），数据出来时位置不跳
+export function InsightCardSkeleton({ half = false }) {
+  const ring = half ? { w: 232, h: 116, r: '116px 116px 0 0', hole: { w: 136, h: 68, r: '68px 68px 0 0' } } : { w: 172, h: 172, r: '50%', hole: { w: 108, h: 108, r: '50%' } };
+  return (
+    <div className="skel-card" aria-label="Loading" role="status">
+      <div className="skel-row"><Skel w={150} h={18} r={5} /><Skel w={16} h={16} r={8} /><span style={{ flex: 1 }} /><Skel w={18} h={18} r={9} /></div>
+      <div className="skel-key"><Skel h={14} /><Skel w="72%" h={14} style={{ marginTop: 8 }} /></div>
+      <div className="skel-chart" style={{ height: half ? 200 : 258 }}>
+        <div className={`skel-ring ${half ? 'half' : ''}`} style={{ width: ring.w, height: ring.h }}>
+          <Skel w={ring.w} h={ring.h} r={ring.r} />
+          <span className="skel-hole" style={{ width: ring.hole.w, height: ring.hole.h, borderRadius: ring.hole.r }} />
+        </div>
+      </div>
+      <Skel w="70%" h={12} style={{ margin: '0 auto' }} />
+      <div className="skel-ask"><Skel w={22} h={22} r={11} /><Skel w="62%" h={14} /></div>
     </div>
   );
 }

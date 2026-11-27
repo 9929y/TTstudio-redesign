@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useApp } from '../store.js';
-import { Spinner, NavBar, LargeHeader, TopTabs, Pills, Section, KpiCard, KpiSkeleton, Skel, useRefill, useFirstLoad, BarRows, Donut, Cover, Scroll, Avatar, useTabFirstLoad } from '../ui/kit.jsx';
+import { Spinner, NavBar, LargeHeader, TopTabs, Pills, Section, KpiCard, KpiSkeleton, InsightCardSkeleton, Skel, useRefill, useFirstLoad, BarRows, Donut, Cover, Scroll, Avatar, useTabFirstLoad } from '../ui/kit.jsx';
 import { TrendChart, BarChart } from '../ui/charts.jsx';
 import { I } from '../ui/Icons.jsx';
 import {
@@ -110,7 +110,12 @@ function InsightSlot({ Module, loading }) {
   const ca = newAccount || market === 'store' ? 'none' : 'row';
   return (
     <div style={{ padding: '8px 8px 0' }}>
-      {loading ? <div style={{ background: '#fff', borderRadius: 8, padding: 16 }}><Skel h={Module === ModuleA ? 430 : 402} r={6} /></div> : <Module ca={ca} insight={insight} onSelect={onSelect} clearToken={clearToken} onAsk={(q) => push('creatorAssistant', { from: Module === ModuleA ? 'analytics' : 'content', prompt: q })} />}
+      {/* 加载：和成品同形状的骨架；数据到了内容 200ms 淡入、上移 4px（2026-11-26） */}
+      {loading ? <InsightCardSkeleton half={Module !== ModuleA} /> : (
+        <motion.div initial={{ opacity: 0, transform: 'translateY(4px)' }} animate={{ opacity: 1, transform: 'translateY(0px)' }} transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}>
+          <Module ca={ca} insight={insight} onSelect={onSelect} clearToken={clearToken} onAsk={(q) => push('creatorAssistant', { from: Module === ModuleA ? 'analytics' : 'content', prompt: q })} />
+        </motion.div>
+      )}
     </div>
   );
 }
