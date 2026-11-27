@@ -200,7 +200,7 @@ export default function App() {
   return (
     <MotionConfig reducedMotion="user">{/* 系统开了「减弱动态效果」时，位移动画改为淡入淡出 */}
     <div className={`stage-root ${EMBED ? 'embed' : ''}`}>
-      <div className="phone-col"><Phone />{!PUBLIC && <div className="proto-note">Version 4 · Unofficial research prototype · simulated data</div>}</div>
+      <div className="phone-col"><Phone /></div>
       {!EMBED && !PUBLIC && <ResearchPanel />}
     </div>
     </MotionConfig>

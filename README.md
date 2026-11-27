@@ -4,9 +4,9 @@ A redesign of TikTok Studio for iPhone, designed and built as a working React pr
 
 TikTok Studio（iPhone）改版：从设计到前端实现，做成可以直接操作的 React 原型。
 
-**Try it / 体验：** clone or download this repo and double-click `docs/index.html`. It is a single self-contained file and works offline.
+**Try it / 体验：** open **https://9929y.github.io/TTstudio-redesign/** in a browser, or clone this repo and double-click `docs/index.html` (a single self-contained file that works offline).
 
-clone 或下载仓库后，双击 `docs/index.html` 即可打开。单个自包含文件，离线可用。
+在浏览器打开 **https://9929y.github.io/TTstudio-redesign/**，或 clone 仓库后双击 `docs/index.html`（单个自包含文件，离线可用）。
 
 ---
 
