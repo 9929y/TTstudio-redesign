@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 600" width="780" height="600">
+<defs>
+  <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C9E0FB" stop-opacity="0.9"/>
+    <stop offset="0.55" stop-color="#DDEBFC" stop-opacity="0.45"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#3C95F4"/><stop offset="0.55" stop-color="#1E7CE8"/><stop offset="1" stop-color="#0D4A96"/>
+  </linearGradient>
+  <linearGradient id="sky" x1="0" y1="0" x2="0.4" y2="1">
+    <stop offset="0" stop-color="#E4F0FD"/><stop offset="1" stop-color="#9CC8F6"/>
+  </linearGradient>
+  <linearGradient id="glass" x1="0" y1="0" x2="0.6" y2="1">
+    <stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#F7FAFE"/>
+  </linearGradient>
+  <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0.3"/>
+  </linearGradient>
+  <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#9CC8F6"/><stop offset="1" stop-color="#D6E8FC"/>
+  </linearGradient>
+  <linearGradient id="barHi" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#1E7CE8"/><stop offset="1" stop-color="#0D4A96"/>
+  </linearGradient>
+  <linearGradient id="red" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#FF5A78"/><stop offset="0.5" stop-color="#FE2C55"/><stop offset="1" stop-color="#D9134A"/>
+  </linearGradient>
+  <linearGradient id="spark" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#9CC8F6"/><stop offset="0.5" stop-color="#1E7CE8"/><stop offset="1" stop-color="#0D4A96"/>
+  </linearGradient>
+  <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.18"/><stop offset="0.45" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <filter id="sh" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#0D4A96" flood-opacity="0.18"/></filter>
+  <filter id="shR" x="-40%" y="-30%" width="180%" height="170%"><feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#FE2C55" flood-opacity="0.32"/></filter>
+  <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="18"/></filter>
+  <clipPath id="cBlue"><rect x="150" y="100" width="352" height="246" rx="30"/></clipPath>
+</defs>
+
+<ellipse cx="400" cy="300" rx="350" ry="260" fill="url(#glow)"/>
+
+<!-- 后层：Studio 蓝渐变卡 -->
+<g transform="rotate(-8 326 223)">
+  <rect x="150" y="100" width="352" height="246" rx="30" fill="url(#blue)"/>
+  <g clip-path="url(#cBlue)" fill="none" stroke="#FFFFFF">
+    <circle cx="470" cy="330" r="120" stroke-opacity="0.16" stroke-width="2"/>
+    <circle cx="470" cy="330" r="180" stroke-opacity="0.10" stroke-width="2"/>
+    <circle cx="470" cy="330" r="240" stroke-opacity="0.06" stroke-width="2"/>
+  </g>
+  <rect x="150" y="100" width="352" height="246" rx="30" fill="url(#sheen)"/>
+  <rect x="180" y="128" width="96" height="14" rx="7" fill="#FFFFFF" fill-opacity="0.55"/>
+  <rect x="180" y="152" width="58" height="10" rx="5" fill="#FFFFFF" fill-opacity="0.3"/>
+</g>
+
+<!-- 后层：浅蓝卡 -->
+<g transform="rotate(8 520 262)">
+  <rect x="418" y="112" width="226" height="284" rx="30" fill="url(#sky)" fill-opacity="0.78"/>
+  <rect x="419" y="113" width="224" height="282" rx="29" fill="none" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="2"/>
+</g>
+
+<!-- 主卡：白色玻璃 + 柱状图 -->
+<g filter="url(#sh)">
+  <rect x="196" y="178" width="388" height="272" rx="28" fill="url(#glass)"/>
+</g>
+<rect x="197" y="179" width="386" height="270" rx="27" fill="none" stroke="#E6EDF6" stroke-width="2"/>
+<circle cx="236" cy="218" r="17" fill="#E8F2FD"/>
+<path d="M236 208 Q238.0 216.0 246 218 Q238.0 220.0 236 228 Q234.0 220.0 226 218 Q234.0 216.0 236 208 Z" fill="#1E7CE8"/>
+<rect x="264" y="206" width="132" height="12" rx="6" fill="#D9E1EB"/>
+<rect x="264" y="226" width="82" height="10" rx="5" fill="#E9EEF4"/>
+<path d="M227.0 416.0 H553.0" stroke="#E3E9F1" stroke-width="2" stroke-linecap="round"/>
+  <rect x="231.0" y="357.6" width="30" height="58.4" rx="9" fill="url(#bar)"/>
+  <rect x="279.0" y="366.9" width="30" height="49.1" rx="9" fill="url(#bar)"/>
+  <rect x="327.0" y="373.4" width="30" height="42.6" rx="9" fill="url(#bar)"/>
+  <rect x="375.0" y="376.4" width="30" height="39.6" rx="9" fill="url(#bar)"/>
+  <rect x="423.0" y="382.0" width="30" height="34.0" rx="9" fill="url(#bar)"/>
+  <rect x="471.0" y="266.0" width="30" height="150.0" rx="9" fill="url(#barHi)"/>
+  <rect x="519.0" y="310.8" width="30" height="105.2" rx="9" fill="url(#bar)"/>
+
+<!-- 红色视频卡 -->
+<g transform="rotate(-10 178 404)" filter="url(#shR)">
+  <rect x="114" y="298" width="128" height="212" rx="24" fill="url(#red)"/>
+</g>
+<g transform="rotate(-10 178 404)">
+  <rect x="115" y="299" width="126" height="210" rx="23" fill="none" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="2"/>
+  <path d="M166 382 C166 375 172 371 178 375 L200 389 C205 392 205 399 200 402 L178 416 C172 420 166 416 166 409 Z" fill="#FFFFFF"/>
+  <rect x="134" y="480" width="88" height="6" rx="3" fill="#FFFFFF" fill-opacity="0.4"/>
+  <rect x="134" y="480" width="40" height="6" rx="3" fill="#FFFFFF"/>
+</g>
+
+<!-- 玫瑰图圆卡 -->
+<g filter="url(#sh)"><circle cx="606" cy="432" r="76" fill="#FFFFFF"/></g>
+  <path d="M608.51 372.05 A60 60 0 0 1 662.24 411.09 L624.75 425.03 A20 20 0 0 0 606.84 412.02 Z" fill="#EEF2F7"/>
+  <path d="M608.18 380.05 A52.0 52.0 0 0 1 654.74 413.87 L624.75 425.03 A20 20 0 0 0 606.84 412.02 Z" fill="#0D4A96"/>
+  <path d="M663.79 415.86 A60 60 0 0 1 643.27 479.02 L618.42 447.67 A20 20 0 0 0 625.26 426.62 Z" fill="#EEF2F7"/>
+  <path d="M651.46 419.31 A47.2 47.2 0 0 1 635.32 468.99 L618.42 447.67 A20 20 0 0 0 625.26 426.62 Z" fill="#9CC8F6"/>
+  <path d="M639.20 481.98 A60 60 0 0 1 572.80 481.98 L594.93 448.66 A20 20 0 0 0 617.07 448.66 Z" fill="#EEF2F7"/>
+  <path d="M629.24 466.98 A42.0 42.0 0 0 1 582.76 466.98 L594.93 448.66 A20 20 0 0 0 617.07 448.66 Z" fill="#1E7CE8"/>
+  <path d="M568.73 479.02 A60 60 0 0 1 548.21 415.86 L586.74 426.62 A20 20 0 0 0 593.58 447.67 Z" fill="#EEF2F7"/>
+  <path d="M575.69 470.24 A48.8 48.8 0 0 1 559.00 418.88 L586.74 426.62 A20 20 0 0 0 593.58 447.67 Z" fill="#5A9FF0"/>
+  <path d="M549.76 411.09 A60 60 0 0 1 603.49 372.05 L605.16 412.02 A20 20 0 0 0 587.25 425.03 Z" fill="#EEF2F7"/>
+  <path d="M564.76 416.66 A44.0 44.0 0 0 1 604.16 388.04 L605.16 412.02 A20 20 0 0 0 587.25 425.03 Z" fill="#1765C4"/>
+
+<!-- 通知红点 -->
+<circle cx="578" cy="184" r="13" fill="#FE2C55" stroke="#FFFFFF" stroke-width="5"/>
+
+<!-- AI 星形 -->
+<path d="M646 74 Q654.64 119.36 700 128 Q654.64 136.64 646 182 Q637.36 136.64 592 128 Q637.36 119.36 646 74 Z" fill="#9CC8F6" filter="url(#soft)" opacity="0.7"/>
+<path d="M646 80 Q653.68 120.32 694 128 Q653.68 135.68 646 176 Q638.32 135.68 598 128 Q638.32 120.32 646 80 Z" fill="url(#spark)"/>
+<path d="M702 48 Q704.88 63.12 720 66 Q704.88 68.88 702 84 Q699.12 68.88 684 66 Q699.12 63.12 702 48 Z" fill="#5A9FF0"/>
+<path d="M584 51 Q585.76 60.24 595 62 Q585.76 63.76 584 73 Q582.24 63.76 573 62 Q582.24 60.24 584 51 Z" fill="#9CC8F6"/>
+<circle cx="112" cy="230" r="7" fill="#9CC8F6"/>
+<circle cx="700" cy="300" r="5" fill="#FE2C55"/>
+</svg>

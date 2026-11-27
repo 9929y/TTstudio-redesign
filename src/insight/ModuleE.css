@@ -1,0 +1,17 @@
+/* Module E / C motion — from IMS6-Key-Blue.dc.html and IMS-C-Blue.dc.html (.im-* renamed .ime-* so it cannot clash with other modules) */
+/* 按下反馈按 iOS / TikTok 原生：按下立刻变暗，松手 160ms 恢复，不缩放 */
+.ime-press { transition: opacity 160ms ease-out; }
+.ime-press:active { opacity: 0.6; transition: none; }
+.ime-seg { transition: fill-opacity 200ms ease, filter 200ms ease; }
+.ime-lab { transition: left 220ms cubic-bezier(0.23, 1, 0.32, 1), top 220ms cubic-bezier(0.23, 1, 0.32, 1), width 220ms cubic-bezier(0.23, 1, 0.32, 1), opacity 160ms ease-out; }
+.ime-fade { transition: color 200ms ease; }
+.ime-scrim { animation: ime-op 250ms ease-out; }
+/* 2026-11-26：弹层上滑按美国录屏实测（16 帧 267ms，cubic-bezier(.45,.2,.6,1)），与 SheetFrame 一致 */
+.ime-sheet { animation: ime-up 270ms cubic-bezier(0.45, 0.2, 0.6, 1); }
+@keyframes ime-in { from { opacity: 0; filter: blur(2px); transform: scale(.97); } to { opacity: 1; filter: none; transform: none; } }
+@keyframes ime-op { from { opacity: 0; } }
+@keyframes ime-up { from { transform: translateY(100%); } }
+@media (prefers-reduced-motion: reduce) {
+  .ime-seg { transition: fill-opacity 200ms ease; }
+  .ime-sheet { animation: ime-op 200ms ease-out; }
+}

@@ -1,0 +1,96 @@
+/* S1 · Curated for me (final). Values ported from IMU-S1-Final.dc.html. */
+/* 按下反馈按 iOS / TikTok 原生：按下立刻变暗，松手 160ms 恢复，不缩放 */
+.cfm-press { transition: opacity 160ms ease-out; }
+.cfm-press:active { opacity: 0.6; transition: none; }
+.cfm-scrim { animation: cfm-op 250ms ease-out; }
+/* 2026-11-26：弹层上滑按美国录屏实测（16 帧 267ms，cubic-bezier(.45,.2,.6,1)），与 SheetFrame 一致 */
+.cfm-sheet { animation: cfm-up 270ms cubic-bezier(0.45, 0.2, 0.6, 1); }
+@keyframes cfm-op { from { opacity: 0; } }
+@keyframes cfm-up { from { transform: translateY(100%); } }
+@media (prefers-reduced-motion: reduce) {
+  .cfm-sheet { animation: cfm-op 200ms ease-out; }
+}
+
+.cfm { color: #161823; }
+.cfm-home { padding: 0 8px 9px; }
+.cfm-create { padding: 16px 16px 0; }
+.cfm-panel { box-sizing: border-box; border-radius: 12px; background: #ffffff; padding: 16px 12px 12px; }
+.cfm-create .cfm-panel { box-shadow: inset 0 0 0 0.5px #dcdce0; }
+.cfm-head { box-sizing: border-box; width: 100%; height: 22px; padding: 0 4px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+.cfm-head > span { font-size: 17px; line-height: 22px; font-weight: 700; color: #161823; }
+.cfm-head > svg { flex: none; }
+
+.cfm-tip { display: block; font-size: 12px; line-height: 16px; font-weight: 400; color: #57585e; }
+.cfm-topic { font-size: 15px; line-height: 20px; font-weight: 600; color: #161823; }
+.cfm-clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cfm-nowrap { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cfm-illo { position: absolute; }
+.cfm-illo svg { display: block; }
+.cfm-plus { flex: none; width: 22px; height: 15px; border-radius: 4px; background: #161823; display: grid; place-items: center; box-shadow: -2px 0 0 #25f4ee, 2px 0 0 #fe2c55; }
+
+/* Home: carousel of cards */
+.cfm-track { display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; margin-right: -12px; padding-right: 12px; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+.cfm-track::-webkit-scrollbar { display: none; }
+.cfm-card { position: relative; flex: none; box-sizing: border-box; width: 300px; height: 128px; border-radius: 8px; overflow: hidden; box-shadow: inset 0 0 0 0.5px #dcdce0; padding: 12px 104px 12px 12px; display: flex; flex-direction: column; align-items: flex-start; cursor: pointer; scroll-snap-align: start; text-align: left; }
+.cfm-card-text { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 4px; font-size: 15px; }
+.cfm-card-cta-wrap { margin-top: auto; }
+.cfm-card-cta { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 8px; background: #ffffff; color: #161823; font-size: 13px; line-height: 16px; font-weight: 600; box-shadow: inset 0 0 0 0.5px #dcdce0; }
+.cfm-card .cfm-illo { right: 0; bottom: 0; width: 104px; height: 128px; }
+.cfm-dots { display: flex; justify-content: center; gap: 4px; padding-top: 12px; }
+.cfm-dots span { display: block; width: 4px; height: 4px; border-radius: 2px; background: #d4d4d8; transition: width 200ms ease, background-color 200ms ease; }
+.cfm-dots span.on { width: 12px; background: #161823; }
+
+/* Create: three rows, a row opens in place */
+.cfm-list { display: flex; flex-direction: column; gap: 8px; }
+.cfm-row { position: relative; box-sizing: border-box; width: 100%; min-height: 56px; border-radius: 8px; overflow: hidden; padding: 10px 124px 10px 12px; display: flex; flex-direction: column; justify-content: center; }
+/* Final：行内标题最多两行（13/18），提示 12/16 */
+.cfm-row .cfm-tip { font-size: 12px; line-height: 16px; }
+.cfm-row .cfm-topic { font-size: 13px; line-height: 18px; }
+.cfm-row-text { position: relative; z-index: 1; display: flex; flex-direction: column; min-width: 0; }
+.cfm-row .cfm-illo { right: 28px; top: 0; bottom: 0; width: 88px; }
+/* Final（2026-11-26 新一轮）：箭头贴顶 12px，不再垂直居中 */
+.cfm-row-chev { position: absolute; z-index: 2; right: 8px; top: 12px; display: grid; place-items: center; width: 16px; height: 16px; }
+.cfm-exp { position: relative; box-sizing: border-box; width: 100%; border-radius: 8px; overflow: hidden; padding: 0 0 12px; }
+.cfm-exp .cfm-illo { right: 28px; top: 0; bottom: 0; width: 88px; }
+.cfm-exp-head { position: relative; box-sizing: border-box; width: 100%; min-height: 56px; padding: 10px 124px 10px 12px; display: flex; flex-direction: column; justify-content: center; }
+.cfm-exp-head .cfm-tip { font-size: 12px; line-height: 16px; }
+.cfm-exp-head .cfm-topic { font-size: 13px; line-height: 18px; }
+.cfm-exp-chev { position: absolute; z-index: 2; right: 8px; top: 12px; display: grid; place-items: center; width: 16px; height: 16px; pointer-events: none; }
+.cfm-pad12 { padding: 12px 12px 0; }
+
+/* Reasons list (expanded row and Details sheet) */
+.cfm-why { position: relative; z-index: 1; border-radius: 8px; background: #ffffff; box-shadow: inset 0 0 0 0.5px #dcdce0; overflow: hidden; }
+.cfm-why-in { margin-bottom: -1px; }
+.cfm-why-row { display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px; border-bottom: 0.5px solid #e8e8ea; }
+.cfm-why-ic { flex: none; display: grid; place-items: center; width: 16px; height: 20px; }
+.cfm-why-ic svg { flex: none; }
+.cfm-why-t { font-size: 13px; line-height: 20px; color: #57585e; }
+.cfm-why-t b { font-weight: 600; color: #161823; }
+.cfm-why.lg .cfm-why-row { padding: 12px 16px; }
+.cfm-why.lg .cfm-why-ic { width: 18px; }
+.cfm-why.lg .cfm-why-t { font-size: 14px; }
+
+.cfm-cta-full { position: relative; z-index: 1; box-sizing: border-box; width: 100%; height: 46px; border-radius: 8px; background: #ffffff; box-shadow: inset 0 0 0 0.5px #dcdce0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; line-height: 20px; font-weight: 600; color: #161823; }
+
+/* Details sheet: portalled into the phone screen (.screen-root) */
+.cfm-scrim { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 600; }
+.cfm-sheet { position: absolute; left: 0; right: 0; bottom: 0; background: #ffffff; border-radius: 12px 12px 0 0; z-index: 601; padding-bottom: 34px; display: flex; flex-direction: column; color: #161823; }
+.cfm-sheet-head { position: relative; height: 56px; display: grid; place-items: center; border-bottom: 0.5px solid #e8e8ea; }
+.cfm-sheet-head > span { font-size: 16px; line-height: 20px; font-weight: 700; }
+.cfm-sheet-x { position: absolute; right: 8px; top: 6px; width: 44px; height: 44px; display: grid; place-items: center; }
+.cfm-sheet-body { padding: 20px 24px 0; display: flex; flex-direction: column; gap: 16px; }
+.cfm-hero { position: relative; box-sizing: border-box; height: 96px; border-radius: 8px; overflow: hidden; box-shadow: inset 0 0 0 0.5px #dcdce0; padding: 12px 104px 12px 12px; display: flex; flex-direction: column; gap: 4px; }
+.cfm-hero > span:not(.cfm-illo) { position: relative; z-index: 1; }
+.cfm-hero .cfm-illo { right: 0; bottom: 0; width: 104px; height: 96px; }
+
+/* 只有一张卡（新账号）：卡片撑满面板宽度，不显示圆点 */
+.cfm-home.is-single .cfm-card { width: 100%; flex-basis: 100%; }
+
+/* Create 行（手风琴）：一个容器包住标题区和展开内容（2026-11-26 动效精修） */
+.cfm-item { position: relative; border-radius: 8px; overflow: hidden; }
+.cfm-item > .cfm-row { background: transparent; border-radius: 0; overflow: visible; }
+.cfm-row-chev svg { display: block; transition: transform 240ms cubic-bezier(0.23, 1, 0.32, 1); }
+.cfm-item.is-open .cfm-row-chev svg { transform: rotate(180deg); }
+.cfm-exp-body { overflow: hidden; }
+.cfm-exp-in { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+@media (prefers-reduced-motion: reduce) { .cfm-row-chev svg { transition: none; } }

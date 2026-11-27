@@ -1,0 +1,49 @@
+/* S7 module D · Key metrics vs yours (blue). Values ported from IMS7-Key-Blue.dc.html. */
+/* 按下反馈按 iOS / TikTok 原生：按下立刻变暗，松手 160ms 恢复，不缩放 */
+.imd-press { transition: opacity 160ms ease-out; }
+.imd-press:active { opacity: 0.6; transition: none; }
+.imd-scrim { animation: imd-op 250ms ease-out; }
+/* 2026-11-26：弹层上滑按美国录屏实测（16 帧 267ms，cubic-bezier(.45,.2,.6,1)），与 SheetFrame 一致 */
+.imd-sheet { animation: imd-up 270ms cubic-bezier(0.45, 0.2, 0.6, 1); }
+@keyframes imd-op { from { opacity: 0; } }
+@keyframes imd-up { from { transform: translateY(100%); } }
+@media (prefers-reduced-motion: reduce) {
+  .imd-sheet { animation: imd-op 200ms ease-out; }
+}
+
+.imd-wrap { padding: 8px 8px 0; }
+.imd { box-sizing: border-box; width: 100%; border-radius: 12px; background: #ffffff; padding: 16px; display: flex; flex-direction: column; gap: 12px; color: #161823; }
+.imd-head { display: flex; align-items: flex-start; gap: 8px; }
+.imd-spark { flex: none; display: flex; height: 22px; align-items: center; }
+.imd-lead { margin: 0; flex: 1; font-size: 15px; line-height: 22px; color: #57585e; font-weight: 400; }
+.imd-lead b { color: #161823; font-weight: 600; }
+.imd-info-wrap { flex: none; margin-top: -1px; }
+.imd-info { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+
+.imd-rows { display: flex; flex-direction: column; }
+.imd-row { display: flex; flex-direction: column; gap: 8px; padding: 10px 0; }
+.imd-label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; line-height: 18px; font-weight: 600; color: #161823; }
+.imd-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+.imd-pair { display: flex; flex-direction: column; gap: 4px; }
+.imd-line { display: flex; justify-content: space-between; align-items: baseline; }
+.imd-line span { font-size: 13px; line-height: 18px; color: #161823; font-weight: 400; }
+.imd-line .imd-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+.imd-track { position: relative; display: block; height: 8px; border-radius: 4px; background: #f1f1f2; overflow: hidden; }
+.imd-bar { position: absolute; left: 0; top: 0; bottom: 0; min-width: 3px; border-radius: 4px; }
+
+.imd-ca { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-bottom: -8px; border-top: 0.5px solid #e8e8ea; padding-top: 4px; font-size: 14px; line-height: 18px; font-weight: 600; color: #161823; }
+.imd-ca > span { flex: 1; }
+.imd-ca svg { flex: none; }
+
+/* ⓘ drawer: portalled into the phone screen (.screen-root), above the Analysis sheet (z 600/601) */
+.imd-scrim { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 610; }
+.imd-sheet { position: absolute; left: 0; right: 0; bottom: 0; background: #ffffff; border-radius: 12px 12px 0 0; z-index: 611; padding-bottom: 34px; display: flex; flex-direction: column; color: #161823; }
+.imd-sheet-head { position: relative; height: 54px; display: grid; place-items: center; border-bottom: 0.5px solid #e8e8ea; }
+.imd-sheet-head > span { font-size: 16px; line-height: 20px; font-weight: 700; }
+.imd-sheet-x { position: absolute; right: 6px; top: 5px; width: 44px; height: 44px; display: grid; place-items: center; }
+.imd-sheet-body { padding: 20px 24px 0; display: flex; flex-direction: column; gap: 20px; }
+.imd-item { display: grid; grid-template-columns: 20px minmax(0, 1fr); column-gap: 12px; align-items: start; }
+.imd-item-ic { display: flex; height: 21px; align-items: center; }
+.imd-item-text { display: flex; flex-direction: column; gap: 2px; }
+.imd-item-text b { font-size: 15px; line-height: 21px; font-weight: 600; color: #161823; }
+.imd-item-text span { font-size: 15px; line-height: 21px; color: #8a8b91; }

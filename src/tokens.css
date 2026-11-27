@@ -1,0 +1,89 @@
+/* ------------------------------------------------------------------
+   Design tokens —— 取自录屏（iOS 2026-08 QKE0DFa9O6s 为主，Android 补细节）
+   每个值后注明来源帧；无法测量的写「估」。
+   同时覆盖 Semi 的 --semi-color-* 变量，让复用的 Semi 组件自动套上录屏视觉。
+------------------------------------------------------------------- */
+:root {
+  /* 品牌/操作色 */
+  --c-primary: #fe2c55;          /* Post / Done / Aplicar 按钮（o1g_0441、zaDQ_0105、91F_0349） */
+  --c-primary-disabled: #f9a6b6; /* Done 置灰（o1g_0248） */
+  --c-blue: #1e7ce8;             /* KPI 上升箭头圆、选中胶囊字（o1g_0036、o1g_0622） */
+  --c-blue-weak: #e8f2fe;        /* 选中 KPI 卡底、Most views 胶囊底（o1g_0036/0622） */
+  --c-blue-line: #9cc8f6;        /* 选中 KPI 卡描边（QKE_0042） */
+  --c-chart: #3d8eea;            /* 趋势线（o1g_0045） */
+  --c-chart-fill-top: rgba(61, 142, 234, 0.28);
+  --c-chart-fill-bot: rgba(61, 142, 234, 0.02);
+  --c-scheduled-bg: #e3f1fd;     /* Scheduled 徽标（zaDQ_0149） */
+  --c-scheduled-fg: #2a85d8;
+  --c-warn: #e8384f;             /* Warning received（QKE_0102） */
+  --c-orange-bg: #fff3e6;        /* Data is processing 横幅（ioQ_0034，估） */
+  --c-orange-fg: #c96a00;
+  --c-green: #20d5a0;            /* 上传进度条（zaDQ_0143，估） */
+  --c-neg: #8a8b91;              /* 下降值：灰色圆 + 灰字（o1g_0036 “-919 (-2.6%)”） */
+
+  /* 中性色 */
+  --c-text: #161823;             /* 主文字 */
+  --c-text-2: #57585e;           /* 次级说明 */
+  --c-text-3: #8a8b91;           /* 未选 Tab、时间戳 */
+  --c-line: #e8e8ea;             /* 分隔线 */
+  --c-pill: #f1f1f2;             /* 胶囊底 */
+  --c-card-line: #e3e3e6;        /* KPI 卡描边 */
+  --c-page: #f8f8f8;             /* Analytics 页底（卡片之间的灰） */
+  --c-white: #ffffff;
+  --c-skel: #f2f2f2;             /* 骨架块（o1g_0043） */
+  --c-scrim: rgba(0, 0, 0, 0.5); /* 弹层遮罩（o1g_0248） */
+
+  /* 圆角 */
+  --r-card: 8px;   /* KPI 卡（o1g_0036） */
+  --r-block: 12px; /* 白色分区（Analytics 区块、Manage 卡片） */
+  --r-pill: 999px; /* 日期胶囊（o1g_0036 “7 days” 全圆） */
+  --r-chip: 8px;   /* Manage 筛选胶囊（o1g_0248 “Sort by ⌄”） */
+  --r-sheet: 12px; /* 底部弹层顶部 */
+  --r-btn: 8px;    /* Upload / Post 按钮 */
+
+  /* 字体 —— TikTok Sans 为开源字体；离线时回落到 SF Pro */
+  --font: 'TikTok Sans', -apple-system, 'SF Pro Text', 'Helvetica Neue', 'PingFang SC', sans-serif;
+  --fs-large-title: 28px; /* 页面大标题 Analytics / Manage（QKE_0042） */
+  --fs-title: 17px;       /* 导航栏标题 Video analysis */
+  --fs-section: 17px;     /* Key metrics */
+  --fs-body: 15px;
+  --fs-sub: 13px;
+  --fs-cap: 12px;
+  --fs-kpi: 22px;         /* KPI 数值 15.9K（QKE_0042） */
+
+  /* 布局 */
+  --phone-w: 393px;
+  --phone-h: 852px;
+  --status-h: 54px;
+  --tabbar-h: 83px;       /* 49 + home indicator 34 */
+  --gutter: 16px;
+
+  /* 动效 —— iOS 标准值；录屏 30fps 只能估 */
+  --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-push: 0.42s;
+  --dur-sheet: 0.36s;
+
+  /* Semi 覆盖 */
+  --semi-color-primary: var(--c-primary);
+  --semi-color-primary-hover: #e9284e;
+  --semi-color-primary-active: #d02246;
+  --semi-color-text-0: var(--c-text);
+  --semi-color-text-1: var(--c-text-2);
+  --semi-color-text-2: var(--c-text-3);
+  --semi-color-fill-0: var(--c-skel);
+  --semi-color-border: var(--c-line);
+  --semi-font-family-regular: var(--font);
+}
+
+/* Semi 在 body 上定义自己的主题变量，需在同级覆盖才生效 */
+html body, html body[theme-mode] {
+  --semi-color-primary: var(--c-primary);
+  --semi-color-primary-hover: #e9284e;
+  --semi-color-primary-active: #d02246;
+  --semi-color-text-0: var(--c-text);
+  --semi-color-text-1: var(--c-text-2);
+  --semi-color-text-2: var(--c-text-3);
+  --semi-color-fill-0: #ededf0;
+  --semi-color-border: var(--c-line);
+  --semi-color-danger: var(--c-warn);
+}

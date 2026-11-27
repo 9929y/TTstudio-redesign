@@ -1,0 +1,7 @@
+TikTok Studio prototype photo assets
+30 vertical photos (25 travel, 5 other), 5 avatars.
+Vertical masters: 1080 x 1920 (9:16). Avatar images: 512 x 512.
+Use object-fit:cover to adapt to grid tiles; avatars can be clipped into a circle.
+Photographic stock stand-ins, not actual TikTok video frames or creator accounts.
+Sources.csv records source pages. Pexels license: https://www.pexels.com/license/
+For prototypes use only; do not imply featured people endorse a product.
