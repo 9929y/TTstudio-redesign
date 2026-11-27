@@ -133,7 +133,7 @@ const UI_DEFAULT = { hint: 'Tap an area to see how it moved', legend: 'Previous 
 
 // ---------- 卡片本体：A、B 共用 ----------
 // geo = 几何参数；act = data-act 前缀（insight-a / insight-b）
-export function RoseCard({ geo: G, act, ca = 'row', title, insight: D, onAsk, onSelect, askAct = 'assistant-pop-analytics' }) {
+export function RoseCard({ geo: G, act, ca = 'row', title, insight: D, onAsk, onSelect, clearToken = 0, askAct = 'assistant-pop-analytics' }) {
   const [tip, setTip] = useState(-1);          // 选中的区，-1 = 总分
   // 评分图联动（2026-11-26）：点扇区或标签选中；再点同一项取消；点卡片里的空白处恢复默认。
   // 选中结果通知页面（onSelect），Overview 用它让下方 Key metrics 选中对应的卡和趋势图。
@@ -143,10 +143,18 @@ export function RoseCard({ geo: G, act, ca = 'row', title, insight: D, onAsk, on
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
   const firstRun = useRef(true);
+  const silent = useRef(false); // 由下方触发的取消：不再回头改下方
   useEffect(() => {
     if (firstRun.current) { firstRun.current = false; return; }
+    if (silent.current) { silent.current = false; return; }
     onSelectRef.current?.(tip >= 0 ? (D.areas || [])[tip]?.name : null);
   }, [tip]); // eslint-disable-line react-hooks/exhaustive-deps
+  // 下方换了卡 / 排序，或取消了选中：评分图回到总览
+  const clearMounted = useRef(false);
+  useEffect(() => {
+    if (!clearMounted.current) { clearMounted.current = true; return; }
+    setTip((t) => { if (t >= 0) silent.current = true; return -1; });
+  }, [clearToken]);
   const [drawer, setDrawer] = useState(false); // ⓘ 抽屉
   const [host, setHost] = useState(null);
   const rootRef = useRef(null);
@@ -329,9 +337,9 @@ export function ScoresNeedSevenDays() {
 }
 
 const A7 = buildModuleA({ key: '7' });
-export function ModuleA({ ca = 'row', title, insight = A7, onAsk, onSelect }) {
+export function ModuleA({ ca = 'row', title, insight = A7, onAsk, onSelect, clearToken }) {
   if (!insight) return <ScoresNeedSevenDays />;
-  return <RoseCard geo={GEO_FULL} act="insight-a" ca={ca} title={title} insight={insight} onAsk={onAsk} onSelect={onSelect} />;
+  return <RoseCard geo={GEO_FULL} act="insight-a" ca={ca} title={title} insight={insight} onAsk={onAsk} onSelect={onSelect} clearToken={clearToken} />;
 }
 
 export default ModuleA;

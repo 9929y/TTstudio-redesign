@@ -19,9 +19,9 @@ export const GEO_HALF = {
 };
 
 const B7 = buildModuleB({ key: '7' });
-export function ModuleB({ ca = 'row', title, insight = B7, onAsk, onSelect }) {
+export function ModuleB({ ca = 'row', title, insight = B7, onAsk, onSelect, clearToken }) {
   if (!insight) return <ScoresNeedSevenDays />;
-  return <RoseCard geo={GEO_HALF} act="insight-b" ca={ca} title={title} insight={insight} onAsk={onAsk} onSelect={onSelect} />;
+  return <RoseCard geo={GEO_HALF} act="insight-b" ca={ca} title={title} insight={insight} onAsk={onAsk} onSelect={onSelect} clearToken={clearToken} />;
 }
 
 export default ModuleB;

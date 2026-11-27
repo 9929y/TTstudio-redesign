@@ -734,6 +734,20 @@ test('14 评分图联动：选中维度 → 图中央 / Key metrics / Ask 行一
   await page.waitForTimeout(500);
   await expect(card).toHaveAttribute('data-tip', '-1');
   await expect(sel).toHaveCount(0);
+  // 反向：下方换卡 → 评分图回到总览；再点已选中的卡 → 两边都未选中
+  await area('Shares');
+  await expect(sel).toHaveText('Shares');
+  await tap(page, 'kpi-likes');
+  await expect(card).toHaveAttribute('data-tip', '-1');
+  await expect(sel).toHaveText('Likes');
+  await tap(page, 'kpi-likes');
+  await expect(sel).toHaveCount(0);
+  await expect(card).toHaveAttribute('data-tip', '-1');
+  await area('Views');
+  await expect(sel).toHaveText('Post views');
+  await tap(page, 'kpi-views');
+  await expect(sel).toHaveCount(0);
+  await expect(card).toHaveAttribute('data-tip', '-1');
   // 选中后点 Ask 行：沿用现有入口，带着这条问题打开 Creator Assistant
   await area('Shares');
   await tap(page, 'assistant-pop-analytics');
@@ -755,4 +769,9 @@ test('14 评分图联动：选中维度 → 图中央 / Key metrics / Ask 行一
   await shot(page, 'l3_content_engagement');
   await barea('Engagement');
   await expect(act(page, 'pill-views')).toHaveClass(/on/);
+  // 反向：换排序 → 评分图回到总览
+  await barea('Followers');
+  await tap(page, 'pill-likes');
+  await expect(bcard).toHaveAttribute('data-tip', '-1');
+  await expect(act(page, 'pill-likes')).toHaveClass(/on/);
 });

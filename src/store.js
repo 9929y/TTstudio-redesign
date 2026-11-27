@@ -82,6 +82,9 @@ export const useApp = create((set, get) => ({
   topMetric: 'views',
   topToken: 0,
   setTopMetric: (m) => set((s) => ({ topMetric: m, topToken: s.topToken + 1 })),
+  // 评分图与下方数据双向联动（2026-11-26）：在下方换卡 / 换排序时，让上面的评分图回到总览
+  roseClear: { A: 0, B: 0 },
+  clearRose: (which) => set((s) => ({ roseClear: { ...s.roseClear, [which]: s.roseClear[which] + 1 } })),
   insightPill: { viewers: 'Locations', followers: 'Gender' },
   setInsightPill: (tab, v) => set((s) => ({ insightPill: { ...s.insightPill, [tab]: v } })),
 
