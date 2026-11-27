@@ -113,3 +113,6 @@
 .cax-screen .cax-send { flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: #9cc8f6; color: #fff; transition: background-color .15s ease; }
 .cax-screen .cax-send.on { background: #1e7ce8; }
 .cax-disc { flex: none; display: block; padding: 8px 28px 34px; font-size: 11.5px; line-height: 15px; color: #6d6e75; }
+
+/* 没有输入框后，对话底部留出 Home 条的安全区（2026-11-26） */
+.cax-screen .cax-end { min-height: 34px; }

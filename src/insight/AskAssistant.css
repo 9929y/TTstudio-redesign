@@ -20,19 +20,19 @@
 .ask-pill::after { content: none; }
 /* 出场（2026-11-26 加强，按反馈「首页看不到」）：一道亮光沿边框跑一圈半，同时外圈泛起柔和蓝光，再退成静止的渐变边。
    原来只是把本来就是渐变的 1.5px 外圈原地转一圈，几乎看不出变化。 */
-.ask-pill.sweep { animation: ask-glow 2.2s ease-out 0.35s 1 both; }
+/* 2026-11-26 按反馈：不要外圈光晕，只留沿边框走的一道亮光，放慢到 3.2s 走一圈 */
 .ask-pill.sweep::after {
   content: ''; position: absolute; left: 50%; top: 50%; width: 130%; aspect-ratio: 1; z-index: -1; pointer-events: none;
   background: conic-gradient(from 0deg, rgba(255, 255, 255, 0) 0deg, rgba(255, 255, 255, 0) 250deg, #7b61ff 290deg, #25f4ee 330deg, #ffffff 350deg, rgba(255, 255, 255, 0) 360deg);
   transform: translate(-50%, -50%) rotate(0deg); opacity: 0;
-  animation: ask-comet 1.8s cubic-bezier(0.65, 0, 0.35, 1) 0.35s 1 both;
+  animation: ask-comet 3.2s cubic-bezier(0.45, 0, 0.55, 1) 0.4s 1 both;
 }
 .ask-pill.sweep { padding: 1.5px; }
 @keyframes ask-comet {
   0% { opacity: 0; transform: translate(-50%, -50%) rotate(0deg); }
-  12% { opacity: 1; }
-  80% { opacity: 1; }
-  100% { opacity: 0; transform: translate(-50%, -50%) rotate(540deg); }
+  10% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(360deg); }
 }
 @keyframes ask-glow {
   0% { box-shadow: 0 0 0 0 rgba(47, 98, 242, 0); }

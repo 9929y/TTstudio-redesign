@@ -574,34 +574,23 @@ test('12 子流程：Creator Assistant（Analytics 内嵌卡 → 欢迎页 → �
   await page.waitForTimeout(600);
   await expect(act(page, 'assistant-pop-home')).toHaveClass(/ask-pill/);
   await tap(page, 'assistant-pop-home');
-  await page.waitForTimeout(2200);
-  await expect(page.locator('#phone-screen .cax-me:visible')).toHaveCount(1);
-  await expect(page.locator('#phone-screen .cax-msg-bot:visible')).toHaveCount(1);
-  await expect(act(page, 'assistant-input')).toHaveAttribute('placeholder', 'Ask about your account');
-  // 清空对话后回到欢迎内容和四个问题
-  await tap(page, 'assistant-more');
-  await tap(page, 'assistant-clear');
-  await page.waitForTimeout(600);
-  await expect(act(page, 'assistant-say-hi')).toHaveCount(0);
+  await page.waitForTimeout(1200);
+  // 2026-11-26：进入只显示 onboarding 第一屏，不自动提问，也没有输入框
+  await expect(page.locator('#phone-screen .cax-me:visible')).toHaveCount(0);
+  await expect(act(page, 'assistant-input')).toHaveCount(0);
   await expect(page.locator('#phone-screen [data-act^="assistant-prompt-"]:visible')).toHaveCount(4);
   await expect(phone(page)).toContainText('personal Creator Assistant');
   await expect(phone(page)).toContainText('Feel free to ask me questions like:');
   await shot(page, 'd2_assistant');
+  // 点示例问题：回复说明原型只作设计参考
   await tap(page, 'assistant-prompt-0');
-  await page.waitForTimeout(3200);
-  await expect(phone(page)).toContainText('Views fell this week, and likes and comments fell faster.');
-  await expect(phone(page)).toContainText('Key metrics');
-  await expect(act(page, 'assistant-input')).toHaveAttribute('placeholder', 'Ask about your account');
+  await page.waitForTimeout(1500);
+  await expect(page.locator('#phone-screen .cax-me:visible')).toHaveCount(1);
+  await expect(phone(page)).toContainText('presents Creator Assistant as a design reference');
   expect(await deadCheck(page, 'creator assistant')).toEqual([]);
   await shot(page, 'd3_assistant_answer');
-  // 自己输入的问题：回复说明需要后端和 agent 编排，原型只展示 mock data
-  await act(page, 'assistant-input').fill('How do I grow faster?');
-  await act(page, 'assistant-input').press('Enter');
-  await page.waitForTimeout(1200);
-  await expect(phone(page)).toContainText('needs a backend and agent orchestration');
   await tap(page, 'assistant-more');
   await tap(page, 'assistant-more-cancel');
-  // 新的回答带一个模块，比一屏长，点赞按钮要先滚到可见
   await act(page, 'assistant-like').last().scrollIntoViewIfNeeded();
   await page.waitForTimeout(300);
   await act(page, 'assistant-like').last().click({ force: true });
@@ -610,10 +599,11 @@ test('12 子流程：Creator Assistant（Analytics 内嵌卡 → 欢迎页 → �
   await tap(page, 'tabbar-inbox');
   await page.waitForTimeout(900);
   await expect(act(page, 'inbox-assistant')).toContainText('Creator Assistant');
-  // 第二次打开直接回到对话，之前的回答还在
+  // 从 Inbox 会话行进入：同样只有 onboarding 第一屏
   await tap(page, 'inbox-assistant');
-  await page.waitForTimeout(700);
-  await expect(phone(page)).toContainText('Views fell this week, and likes and comments fell faster.');
+  await page.waitForTimeout(900);
+  await expect(page.locator('#phone-screen [data-act^="assistant-prompt-"]:visible')).toHaveCount(4);
+  await expect(page.locator('#phone-screen .cax-me:visible')).toHaveCount(0);
   await tap(page, 'nav-back');
   await page.waitForTimeout(600);
   // 2026-11-26：周报已从原型删除，改从 Analytics › Content 的第一条作品进作品详情
@@ -753,11 +743,11 @@ test('14 评分图联动：选中维度 → 图中央 / Key metrics / Ask 行一
   await tap(page, 'kpi-views');
   await expect(sel).toHaveCount(0);
   await expect(card).toHaveAttribute('data-tip', '-1');
-  // 选中后点 Ask 行：沿用现有入口，带着这条问题打开 Creator Assistant
+  // 选中后点 Ask 行：打开 Creator Assistant 的 onboarding 第一屏（不自动提问）
   await area('Shares');
   await tap(page, 'assistant-pop-analytics');
-  await page.waitForTimeout(900);
-  await expect(page.locator('#phone-screen').getByText('How can I get more shares?').first()).toBeVisible();
+  await page.waitForTimeout(1200);
+  await expect(page.locator('#phone-screen [data-act^="assistant-prompt-"]:visible')).toHaveCount(4);
   await shot(page, 'l2_assistant_shares');
   // Content：同一套规则，下方 Top posts 的排序胶囊跟着换，取消后恢复
   await tap(page, 'nav-back');

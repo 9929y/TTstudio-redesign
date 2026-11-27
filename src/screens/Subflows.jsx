@@ -246,7 +246,8 @@ function placeholderFor(params) {
 // 设计稿没有模块的问题：没问过的现有问题 + 两个设计稿里有回答的问题
 const CA_MORE = [CA_KINDS.next.question, summaryAnswer()?.question].filter(Boolean);
 
-const TYPED_REPLY = 'Answering your own questions needs a backend and agent orchestration, so this prototype shows mock data only. Tap one of the suggested questions to see a full answer.';
+// 点示例问题后的回复（2026-11-26 按要求）：原型里 Creator Assistant 只作设计参考，不生成回答
+const PREVIEW_REPLY = 'This prototype presents Creator Assistant as a design reference. Live answers rely on backend services and agent orchestration, including secure access to account data, tool calls and response checks, which are outside the scope of this build. The rest of the prototype runs on sample data.';
 
 export function CreatorAssistantScreen({ params }) {
   const thread = useApp((s) => s.assistantThread);
@@ -276,31 +277,16 @@ export function CreatorAssistantScreen({ params }) {
     }, delay));
   };
   const sayKind = (kind, extra, delay) => say({ kind, postId: params?.postId, text: kindData(kind, params?.postId).headline, ...extra }, delay);
-  const ask = (q, from, typed = false) => {
+  const ask = (q, from) => {
     if (!q.trim() || busyRef.current) return;
     useApp.setState((s) => ({ assistantThread: [...s.assistantThread, { me: true, text: q.trim(), ...(from ? { from } : {}) }] }));
     setInput('');
-    // 用户在输入框里自己打的问题：回答需要后端和 agent 编排，原型只放 mock data，直接说明；示例问题和各入口带来的问题照常回答
-    if (typed) return say({ text: TYPED_REPLY, cards: [] });
-    const kind = kindFor(q);
-    if (kind) sayKind(kind); else say(answer(q, { postId: params?.postId, itemId: params?.itemId }));
+    // 原型不生成回答：点任何示例问题都回复同一段说明
+    say({ text: PREVIEW_REPLY, cards: [], preview: true });
   };
   useEffect(() => {
-    useApp.setState({ assistantOpened: true });
-    if (booted.current) return;
-    booted.current = true;
-    // 带着问题进来：先让 onboarding 第一屏入场（约 0.7s），再发出问题、平滑滚到这一轮
-    if (params?.prompt) { timers.current.push(setTimeout(() => ask(params.prompt, fromLabel(params)), 700)); return; }
-    const kind = params?.kind || CA_CONTEXT_KIND[params?.from] || (params?.postId ? 'video' : null);
-    const K = kind && kindData(kind, params?.postId);
-    if (!K) return;
-    const ctx = `${kind}:${params?.postId || ''}`;
-    const t = useApp.getState().assistantThread;
-    if ([...t].reverse().find((m) => !m.me && m.ctx)?.ctx === ctx) return; // 同一个入口再进来，不重复回答
-    if (K.question && K.fromSide !== 'bot') {
-      useApp.setState((s) => ({ assistantThread: [...s.assistantThread, { me: true, text: K.question, from: K.from }] }));
-      sayKind(kind, { ctx }, 500);
-    } else sayKind(kind, { ctx, from: K.from }, 500);
+    // 进入时只显示 onboarding 第一屏：每次都是新的对话，不替用户发问题，也不自动回答（2026-11-26 按反馈）
+    useApp.setState({ assistantOpened: true, assistantThread: [] });
   }, []);
 
   const last = thread[thread.length - 1];
@@ -308,7 +294,7 @@ export function CreatorAssistantScreen({ params }) {
   const follow = !last || last.me ? [] : last.kind
     ? (CA_KINDS[last.kind]?.chips || [])
     : [...CA_MORE, ...CA_STARTERS.map((x) => x[1]), ...PROMPT_GROUPS.flatMap((g) => g.items)].filter((q, i, a) => a.indexOf(q) === i && !asked.has(q)).slice(0, 5);
-  const showChips = follow.length > 0 && !busy;
+  const showChips = false; // 回复后不再给追问建议
   // 这一轮从哪条开始：最后一条提问；没有提问（周报入口）就是最后一条回答
   let anchor = thread.length - 1;
   while (anchor > 0 && !thread[anchor].me && thread[anchor - 1]?.me) anchor -= 1;
@@ -348,12 +334,8 @@ export function CreatorAssistantScreen({ params }) {
           {busy && <div className="cax-bubble ca-typing"><i /><i /><i /></div>}
           <div className={`cax-end ${showChips ? 'chips' : ''}`} />
         </Scroll>
-        {showChips && <div className="cax-chips">{follow.map((q) => <button key={q} className="cax-chip cax-press" data-act="assistant-follow" onClick={() => ask(q)}>{q}</button>)}</div>}
       </div>
-      <div className="cax-composer">
-        <input data-act="assistant-input" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && ask(input, undefined, true)} placeholder={placeholderFor(params)} />
-        <button className={`cax-send ${input.trim() ? 'on' : ''}`} data-act="assistant-send" aria-label="Send" onClick={() => ask(input, undefined, true)}><I.send size={16} /></button>
-      </div>
+      {/* 没有输入框：原型里不提供自由提问（2026-11-26 按反馈） */}
       {/* 输入框下方不放说明（2026-11-26 按反馈删掉）；用户自己输入的问题在对话里说明只是 mock data */}
     </div>
   );
