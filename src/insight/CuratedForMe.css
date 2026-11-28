@@ -66,6 +66,19 @@
    卡片只在面板圆角白底的边缘被遮住，不会在面板内 16 处被生硬切掉（2026-11-28「卡片左右不要有被 crop 的感觉」） */
 .cfm-home .cfm-track { margin-inline: -16px; padding-inline: 16px; scroll-padding-inline: 16px; }
 .cfm-home.is-single .cfm-track { margin-inline: 0; padding-inline: 0; }
+/* 吸附 + 循环（2026-11-28）：每张卡左边停在 16 的页边距，一次滑一张；系统惯性，不停在半张。
+   循环时最后一张后面接第一张，任何停稳状态都是「当前卡靠左 + 下一张在右侧露出」，不再出现末尾右对齐、左边露半张的状态。
+   程序换位（复制卡 → 真卡）必须是瞬时的，所以 scroll-behavior 固定为 auto。 */
+.cfm-home .cfm-track { scroll-behavior: auto; }
+.cfm-home .cfm-card { scroll-snap-align: start; scroll-snap-stop: always; }
+.cfm-home .cfm-card[data-clone="pre"] { order: -1; }
+/* 卡距 8 < 页边距 16，停稳时上一张会在面板左缘露出 8 宽的一条。左缘 0–8 完全隐去、8–16 渐隐：
+   当前卡（左边在 16）不受影响，滑走的卡是淡出而不是在某条线上被硬切 */
+.cfm-home .cfm-track.is-loop { -webkit-mask-image: linear-gradient(to right, transparent 8px, #000 16px); mask-image: linear-gradient(to right, transparent 8px, #000 16px); }
+/* 桌面鼠标拖动时暂停吸附，跟手移动；松手后再吸附到一张 */
+.cfm-home .cfm-track.is-loop { cursor: grab; }
+.cfm-home .cfm-track.is-drag { scroll-snap-type: none; cursor: grabbing; user-select: none; -webkit-user-select: none; }
+@media (prefers-reduced-motion: reduce) { .cfm-dots span { transition: none; } }
 
 /* Create 行（手风琴）：一个容器包住标题区和展开内容（2026-11-26 动效精修） */
 .cfm-item { position: relative; border-radius: 8px; overflow: hidden; }
