@@ -1301,7 +1301,7 @@ html:has(.stage-root.embed), html:has(.stage-root.embed) body { background: tran
    帧 640px 宽 → 1pt = 1.592px）。下面每个值都是在帧上量出来的，
    来源帧写在行尾；量不到的地方不动。
    ===================================================================== */
-:root { --c-page: #f3f3f3; --fs-large-title: 24px; --c-text-2b: #6d6e73; }
+:root { --fs-large-title: 24px; --c-text-2b: #6d6e73; } /* --c-page: single definition in tokens.css (2026-11-28) */
 
 /* 页头和页面同为 #f3f3f3，不是白色（0038 / 0119 / 0124） */
 .screen.gray .fixed-head, .screen.gray .top-tabs, .screen.gray .sticky-tabs,

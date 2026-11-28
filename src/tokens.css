@@ -35,7 +35,7 @@
   --c-line: #e8e8ea;             /* 分隔线 */
   --c-pill: #f1f1f2;             /* 胶囊底 */
   --c-card-line: #e3e3e6;        /* KPI 卡描边 */
-  --c-page: #f8f8f8;             /* Analytics 页底（卡片之间的灰） */
+  --c-page: #f6f6f6;             /* Analytics 页底（卡片之间的灰白）：appstore_analytics.jpg / inapp_video_analysis_metrics.jpg 实测 #f6f6f6（2026-11-28 Yanice：非常浅的灰白） */
   --c-white: #ffffff;
   --c-skel: #f2f2f2;             /* 骨架块（o1g_0043） */
   --c-scrim: rgba(0, 0, 0, 0.5); /* 弹层遮罩（o1g_0248） */
