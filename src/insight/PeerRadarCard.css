@@ -4,8 +4,8 @@
   /* Series colours (2026-11-28 Yanice): own = original chart blue, peer = existing peer orange. */
   --radar-own: var(--c-blue);
   --radar-peer: var(--c-radar-peer);
-  /* Highlight + dim (same idea as the old RoseCard and the Content score rows): the selected axis stays
-     at full strength, the other axes recede. */
+  /* Highlight + dim (same idea as the old RoseCard and the Content score rows): only after a user selection.
+     The selected axis stays at full strength, the other axes recede. Default state: nothing dims. */
   --radar-dim: 0.4;
   display:flex; flex-direction:column; gap:var(--card-gap); min-width:0;
 }
@@ -35,7 +35,7 @@
   transition:opacity 200ms ease, border-color 200ms ease;
 }
 .peer-radar-label.is-on { border-color:var(--c-card-line); background:var(--c-white, #fff); }
-.peer-radar-label:not(.is-on) { opacity:var(--radar-dim); }
+.peer-radar-label.is-dim { opacity:var(--radar-dim); }
 .peer-radar-hit:focus-visible .peer-radar-label { border-color:var(--c-blue-selected); box-shadow:0 0 0 1px var(--c-blue-selected); }
 /* Text uses the Key metrics classes themselves (.kpi-label, .kpi-delta, .kd-abs, .kd-pill); only layout is set here. */
 .peer-radar-label .kpi-label { overflow:visible; }
@@ -46,28 +46,28 @@
 .peer-radar-label .kd-pill { padding:1px 6px; }
 /* Points follow the same highlight: the selected axis keeps full strength. */
 .peer-radar-own-pt, .peer-radar-peer-pt { transition:opacity 200ms ease; }
-.peer-radar-own-pt:not(.is-on), .peer-radar-peer-pt:not(.is-on) { opacity:var(--radar-dim); }
+.peer-radar-own-pt.is-dim, .peer-radar-peer-pt.is-dim { opacity:var(--radar-dim); }
 
 /* ---- Tabs = original page tabs (15/18, selected 600 #161823, others 500 #6D6E73, 2px underline) ---- */
 .screen .top-tabs.peer-radar-tabs { padding:0; background:var(--c-white); overflow-x:auto; scrollbar-width:none; }
 .peer-radar-tabs::-webkit-scrollbar { display:none; }
 .peer-radar-tabs button { flex:1 0 auto; min-height:var(--touch-target); min-width:44px; padding-inline:3px; white-space:nowrap; }
 .peer-radar-tabs .tt-line { bottom:0; }
-/* The shared TopTabs have no pressed state: same press rule as the rest of the app. No hover state. */
-.peer-radar-tabs button { transition:opacity 160ms ease-out; -webkit-tap-highlight-color:transparent; }
+/* The shared TopTabs have no pressed state: same press rule as the rest of the app. No hover state.
+   The underline is the only selected indicator: no focus box or outline (2026-11-28 Yanice). */
+.peer-radar-tabs button { transition:opacity 160ms ease-out; -webkit-tap-highlight-color:transparent; outline:none; box-shadow:none; }
+.peer-radar-tabs button:focus, .peer-radar-tabs button:focus-visible { outline:none; box-shadow:none; }
 .peer-radar-tabs button:active { opacity:0.6; transition:none; }
 .peer-radar-tabs button:not(.on):hover { color:var(--c-text-2b); }
 
-/* ---- Tiles = original Key metrics tiles; 2 + 1 (three across does not fit 393pt, see DESIGN_SPEC) ---- */
+/* ---- Tiles = original Key metrics tiles, two in one row of the original 2-column .kpi-grid ---- */
 .peer-radar-kpis .kpi { cursor:default; }
 .peer-radar-kpis .kpi:not(.sel):hover { border-color:#dddddd; }
 .peer-radar-kpis .kpi.sel:hover { background:#f3f8fd; }
-.peer-radar-kpis .peer-radar-rank { grid-column:1 / -1; }
 .peer-radar-kpis { container-type:inline-size; }
 /* Compact widths keep the 13px label but let it wrap instead of truncating its meaning. */
 @container (max-width: 330px) {
   .peer-radar-kpis .kpi-label { white-space:normal; overflow:visible; min-height:32px; }
-  .peer-radar-kpis .peer-radar-rank .kpi-label { min-height:0; }
   .peer-radar-kpis .kpi-delta { flex-wrap:wrap; row-gap:2px; }
 }
 @media (prefers-reduced-motion: reduce) {
