@@ -8,7 +8,7 @@ import './ModuleD.css';
 import { AskRow } from './AskAssistant.jsx';
 import { CardHead, KeyBlock } from './CardParts.jsx';
 import { useEntering } from './entrance.js';
-import { inspoTakeaways } from './inspoTakeaways.js';
+import { inspoTakeaways, INSPO_TITLE } from './inspoTakeaways.js';
 
 function InfoDrawer({ info, host, onClose }) {
   // Header divider only after the body scrolls (same rule as SheetFrame's is-scrolled)
@@ -104,7 +104,7 @@ export function ModuleD({ ca = 'row', insight = MODULE_D, onAsk }) {
   return (
     <div className={`imd${entering ? ' enter-card' : ''}`} ref={ref}>
       {/* Final（Version 216）：标题 Compared with your posts + AI 星形 + ⓘ 一行，洞察在浅蓝块里；标题文字 Yanice 仍在三个候选里选 */}
-      <CardHead title={D.cardTitle || 'Compared with your posts'} infoLabel="About this comparison" act="insight-d-info" onInfo={openInfo} />
+      <CardHead title={takeaways ? INSPO_TITLE : (D.cardTitle || 'Compared with your posts')} infoLabel={takeaways ? 'About this summary' : 'About this comparison'} act="insight-d-info" onInfo={openInfo} />
       <KeyBlock k={D.key} rest={D.rest} bullets={D.bullets} next={D.next} />
       {takeaways ? (
         <div className={`imd-take${entering ? ' enter-fade' : ''}`}>
