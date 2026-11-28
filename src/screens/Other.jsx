@@ -65,13 +65,13 @@ export function InboxScreen({ pushed }) {
     <div className="screen gray">
       {pushed ? <NavBar title="Inbox" /> : <div className="fixed-head"><LargeHeader title="Inbox" search={null} gear /></div>}
       {firstLoad ? <div className="spin-center"><Spinner /></div> : <Scroll id={pushed ? 'inbox-pushed' : 'inbox'} className={pushed ? '' : 'with-tabbar'}>
+        <Pills variant="blue" className="inbox-pills" value={filter} onChange={setFilter}
+          items={[{ key: 'all', label: 'All' }, { key: 'posts', label: 'Posts' }, { key: 'account', label: 'Account updates' }]} />
         {!noAssistant && (
-          <div style={{ padding: '8px 16px 2px' }}>
+          <div style={{ padding: '0 16px 12px' }}>
             <AskPill act="inbox-ask" tone="light" prompts={INBOX_PROMPTS} icon={<CaIcon size={22} />} onAsk={(q) => push('creatorAssistant', { from: 'inbox', prompt: q })} />
           </div>
         )}
-        <Pills variant="blue" className="inbox-pills" value={filter} onChange={setFilter}
-          items={[{ key: 'all', label: 'All' }, { key: 'posts', label: 'Posts' }, { key: 'account', label: 'Account updates' }]} />
         <AnimatePresence initial={false}>
           {list.map((n) => {
             const post = n.postId && POST_BY_ID[n.postId];
