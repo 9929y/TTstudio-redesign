@@ -136,7 +136,7 @@ export function PeerRadarCard({ scope, insight, areas: rawAreas, ca='row', act, 
   useEffect(() => {
     if (firstReset.current) { firstReset.current = false; return; }
     if (selRef.current != null) { silent.current = true; setSel(null); }
-  }, [insight, resetToken]);
+  }, [insight?.key, insight?.period, resetToken]); // by content, so a wrapped insight object ({...insight, cardTitle}) does not reset on every render
   const pick = key => {
     const i = areas.findIndex(a => a.key === key);
     if (i >= 0) setSel(i);
