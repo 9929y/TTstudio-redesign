@@ -135,13 +135,13 @@ function HomeDashboard({ nav }) {
             </button>
           ))}
         </div>
-        {/* FIN-S1-Page: Ask Creator Assistant takes Start creating's place; creating now starts from a Curated for me card */}
+        {/* FIN-S1-Page: Ask Creator Assistant takes Start creating's place; creating now starts from a Curated for you card */}
         {noAssistant
           ? <button className="hd-start" data-act="home-start-creating" onClick={() => switchTab('create')}><span className="hd-start-ic"><I.plus size={12} /></span>Start creating</button>
           : <AskPill prompts={HOME_PROMPTS} icon={<CaIcon size={22} />} onAsk={(q) => push('creatorAssistant', { from: 'home', prompt: q, postId: /doing\?$/.test(q) ? latestPost().id : undefined })} />}
       </div>
       <div className="hd-body">
-        {/* 新账号也显示 Curated for me，只有 Trending now 一张（Final「Home · new US account」） */}
+        {/* 新账号也显示 Curated for you，只有 Trending now 一张（Final「Home · new US account」） */}
         <CuratedForMe place="home" only={na ? 'trend' : ''} />
         <div className="hd-card">
           <button className="hd-card-head" data-act="home-inbox-more" onClick={() => switchTab('inbox')}><span>Inbox</span><I.right size={18} /></button>

@@ -23,8 +23,8 @@ const hourLabel = (h) => `${((h + 11) % 12) + 1} ${h < 12 ? 'AM' : 'PM'}`;
 
 // ---------------- Creator Assistant ----------------
 export const PROMPT_GROUPS = [
-  { title: 'Analyze your data', items: ['What can I do to increase my engagement?', 'What was my account traffic this month?', 'How’s my video performance?', 'When are my followers the most active?'] },
-  { title: 'Find inspiration', items: ['What’s trending in travel right now?', 'Show me high performers in my niche.', 'What do my followers like to watch?'] },
+  { title: 'Analyze your data', items: ['What can you do to increase your engagement?', 'What was your account traffic this month?', 'How’s your video performance?', 'When are your followers the most active?'] },
+  { title: 'Find inspiration', items: ['What’s trending in travel right now?', 'Show high performers in your niche.', 'What do your followers like to watch?'] },
   { title: 'Platform rules', items: ['What’s TikTok’s Originality Policy?', 'How can I join the Creator Rewards Program?', 'What monetization tools are there on TikTok?'] },
 ];
 
@@ -54,7 +54,7 @@ function answerPlus(q, ctx) {
     if (/ask about|comments/i.test(q) && topics) return { text: `${topics.length} topics come up in this post’s comments.\n\n${topics.map((t, i) => `${i + 1}. ${t[0]}: ${fmt(t[2])} comments`).join('\n')}`, cards: [] };
     if (/try this|next post/i.test(q)) {
       const t = topics?.[0];
-      const lines = [t ? `Answer the top comment topic up front: ${t[0].toLowerCase()}` : 'Keep your usual format and change one thing at a time', 'Put the details in the caption or a pinned comment so people can save them', ...(item.id === 'insp3' ? ['Curated for me already has a matching idea: Amalfi on a budget, every cost listed'] : [])];
+      const lines = [t ? `Answer the top comment topic up front: ${t[0].toLowerCase()}` : 'Keep your usual format and change one thing at a time', 'Put the details in the caption or a pinned comment so people can save them', ...(item.id === 'insp3' ? ['Curated for you already has a matching idea: Amalfi on a budget, every cost listed'] : [])];
       return { text: `Borrow what viewers respond to, not the video itself.\n\n${lines.map((x, i) => `${i + 1}. ${x}`).join('\n')}`, cards: [{ label: 'See ideas for you', go: ['tab', 'create'] }] };
     }
   }
@@ -84,16 +84,16 @@ function answerPlus(q, ctx) {
     const t1 = topPosts('views', { key: '7' }, 1)[0];
     return { text: `In the last 7 days, most of your ${fmt(by.views.value)} views came from For You.\n\n${[...src.map(([k, v]) => `${(v * 100).toFixed(1)}% from ${k}`), `“${postName(t1.post)}” brought ${Math.round((t1.value / by.views.value) * 100)}% of all views`].map((x, i) => `${i + 1}. ${x}`).join('\n')}`, cards: [{ label: 'View traffic source', go: ['analytics', 'overview'] }] };
   }
-  if (/why did my views (fall|rise)/i.test(q)) {
+  if (/why did (my|your) views (fall|rise)/i.test(q)) {
     const t1 = topPosts('views', { key: '7' }, 1)[0];
     const d = Array.from(DAILY.views.slice(E - 6, E + 1));
     return { text: `Post views ${by.views.delta < 0 ? 'fell' : 'rose'} ${Math.abs(by.views.deltaPct * 100).toFixed(1)}% to ${fmt(by.views.value)}.\n\n1. Daily views slid from ${fmtFull(d[0])} to ${fmtFull(d[4])} before your new post\n2. “${postName(t1.post)}” went up on ${t1.post.publishedAt.toLocaleString('en-US', { month: 'short', day: 'numeric' })} and brought ${Math.round((t1.value / by.views.value) * 100)}% of the week’s views\n3. ${(trafficSources({ key: '7' })[0][1] * 100).toFixed(1)}% of views came from For You`, cards: [{ label: 'View key metrics', go: ['analytics', 'overview'] }] };
   }
-  if (/drove (my )?views/i.test(q)) {
+  if (/drove ((my|your) )?views/i.test(q)) {
     const rows = topPosts('views', { key: '7' }, 3);
     return { text: `These posts drove most of your ${fmt(by.views.value)} views in the last 7 days.\n\n${rows.map((r, i) => `${i + 1}. “${postName(r.post)}”: ${fmt(r.value)} views`).join('\n')}`, cards: [{ label: 'View top posts', go: ['analytics', 'content'] }] };
   }
-  if (/visiting my profile|profile visits/i.test(q)) {
+  if (/visiting (my|your) profile|profile visits/i.test(q)) {
     const pv = by.profile.value, pvp = pv - by.profile.delta, v = by.views.value, vp = v - by.views.delta;
     const A = buildModuleA({ key: '7' }), vis = A?.areas.find((a) => a.name === 'Visits');
     return { text: `Profile views ${pv < pvp ? 'fell' : 'rose'} ${Math.abs(by.profile.deltaPct * 100).toFixed(1)}% to ${pv}, but views fell more, so more of your viewers went on to your profile.\n\n1. Profile views per 1K views: ${n1((pvp / vp) * 1000)} → ${n1((pv / v) * 1000)}\n2. Visits score ${vis ? vis.you : '—'}, against 50 for a typical similar creator\n3. End with a reason to check your other posts`, cards: [] };
@@ -123,7 +123,7 @@ function answer(q, ctx) {
   const { by, top, k28 } = weekStats();
   const post = ctx?.postId ? POST_BY_ID[ctx.postId] : null;
   // 2026-11-28：和卡片同一口径（同类创作者），不再和前 7 天比
-  if (/engagement|likes and comments|like my posts|likes drop/i.test(q)) {
+  if (/engagement|likes and comments|like (my|your) posts|likes drop/i.test(q)) {
     const eg = buildModuleA({ key: '7' })?.areas.find((a) => a.name === 'Engagement');
     return { text: `${eg ? `Your engagement ${eg.sentence}` : 'Here is how to get more likes and comments.'} Try:\n\n1. Ask a question in the first 3 seconds\n2. Pin a comment that asks where to go next\n3. Reply with a video to your most-liked question`, cards: [{ label: 'Reply to comments', go: ['tab', 'manage', 'comments'] }] };
   }

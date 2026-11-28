@@ -1,19 +1,18 @@
 /* Radar card: every text and box reuses an original TikTok Studio role (ref NEW_ELEMENT_MAPPING.md).
    Only layout and the series colours are specific to the radar. */
 .peer-radar {
-  /* Series colours (2026-11-28 Yanice): monochrome blue in our theme colour, the structure of the Xiaohongshu
-     reference. Own = deep theme blue line, light blue fill, solid points with a white ring. Peer = a lighter tint of
-     the same blue (light stroke, very light fill, white points ringed in it). Rings = thin grey dashes. */
+  /* Series colours (2026-11-28 Yanice): both series from ONE deep blue, --c-blue-selected (#0d4a96 = 13, 74, 150).
+     My account = that blue as the line and the hollow points' ring, fill at 50%. Similar = the same blue at 50% for the
+     line and ring, fill at 25% (Yanice's values); the similar polygon is drawn underneath, mine on top. Rings = thin grey
+     dashes. Only the selected label uses the primary blue (--radar-sel below). */
+  /* Lines and point rings = primary blue (--c-blue #1e7ce8); fills = deep blue #0d4a96 at 18% (mine) / 5% (similar). */
   --radar-own: var(--c-blue);
-  --radar-own-fill: rgba(30, 124, 232, 0.16);
-  --radar-peer: var(--c-blue-line);
-  --radar-peer-fill: rgba(30, 124, 232, 0.05);
+  --radar-own-fill: rgba(13, 74, 150, 0.18);
+  --radar-peer: rgba(30, 124, 232, 0.5);
+  --radar-peer-fill: rgba(13, 74, 150, 0.05);
   --radar-ring: var(--c-radar-axis);
-  /* Selected label (selected-pill rule): deep selected blue border and line 1, lighter blue line 2. */
-  --radar-sel: var(--c-blue-selected);
-  --radar-sel-2: #5a83b8;
-  --radar-box: #f7f7f8;
-  --radar-box-line: rgba(22, 24, 35, 0.08);
+  /* Selected label: both lines in the primary blue --c-blue (#1e7ce8; tokens.css --c-primary is the red Post button). */
+  --radar-sel: var(--c-blue);
   /* Highlight + dim (same idea as the old RoseCard and the Content score rows): only after a user selection.
      The selected axis stays at full strength, the other axes recede. Default state: nothing dims. */
   --radar-dim: 0.4;
@@ -26,7 +25,7 @@
 .peer-radar-legend { display:flex; justify-content:center; align-items:center; gap:20px; color:var(--c-text); font-size:13.5px; line-height:18px; font-weight:400; }
 .peer-radar-legend span { display:flex; align-items:center; gap:6px; white-space:nowrap; }
 
-/* ---- Axis labels: metric name (.kpi-label) over its status chip (.kd-pill), both lines centred ----
+/* ---- Axis labels: metric name (.kpi-label) over its absolute value, both lines centred ----
    Position comes from PeerRadarCard.jsx placeLabels (equal GAP to the outer ring, always inside the chart width);
    the button is exactly the label box, so the box measured there is the box drawn here. */
 .peer-radar-hit {
@@ -39,20 +38,26 @@
 /* Press feedback (DESIGN_SPEC): opacity 0.6 immediately, 160ms back, no scale. */
 .peer-radar-hit:active { opacity:0.6; transition:none; }
 .peer-radar-pt-hit { cursor:pointer; outline:none; }
-/* Box (2026-11-28, Xiaohongshu reference): every label sits in a very light grey rounded box with a 0.5px line.
-   Selected = deep blue line (a 0.5px inset shadow thickens it to 1px without moving or resizing the block). */
 .peer-radar-label {
+  /* 2026-11-28 final label spec (Yanice): no box, border or background in any state. The padding only widens the tap
+     target and keeps the measured block the same as the drawn one. */
   display:flex; flex-direction:column; align-items:center; text-align:center; white-space:nowrap;
-  min-width:44px; padding:4px 7px; border:0.5px solid var(--radar-box-line); border-radius:8px; background:var(--radar-box); box-sizing:border-box;
-  transition:opacity 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+  min-width:44px; padding:3px 6px; border:0.5px solid transparent; border-radius:6px; background:transparent; box-sizing:border-box;
+  transition:opacity 200ms ease, border-color 200ms ease;
 }
-.peer-radar-label.is-on { border-color:#9cc8f6; background:var(--c-white, #fff); } /* light 0.5px line when selected (Yanice: no heavy stroke) */
 .peer-radar-label.is-dim { opacity:var(--radar-dim); }
-/* Line 1 = name + value in the Key metrics label style; line 2 = percentile, smaller and lighter grey. */
-.peer-radar-label .kpi-label { overflow:visible; font-size:12px; line-height:15px; transition:color 200ms ease; } /* one step smaller than Key metrics: an agreed exception for the chart labels */
-.peer-radar-label .prl-rank { margin-top:1px; font-size:10.5px; line-height:13px; color:var(--c-text-3); transition:color 200ms ease; }
-.peer-radar-label.is-on .kpi-label { color:var(--radar-sel); }
-.peer-radar-label.is-on .prl-rank { color:var(--radar-sel-2); }
+/* Line 1 = metric name (Key metrics label style at the chart size, 11px) + trend arrow; line 2 = the value, one step up
+   (12px) so the two lines balance. Regular weight throughout. */
+.peer-radar-label .kpi-label { display:inline-flex; align-items:center; justify-content:center; gap:2px; overflow:visible; font-size:11px; line-height:14px; transition:color 200ms ease; } /* one step smaller than Key metrics: an agreed exception for the chart labels */
+.peer-radar-label .prl-val { margin-top:1px; font-size:12px; line-height:15px; color:var(--c-text); font-variant-numeric:tabular-nums; transition:color 200ms ease; }
+/* Trend arrow after the name: the Key metrics .kd-pill text colours as plain colour, no pill. */
+.peer-radar-label .prl-arrow { display:inline-flex; }
+.peer-radar-label .prl-arrow.up { color:#1765c4; }
+.peer-radar-label .prl-arrow.down { color:#b4400c; }
+/* Selected (no box): both lines turn the primary selected blue; the other four labels dim. */
+/* Selected: a thin primary-blue box and bold text (Yanice 2026-11-28: bold, not blue text). */
+.peer-radar-label.is-on { border-color:var(--radar-sel); background:var(--c-white, #fff); }
+.peer-radar-label.is-on .kpi-label, .peer-radar-label.is-on .prl-val { font-weight:600; }
 /* Points follow the same highlight: the selected axis keeps full strength. */
 .peer-radar-own-pt, .peer-radar-peer-pt { transition:opacity 200ms ease; }
 .peer-radar-own-pt.is-dim, .peer-radar-peer-pt.is-dim { opacity:var(--radar-dim); }
@@ -68,18 +73,13 @@
 .peer-radar-tabs button:focus, .peer-radar-tabs button:focus-visible { outline:none; box-shadow:none; }
 .peer-radar-tabs button:active { opacity:0.6; transition:none; }
 
-/* ---- Tile = original Key metrics tile across the whole row of the 2-column .kpi-grid ---- */
-.peer-radar-kpis .peer-radar-tile { grid-column:1 / -1; }
-/* Value row: the Rewards split sits right of the value, so the tile is the same height on every tab. */
-.peer-radar-tile .prt-row { display:flex; align-items:baseline; justify-content:space-between; gap:8px; min-width:0; }
-.peer-radar-tile .prt-split { font-size:12px; line-height:16px; color:var(--c-text-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+/* ---- Tiles = original Key metrics tiles (kit.jsx KpiCard + Delta markup) in the 2-column .kpi-grid, no own type ---- */
 .peer-radar-kpis .kpi { cursor:default; }
 .peer-radar-kpis { container-type:inline-size; }
 /* Compact widths keep the 13px label but let it wrap instead of truncating its meaning. */
 @container (max-width: 330px) {
   .peer-radar-kpis .kpi-label { white-space:normal; overflow:visible; min-height:32px; }
-  .peer-radar-kpis .kpi-delta { flex-wrap:wrap; row-gap:2px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .peer-radar-label, .peer-radar-label .kpi-label, .peer-radar-label .prl-rank, .peer-radar-hit, .peer-radar-tabs button, .peer-radar-own-pt, .peer-radar-peer-pt { transition:none; }
+  .peer-radar-label, .peer-radar-label .kpi-label, .peer-radar-label .prl-val, .peer-radar-hit, .peer-radar-tabs button, .peer-radar-own-pt, .peer-radar-peer-pt { transition:none; }
 }

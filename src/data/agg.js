@@ -25,6 +25,9 @@ export function fmtStat(n) {
   if (a < 1e9) return s + strip((a / 1e6).toFixed(1)) + 'M';
   return s + strip((a / 1e9).toFixed(1)) + 'B';
 }
+// Video analysis header counts (n_a731E9Wt8 1:54: 22K / 1,672 / 45): full number under 10K, whole K under 1M.
+// Shared so the post radar's Reach label reads exactly like the header above it (7,275 / 92K).
+export const fmtCount = (v) => (v < 1e4 ? Math.round(v).toLocaleString('en-US') : v < 1e6 ? `${Math.floor(v / 1e3)}K` : fmt(v));
 export const fmtFull = (n) => Math.round(n).toLocaleString('en-US');
 export const fmtMoney = (n) => '$' + n.toFixed(2);
 export const pct = (x, d = 1) => (x * 100).toFixed(d) + '%';

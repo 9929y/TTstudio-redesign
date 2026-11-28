@@ -9,7 +9,7 @@ import { coverUrl } from '../ui/illo.jsx';
 import { RetentionChart } from '../ui/charts.jsx';
 import { I } from '../ui/Icons.jsx';
 import { POST_BY_ID, ACCOUNT } from '../data/seed.js';
-import { fmt, fmtFull, fmtStat, monDayYear, time12, postViewerStats, secToClock } from '../data/agg.js';
+import { fmt, fmtCount, fmtFull, fmtStat, monDayYear, time12, postViewerStats, secToClock } from '../data/agg.js';
 import { CommentTopicsCard } from '../insight/CommentTopicsCard.jsx';
 import { CommentRow } from './Manage.jsx';
 import { ModuleE } from '../insight/ModuleE.jsx';
@@ -23,8 +23,7 @@ export function resolvePost(id) {
   return u || POST_BY_ID[id];
 }
 
-// 头部计数（n_a731E9Wt8 1:54：22K / 1,672 / 45）：万以下完整数字，万以上取整 K
-const fmtCount = (v) => (v < 1e4 ? Math.round(v).toLocaleString('en-US') : v < 1e6 ? `${Math.floor(v / 1e3)}K` : fmt(v));
+// 头部计数（n_a731E9Wt8 1:54：22K / 1,672 / 45）：万以下完整数字，万以上取整 K（agg.js fmtCount，雷达 Reach 同一格式）
 function Header({ p }) {
   const d = p.publishedAt;
   return (

@@ -1,4 +1,4 @@
-/* S1 · Curated for me (final). Values ported from IMU-S1-Final.dc.html. */
+/* S1 · Curated for you (final). Values ported from IMU-S1-Final.dc.html. */
 /* 按下反馈按 iOS / TikTok 原生：按下立刻变暗，松手 160ms 恢复，不缩放 */
 .cfm-press { transition: opacity 160ms ease-out; }
 .cfm-press:active { opacity: 0.6; transition: none; }

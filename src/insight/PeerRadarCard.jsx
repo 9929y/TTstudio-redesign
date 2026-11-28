@@ -12,11 +12,11 @@ import { withRadarStats, rewardsBreakdown } from './radarStats.js';
 import { useEntering, segIn, labDelay, ENTER_EASE } from './entrance.js';
 import './PeerRadarCard.css';
 
-// Monochrome blue (2026-11-28 Yanice, structure of the Xiaohongshu reference in our theme colour):
-// own = deep theme blue line + light blue fill, peer = a lighter tint of the same blue. All resolve in PeerRadarCard.css.
+// Monochrome blue (2026-11-28 Yanice, structure of the Xiaohongshu reference): one deep blue (--c-blue-selected) for
+// both series, my line full strength, similar at 50%, fills 50% / 25%. All resolve in PeerRadarCard.css.
 const C = { own: 'var(--radar-own)', ownFill: 'var(--radar-own-fill)', peer: 'var(--radar-peer)', peerFill: 'var(--radar-peer-fill)' };
 const LABELS = {
-  account: { selfLabel: 'Your account', peerLabel: 'Similar creators', group: 'of similar creators' },
+  account: { selfLabel: 'My account', peerLabel: 'Similar creators', group: 'of similar creators' },
   post: { selfLabel: 'This video', peerLabel: 'Similar videos', group: 'of similar videos' },
 };
 
@@ -31,8 +31,8 @@ export function axisRadius(own, peer) {
 }
 
 // Delta-chip arrow, same drawing as kit.jsx Delta.
-const Arrow = ({ up }) => (
-  <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" style={{ transform: up ? 'rotate(180deg)' : 'none' }}>
+const Arrow = ({ up, size = 12 }) => (
+  <svg width={size} height={size} viewBox="0 0 12 12" aria-hidden="true" style={{ transform: up ? 'rotate(180deg)' : 'none' }}>
     <path d="M6 2.2v7.4M3 6.7l3 3 3-3" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
@@ -43,62 +43,52 @@ const Arrow = ({ up }) => (
 const PT_DELAY = 0.3; // points land as the polygon reaches them
 const ptIn = (i) => ({ duration: 0.26, ease: ENTER_EASE, delay: PT_DELAY + i * 0.05 });
 
-// ---- Axis label placement (2026-11-28 Yanice, same rule as the rose chart's labelFit.js) ----
-// Every label block (its selected outline box included) keeps the same GAP from the outer ring in every direction,
-// so no label can touch the rings, spokes, polygon or points (points never go past the rim).
-//  - Top label: centred on its axis, bottom edge on ring + GAP.
-//  - Side pair and bottom pair: one shared row height per pair (taken from a block centred on the axis direction),
-//    then each block's nearest edge or corner is moved to exactly ring + GAP. The two blocks of a pair therefore sit
-//    on the same row with mirrored inner edges, whatever their widths.
-//  - If a pair does not fit inside the 345pt chart it slides along the arc away from the horizontal (the gap never
-//    shrinks). The radius is the largest that keeps all five blocks inside, preferring no slide.
-// 2026-11-28 (reference breathing room): the gap is 14pt; the radius shrinks before a label would leave the chart.
-const GAP = 8; // labels sit close to their corner, as in the reference
-const R_MAX = 92, R_MIN = 40, SLIDE_MAX = 0, SLIDE_COST = 0.5; // no slide: every label sits on its own corner of the pentagon, like the rose chart (Yanice); the radius shrinks instead
+// ---- Axis label placement (2026-11-28 Yanice: smaller rings, labels evenly spaced around the pentagon) ----
+// Every label is anchored to its own corner of the pentagon (the axis end on the outer ring) and keeps the same GAP
+// from that corner:
+//  - Top: centred on the axis, bottom edge GAP above the corner.
+//  - Sides: vertically centred on the corner's height (not pushed up along the axis), inner edge GAP beyond the corner.
+//  - Bottom pair: moved out along its axis until the block is GAP past the corner (support distance of the block in the
+//    axis direction), then both share the lower of the two rows. Their x follows each one's own axis.
+// Each block also keeps CLEAR from the outer ring, so no label touches the rings, spokes, polygon or points.
+// Rings vs data (2026-11-28 Yanice): the polygons keep their drawn scale (S = 92pt for a 4× ratio); only the rings and
+// spokes shrink, so the outer ring sits RING_PAD outside the farthest point (room for the selected point and its stroke)
+// and the labels come in with it. S only shrinks if the five blocks would not otherwise fit inside the chart.
+const GAP = 12, CLEAR = 6, RING_PAD = 8;
+const S_MAX = 92, S_MIN = 40;
 const EDGE = 8; // labels may use 8pt of the card's 16pt padding
 const AXIS_DEG = [-90, -18, 54, 126, 198];
-const PAIRS = [[1, 4, -1], [2, 3, 1]]; // [right axis, left axis, slide step for the right one (towards the vertical)]
 const EST = { w: 96, h: 48 }; // before the first measurement (layout effect replaces it before paint)
-// Distance from the centre to a w×h box whose centre is t along (c, s).
-const boxDist = (t, c, s, w, h) => Math.hypot(Math.max(0, Math.abs(t * c) - w / 2), Math.max(0, Math.abs(t * s) - h / 2));
-function centreDist(d, c, s, w, h) {
-  let lo = 0, hi = d + w + h;
-  for (let k = 0; k < 40; k++) { const m = (lo + hi) / 2; if (boxDist(m, c, s, w, h) < d) lo = m; else hi = m; }
-  return hi;
-}
 function placeLabels(sizes, W, R) {
-  const d = R + GAP, cx = W / 2, cy = d + sizes[0].h; // top block touches the top of the chart
+  const rad = AXIS_DEG.map(a => a * Math.PI / 180), cx = W / 2;
+  const top = sizes[0], cy = top.h + GAP + R; // top block touches the top of the chart
+  const V = rad.map(a => [cx + Math.cos(a) * R, cy + Math.sin(a) * R]);
   const boxes = [];
-  boxes[0] = { x: cx - sizes[0].w / 2, y: 0, ...sizes[0] };
-  if (boxes[0].x < -EDGE) return null;
-  let slide = 0;
-  for (const [ri, li, step] of PAIRS) {
-    const a = sizes[ri], b = sizes[li], w = (a.w + b.w) / 2, h = Math.max(a.h, b.h);
-    let done = false;
-    for (let k = 0; k <= SLIDE_MAX && !done; k++) {
-      const m = (AXIS_DEG[ri] + k * step) * Math.PI / 180, c = Math.cos(m), s = Math.sin(m);
-      const yc = cy + centreDist(d, c, s, w, h) * s, y = yc - h / 2;
-      const dy = Math.max(0, y - cy, cy - (y + h));
-      if (dy >= d) break;
-      const dx = Math.sqrt(d * d - dy * dy);
-      const R1 = { x: cx + dx, y, ...a }, L1 = { x: cx - dx - b.w, y, ...b };
-      if (R1.x + R1.w <= W + EDGE && L1.x >= -EDGE) { boxes[ri] = R1; boxes[li] = L1; slide = Math.max(slide, k); done = true; }
-    }
-    if (!done) return null;
+  boxes[0] = { x: cx - top.w / 2, y: 0, ...top };
+  // sides: right = axis 1, left = axis 4 (mirrored inner edges, same row)
+  const hs = Math.max(sizes[1].h, sizes[4].h), ys = V[1][1] - hs / 2;
+  boxes[1] = { x: V[1][0] + GAP, y: ys, ...sizes[1] };
+  boxes[4] = { x: V[4][0] - GAP - sizes[4].w, y: ys, ...sizes[4] };
+  // bottom pair: axes 2 (right) and 3 (left)
+  const out = i => { const c = Math.abs(Math.cos(rad[i])), sn = Math.abs(Math.sin(rad[i])); return R + GAP + (sizes[i].w / 2) * c + (sizes[i].h / 2) * sn; };
+  const centre = i => [cx + Math.cos(rad[i]) * out(i), cy + Math.sin(rad[i]) * out(i)];
+  const yb = Math.max(...[2, 3].map(i => centre(i)[1] - sizes[i].h / 2));
+  for (const i of [2, 3]) boxes[i] = { x: centre(i)[0] - sizes[i].w / 2, y: yb, ...sizes[i] };
+  for (const b of boxes) {
+    if (b.x < -EDGE || b.x + b.w > W + EDGE) return null;
+    const dx = Math.max(b.x - cx, 0, cx - (b.x + b.w)), dy = Math.max(b.y - cy, 0, cy - (b.y + b.h));
+    if (Math.hypot(dx, dy) < R + CLEAR) return null;
   }
   for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
     const a = boxes[i], b = boxes[j];
     if (a.x < b.x + b.w + 5 && b.x < a.x + a.w + 5 && a.y < b.y + b.h + 5 && b.y < a.y + a.h + 5) return null;
   }
-  return { R, cx, cy, H: Math.ceil(Math.max(...boxes.map(b => b.y + b.h))), boxes, slide };
+  return { R, cx, cy, H: Math.ceil(Math.max(...boxes.map(b => b.y + b.h))), boxes };
 }
-function layoutRadar(sizes, W) {
-  let best = null;
-  for (let R = R_MAX; R >= R_MIN; R--) {
-    const L = placeLabels(sizes, W, R);
-    if (L && (!best || R - SLIDE_COST * L.slide > best.R - SLIDE_COST * best.slide)) best = L;
-  }
-  return best || placeLabels(sizes.map(() => ({ w: 0, h: sizes[0].h })), W, R_MIN);
+// reach = the farthest point as a share of S (the peer ring sits at MID, own points at axisRadius).
+function layoutRadar(sizes, W, reach) {
+  for (let S = S_MAX; S >= S_MIN; S--) { const L = placeLabels(sizes, W, S * reach + RING_PAD); if (L) return { ...L, S }; }
+  return { ...placeLabels(sizes.map(() => ({ w: 0, h: sizes[0].h })), W, S_MIN * reach + RING_PAD), S: S_MIN };
 }
 
 function Radar({ areas, scope, selected, act, onPick, entering }) {
@@ -111,15 +101,16 @@ function Radar({ areas, scope, selected, act, onPick, entering }) {
     const next = areas.map((_, i) => { const el = labRefs.current[i]; return el ? { w: Math.ceil(el.offsetWidth), h: Math.ceil(el.offsetHeight) } : EST; });
     if (!sizes || next.some((n, i) => n.w !== sizes[i]?.w || n.h !== sizes[i]?.h)) setSizes(next);
   });
-  const G = useMemo(() => layoutRadar(sizes || areas.map(() => EST), W), [sizes, W, areas.length]);
-  const { R: radius, cx, cy, H } = G;
+  const reach = Math.max(MID, ...areas.map(a => axisRadius(a.own, a.peer)));
+  const G = useMemo(() => layoutRadar(sizes || areas.map(() => EST), W, reach), [sizes, W, areas.length, reach]);
+  const { R: radius, S, cx, cy, H } = G; // radius = outer ring, S = data scale
   const L = LABELS[scope];
   const xy = (r, i) => {
     const a = AXIS_DEG[i] * Math.PI / 180;
     return [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
   };
-  const ownR = a => radius * axisRadius(a.own, a.peer);
-  const peerR = radius * MID;
+  const ownR = a => S * axisRadius(a.own, a.peer);
+  const peerR = S * MID;
   const points = f => areas.map((a, i) => xy(f(a), i).map(v => v.toFixed(2)).join(',')).join(' ');
   const grow = { transformOrigin: `${cx}px ${cy}px`, transformBox: 'view-box' };
   // No user selection (default state) = nothing dims; otherwise the non-selected axes recede.
@@ -130,14 +121,14 @@ function Radar({ areas, scope, selected, act, onPick, entering }) {
       {/* Rings: thin grey dashed circles. */}
       {[.25,.5,.75,1].map(f => <circle key={f} className="peer-radar-ring" cx={cx} cy={cy} r={radius*f} fill="none" strokeWidth=".75" strokeDasharray="2 3"/>)}
       {areas.map((a,i) => { const [x,y] = xy(radius, i); return <line key={a.name} className={`peer-radar-spoke${selected === i ? ' is-on' : ''}`} x1={cx} y1={cy} x2={x} y2={y} strokeDasharray="2 3" strokeWidth=".75"/>; })}
-      <motion.polygon className="peer-radar-peer" points={points(() => peerR)} style={{ fill: C.peerFill, stroke: C.peer, ...grow }} strokeWidth="1.4" strokeDasharray="3 2" strokeLinejoin="round" vectorEffect="non-scaling-stroke"
+      <motion.polygon className="peer-radar-peer" points={points(() => peerR)} style={{ fill: C.peerFill, stroke: C.peer, ...grow }} strokeWidth="1.15" strokeLinejoin="round" vectorEffect="non-scaling-stroke"
         initial={entering ? { scale: 0, opacity: 0 } : false} animate={{ scale: 1, opacity: 1 }} transition={segIn(0, 0.08)}/>
-      <motion.polygon className="peer-radar-own" points={points(ownR)} style={{ fill: C.ownFill, stroke: C.own, ...grow }} strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke"
+      <motion.polygon className="peer-radar-own" points={points(ownR)} style={{ fill: C.ownFill, stroke: C.own, ...grow }} strokeWidth="1.75" strokeLinejoin="round" vectorEffect="non-scaling-stroke"
         initial={entering ? { scale: 0 } : false} animate={{ scale: 1 }} transition={segIn(0)}/>
-      {areas.map((a,i) => { const [x,y] = xy(peerR,i); return <circle key={a.name} className={`peer-radar-peer-pt${dim(i)}${entering ? ' enter-fade' : ''}`} cx={x} cy={y} r="2.6" style={{ fill: 'var(--c-white, #fff)', stroke: C.peer, animationDelay: entering ? `${PT_DELAY + 0.08 + i * 0.05}s` : undefined }} strokeWidth="1.4"/>; })}
+      {areas.map((a,i) => { const [x,y] = xy(peerR,i); return <circle key={a.name} className={`peer-radar-peer-pt${dim(i)}${entering ? ' enter-fade' : ''}`} cx={x} cy={y} r="3" style={{ fill: 'var(--c-white, #fff)', stroke: C.peer, animationDelay: entering ? `${PT_DELAY + 0.08 + i * 0.05}s` : undefined }} strokeWidth="1.15"/>; })}
       {/* Own points: solid blue with a white ring. Default: every point at full strength. User selection: that axis's
           point grows, the others dim. */}
-      {areas.map((a,i) => { const [x,y] = xy(ownR(a),i), on = selected === i; return <motion.circle key={a.name} className={`peer-radar-own-pt${dim(i)}`} cx={x} cy={y} r={on ? 5 : 3.6} style={{ fill: C.own, stroke: 'var(--c-white, #fff)', transformOrigin: `${x}px ${y}px`, transformBox: 'view-box' }} strokeWidth="1.5"
+      {areas.map((a,i) => { const [x,y] = xy(ownR(a),i), on = selected === i; return <motion.circle key={a.name} className={`peer-radar-own-pt${dim(i)}`} cx={x} cy={y} r={on ? 4.6 : 3.4} style={{ fill: 'var(--c-white, #fff)', stroke: C.own, transformOrigin: `${x}px ${y}px`, transformBox: 'view-box' }} strokeWidth="1.75"
         initial={entering ? { scale: 0 } : false} animate={{ scale: 1 }} transition={ptIn(i)}/>; })}
       {/* Points select too (14pt hit circle); the label button below is the accessible control. */}
       {areas.map((a,i) => { const [x,y] = xy(ownR(a),i); return <circle key={a.name} className="peer-radar-pt-hit" cx={x} cy={y} r="14" fill="transparent" data-act={`${act}-point-${i}`} aria-hidden="true" onClick={e => { e.stopPropagation(); onPick(a.key); }}/>; })}
@@ -145,12 +136,13 @@ function Radar({ areas, scope, selected, act, onPick, entering }) {
     {areas.map((a, i) => {
       const b = G.boxes[i], on = selected === i;
       return <button key={a.name} type="button" className={`peer-radar-hit${entering ? ' enter-fade' : ''}`} aria-pressed={on}
-        aria-label={`${a.name} ${a.ownText}, ahead of ${a.rankText} ${L.group}`}
+        aria-label={`${a.name} ${a.ownText}`}
         data-act={`${act}-axis-${i}`} style={{ left: b.x, top: b.y, visibility: sizes ? undefined : 'hidden', animationDelay: entering ? labDelay(i) : undefined }} onClick={e => { e.stopPropagation(); onPick(a.key); }}>
         <span ref={el => { labRefs.current[i] = el; }} className={`peer-radar-label${dim(i)}`}>
-          {/* Two balanced lines, both centred (Xiaohongshu reference): name + value (.kpi-label) over the percentile. */}
-          <span className="kpi-label prl-name">{a.line1}</span>
-          <span className="prl-rank">{a.line2}</span>
+          {/* Two centred lines: metric name (.kpi-label) + trend arrow (vs the previous 7 days / my typical post, the
+              tile-1 baseline, in the Key metrics up / down colour; none when flat) over the absolute value. */}
+          <span className="kpi-label prl-name">{a.line1}{a.trend !== 'flat' && <span className={`prl-arrow ${a.trend}`}><Arrow up={a.trend === 'up'} size={9}/></span>}</span>
+          <span className="prl-val">{a.line2}</span>
         </span>
       </button>;
     })}
@@ -158,7 +150,7 @@ function Radar({ areas, scope, selected, act, onPick, entering }) {
 }
 
 export function PeerRadarCard({ scope, insight, areas: rawAreas, ca='row', act, cardAct=act, onAsk, onSelect, syncTo, initialArea, resetToken, ask, askAct, children }) {
-  const areas = withRadarStats(rawAreas);
+  const areas = withRadarStats(rawAreas, scope);
   const entering = useEntering(1100); // first entry only (entrance.js); later re-renders keep the plain transitions
   // Two states (2026-11-28 Yanice):
   //  - default (sel = null): first render and after a date-range change. All five axes at full strength, the tabs
@@ -209,8 +201,9 @@ export function PeerRadarCard({ scope, insight, areas: rawAreas, ca='row', act, 
   const L = LABELS[scope];
   const tabs = areas.map(a => ({key:a.key,label:a.name}));
   const askText = sel != null ? (ask?.byArea?.[area.key] || null) : null;
-  const vs = area.vs;
+  // Rewards (account) shows where the money comes from instead of the two comparison tiles.
   const split = scope === 'account' ? rewardsBreakdown(area) : null;
+  const tiles = split || area.tiles;
   return <div data-insight={cardAct} data-tip={sel ?? -1} className={entering ? 'enter-card' : undefined} style={CARD_STYLE} onClick={onBlank}>
     <CardHead title={insight.cardTitle || (scope==='post'?'Post summary':'Performance summary')} infoLabel="About this comparison" act={`${act}-info`} onInfo={()=>setOpen(true)}/>
     <KeyBlock k={insight.key} rest={insight.rest} bullets={insight.bullets} next={insight.next}/>
@@ -218,21 +211,22 @@ export function PeerRadarCard({ scope, insight, areas: rawAreas, ca='row', act, 
       <Radar areas={areas} scope={scope} selected={sel} act={act} onPick={pick} entering={entering}/>
       <div className={`peer-radar-legend${entering ? ' enter-fade' : ''}`} style={entering ? { animationDelay: labDelay(5) } : undefined}>
         {/* Legend dots drawn like the chart points: solid blue with a white ring | white ringed in light blue. */}
-        <span><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4" style={{ fill: C.own, stroke: C.ownFill }} strokeWidth="1.5"/></svg>{L.selfLabel}</span>
+        <span><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="3.5" style={{ fill: 'var(--c-white, #fff)', stroke: C.own }} strokeWidth="2"/></svg>{L.selfLabel}</span>
         <span><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="3.6" style={{ fill: 'var(--c-white, #fff)', stroke: C.peer }} strokeWidth="1.6"/></svg>{L.peerLabel}</span>
       </div>
       <TopTabs id={`${act}-metrics`} tabs={tabs} value={area.key} onChange={pick} equal={false} className="a-tabs peer-radar-tabs" actPrefix={`${act}-area`}/>
-      {/* Shown area: one Key metrics tile across the row (your value + delta chip). The percentile is already on the
-          axis label, so the old "Ahead of" tile is gone (2026-11-28 Yanice). Rewards adds its split in the value row. */}
+      {/* Shown area: two tiles in the exact Key metrics tile markup (kit.jsx KpiCard + Delta): label / value / change
+          pill + grey difference. Comparison: the baseline as the value and your change against it. Rewards: Gifts and
+          Creator Rewards in $, with each part's share of the total in the row. */}
       <div className={`kpi-grid peer-radar-kpis${entering ? ' enter-card' : ''}`} style={entering ? { animationDelay: '0.3s' } : undefined} aria-live="polite">
-        <div className="kpi sel peer-radar-tile" data-tile="self">
-          <div className="kpi-label">{area.label}</div>
-          <div className="prt-row">
-            <div className="kpi-val">{area.ownText}</div>
-            {split && <div className="prt-split" data-split>{split.text}</div>}
+        {tiles.map(t => <div key={t.key} className="kpi peer-radar-tile" data-tile={t.key}>
+          <div className="kpi-label">{t.label}</div>
+          <div className="kpi-val">{t.money != null ? <><small>$</small>{t.money}</> : t.value}</div>
+          <div className="kpi-delta">
+            {t.pill && <span className={`kd-pill ${t.tone}`}>{t.tone !== 'flat' && <Arrow up={t.tone === 'up'}/>}{t.pill}</span>}
+            <span className="kd-abs">{t.abs}</span>
           </div>
-          <div className="kpi-delta"><span className={`kd-pill ${vs.tone}`}>{vs.tone !== 'flat' && <Arrow up={vs.tone === 'up'}/>}{vs.text}</span><span className="kd-abs">vs typical</span></div>
-        </div>
+        </div>)}
       </div>
     </div>
     {ca==='row'&&<AskRow act={askAct} seenKey={`peer-${scope}`} prompts={ask?.prompts||['Ask Creator Assistant']} fixed={askText} onAsk={q=>onAsk?.(q)} icon={<CaIcon size={22}/>}/>}

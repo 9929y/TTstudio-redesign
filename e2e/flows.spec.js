@@ -712,11 +712,33 @@ test('14 评分图联动：选中维度 → 雷达框选 / Key metrics / Ask 行
   };
   await isDefault();
   await expect(sel).toHaveCount(0); // 默认 Key metrics 一张都不选
+  // Labels = metric name over its absolute value (no rank); tiles = Key metrics tile markup: Previous 7 days | Typical
+  // similar creator, each with the baseline value and your change against it (2026-11-28)
+  const tiles = card.locator('.peer-radar-kpis .kpi');
+  const tileText = async (i) => (await tiles.nth(i).innerText()).replace(/\s+/g, ' ').trim();
+  await expect(card.locator('[data-act="insight-a-axis-0"] .peer-radar-label')).toHaveText(/^Views\s*14\.7K$/);
+  await expect(card.locator('.peer-radar-label', { hasText: 'Ahead of' })).toHaveCount(0);
+  await expect(tiles).toHaveCount(2);
+  // Views: tile 1's change equals Analytics › Key metrics Post views; the typical equals the Content summary bars
+  expect(await tileText(0)).toBe('Previous 7 days 16.4K 10.6% −1,737');
+  expect(await tileText(1)).toBe('Typical similar creator 13.1K 11.6% +1,528');
+  const kmViews = (await page.locator('#phone-screen .kpi-grid:not(.peer-radar-kpis) .kpi:visible', { hasText: 'Post views' }).innerText()).replace(/\s+/g, ' ');
+  expect(kmViews).toContain('10.6% −1,737');
+  await expect(tiles.nth(0).locator('.kpi-delta .kd-pill.down')).toHaveCount(1);
+  await expect(tiles.nth(1).locator('.kpi-delta .kd-pill.up')).toHaveCount(1);
+  await expect(card.locator('.peer-radar-kpis')).not.toContainText('Ahead of');
   // 路径一：默认 → Shares → Views → 再点 Views → 默认
   await area('Shares');
   await expect(card).toHaveAttribute('data-tip', '2');
   await expect(sel).toHaveText('Shares');
   await expect(ask).toHaveText('How can I get more shares?');
+  expect(await tileText(0)).toBe('Previous 7 days 77 3.9% +3');
+  expect(await tileText(1)).toBe('Typical similar creator 94 14.4% −14');
+  // Rewards: where the money comes from instead of the comparison tiles; the parts add up to the axis value ($1.47)
+  await area('Rewards');
+  await expect(card.locator('[data-act="insight-a-axis-4"] .peer-radar-label')).toHaveText(/^Rewards\s*\$1\.47$/);
+  expect(await tileText(0)).toBe('Gifts $0.96 65% of rewards');
+  expect(await tileText(1)).toBe('Creator Rewards $0.51 35% of rewards');
   await area('Views');
   await expect(card).toHaveAttribute('data-tip', '0');
   await expect(sel).toHaveText('Post views');
@@ -737,8 +759,10 @@ test('14 评分图联动：选中维度 → 雷达框选 / Key metrics / Ask 行
   await tap(page, 'insight-a-point-3');
   await isDefault();
   // 路径二：默认 → Engagement（聚焦 Likes）→ 点空白 → 默认
-  await area('Reactions');
+  await area('Engagement');
+  await expect(tabOn).toHaveText('Engagement');
   await expect(sel).toHaveText('Likes');
+  expect(await tileText(1)).toBe('Typical similar creator 5.3% 7.1% +0.3 pts');
   await expect(ask).toHaveText(/likes and comments/);
   await shot(page, 'l1_engagement');
   // ⓘ 照常打开说明，选中保留
@@ -775,20 +799,24 @@ test('14 评分图联动：选中维度 → 雷达框选 / Key metrics / Ask 行
   await page.waitForTimeout(1200);
   await expect(page.locator('#phone-screen [data-act^="assistant-prompt-"]:visible')).toHaveCount(4);
   await shot(page, 'l2_assistant_shares');
-  // Content：Content summary 是双条行（2026-11-28 起卡片自身不保留选中），点某一行只让下方 Top posts 换成对应的排序
+  // Content：Content summary 是双条行，只读（2026-11-28 Yanice「这个不能点击」）：没有可点的行，数值全部可见；
+  // Typical similar creator 和 Overview 雷达的 Typical 同一个数
   await tap(page, 'nav-back');
   await tap(page, 'tab-content');
   await page.waitForTimeout(1200);
   const bcard = page.locator('#phone-screen [data-insight="insight-b"]:visible');
-  const barea = async (name) => { await bcard.locator('[data-act^="insight-b-area-"]', { hasText: name }).click(); await page.waitForTimeout(900); };
+  await expect(bcard.locator('button.imd-row, [data-act^="insight-b-area-"]')).toHaveCount(0);
+  await expect(bcard.locator('.imd-row')).toHaveCount(2); // Views and Engagement only (Followers group removed)
+  await expect(bcard.locator('.imd-row').nth(0)).toContainText('Typical similar creator13.1K');
+  await expect(bcard.locator('.imd-row').nth(1)).toContainText('Engagement');
+  await expect(bcard.locator('.imd-row').nth(1)).toContainText('Typical similar creator5.3%');
+  // My account rows of Views and Engagement carry the vs-previous-7-days pill (Views = Key metrics Post views)
+  await expect(bcard.locator('.imd-row').nth(0)).toContainText('My account');
+  await expect(bcard.locator('.imd-row').nth(0).locator('.kd-pill.down')).toHaveText('10.6%');
+  await expect(bcard.locator('.imd-row').nth(1).locator('.kd-pill.down')).toHaveText('30.3%');
+  await shot(page, 'l3_content_bars');
+  // Top posts 排序胶囊照常切换
   await expect(act(page, 'pill-views')).toHaveClass(/on/);
-  await barea('Followers');
-  await expect(act(page, 'pill-newFollowers')).toHaveClass(/on/);
-  await barea('Reactions');
-  await expect(act(page, 'pill-likes')).toHaveClass(/on/);
-  await shot(page, 'l3_content_engagement');
-  // 反向：换排序 → 胶囊照常切换
-  await barea('Followers');
   await tap(page, 'pill-likes');
   await expect(act(page, 'pill-likes')).toHaveClass(/on/);
 });
