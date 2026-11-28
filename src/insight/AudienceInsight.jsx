@@ -26,7 +26,7 @@ const ICONS = {
 // Creators your viewers also watched。每条控制在一行内（393pt 下文字区 289px，最长一条 286px）。
 const ASK_VIEWERS = [
   'How do I get new viewers to follow me?',
-  'How did new people find Kyoto at dusk?',
+  'Who are my new viewers?', // 2026-11-28 QA: the old Kyoto question contradicted the summary (Kyoto isn't in these numbers yet)
   'When should I post Kyoto Part 2?',
   'What else do my viewers watch?',
 ];
@@ -95,7 +95,7 @@ export function AudienceInsight({ tab, onAsk }) {
       <div ref={ref} className={entering ? 'enter-card' : undefined} style={CARD_STYLE} data-insight={`audience-${tab}`}>
         <CardHead title={D.cardTitle} infoLabel="About this insight" act="audience-info"
           onInfo={() => setHost(ref.current?.closest('.screen-root') || document.body)} />
-        <KeyBlock k={D.key} rest={D.rest} bullets={D.bullets} next={D.next} />
+        <KeyBlock k={D.key} rest={D.rest} bullets={D.bullets} next={D.next} allowBullets />
         {caRow && (
           <AskRow act={`insight-${tab}-ask`} seenKey={`ask-audience-${tab}`} prompts={prompts} onAsk={ask}
             icon={(

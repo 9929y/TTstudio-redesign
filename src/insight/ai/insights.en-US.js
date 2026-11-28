@@ -7,9 +7,20 @@
 // Port these to the prompt pack before the next export, or they will be overwritten.
 // 2026-11-27 night hand edit (Yanice: "paragraph 2–3 sentences, 1–2 bullets"): five KeyBlock surfaces rewritten from pack .8 output; no links, no semicolons.
 // 2026-11-27 night: performance_summary = raw model output, pack .8 live run 1 (Yanice chose it over the hand edit).
+// 2026-11-27 (Yanice: scores now compare with similar creators, not the previous 7 days): content_summary rest drops the
+// week-over-week sentence; post_overview is not used until the pack is re-run with the similar-creator baseline (build.js).
+// 2026-11-28 QA: post_overview and other_post regenerated on pack .11 ("similar videos", no percent, bullets ≤ 38 characters).
+// 2026-11-28 hand edit (Yanice: "summary must be more useful than the content below; no 6 in 10 / 2 in 3; say why it is
+// good or bad and what to do"): performance_summary, content_summary (no bullets), topic_search, post_overview, other_post.
+// Each is marked made.hand_edit = 2026-11-28 and raw_model_output = false. The prompt pack is unchanged (owned elsewhere):
+// port these to the pack before the next export, or they will be overwritten.
+// 2026-11-28 (Yanice: cards with a chart below the summary get a paragraph only): the five KeyBlock surfaces above
+// have bullets: [], and the next step is the last sentence.
+// 2026-11-28 ranking-signal pass (08_tiktok_ranking_signals.md): each chart-card summary ties the data to one signal
+// (made.signal); curated_past / curated_trend / curated_similar titles and reasons rewritten. Hand edits, pack unchanged.
 export default {
   "generated_at": "2026-11-27T23:54:05.039Z",
-  "pack_version": "2026-11-27.6",
+  "pack_version": "2026-11-28.11",
   "model": "claude-opus-5-5",
   "locale": "en-US",
   "surfaces": {
@@ -17,55 +28,55 @@ export default {
       "subject": null,
       "source": "model",
       "output": {
-        "story": "carrier_mix",
-        "basis": "carrier_mix Kyoto at dusk 50% of views, 33% of likes, about half the likes per view, still most liked",
-        "key": "Kyoto at dusk brought half your views but only a third of your likes.",
-        "lever": "series",
-        "rest": "It got 260 of your 783 likes, still your most liked post. Its viewers liked it about half as often as viewers of your other posts.",
-        "bullets": [
-          "Itinerary is the top word in its comments.",
-          "Post Kyoto Part 2 Thursday around 6 PM."
-        ],
+        "story": "contrast",
+        "basis": "radar status Views Strong (60), Shares Average (45); signal shares",
+        "key": "Views are strong, but shares are only average.",
+        "lever": "detail",
+        "rest": "Posts people pass on may help you reach more viewers, so add a route map they can send.",
+        "bullets": [],
         "refs": [
-          "post:p44",
-          "area:Views",
+          "area:Shares",
           "area:Engagement",
-          "area:Shares"
+          "post:p44"
         ],
         "safety_flag": "none",
         "next": null
       },
       "made": {
-        "pack_version": "2026-11-27.8",
-        "module": "account_overview 1.6.0",
-        "date": "2026-11-27"
+        "pack_version": "2026-11-28.10",
+        "module": "account_overview 1.8.0",
+        "date": "2026-11-28",
+        "raw_model_output": false,
+        "note": "Hand edit (Yanice: plain, commercial, actionable; no \"6 in 10\"; why good or bad and what to do). Prompt pack unchanged. Paragraph only: a chart sits under this summary, so no bullets (Yanice 2026-11-28). Ranking signal: shares / sends (08_tiktok_ranking_signals.md).",
+        "hand_edit": "2026-11-28",
+        "signal": "shares / sends"
       }
     },
     "content_summary": {
       "subject": null,
       "source": "model",
       "output": {
-        "story": "strongest_weakest",
-        "basis": "net_followers_change ↓ 24.0% vs views_change ↓ 10.6%, follow_conversion_fell true; Kyoto at dusk 27 of 60 followers",
-        "key": "Kyoto at dusk brought 27 of your 60 new followers, more than any other post.",
+        "story": "contrast",
+        "basis": "Followers 14 of 30 against typical 15; p44 the only new post, first second 37 left vs 33 on similar videos",
+        "key": "Followers are just under typical.",
         "lever": "series",
-        "rest": "Your Positano post brought 15 more. You gained fewer followers than the week before, while views only dipped a little.",
-        "bullets": [
-          "Follow it up with Kyoto Part 2."
-        ],
+        "rest": "More viewers left Kyoto at dusk in the first second than on similar videos, so open on the finished shot.",
+        "bullets": [],
         "refs": [
           "area:Followers",
-          "area:Views",
-          "post:p44",
-          "post:p41"
+          "post:p44"
         ],
         "safety_flag": "none",
         "next": null
       },
       "made": {
-        "pack_version": "2026-11-27.8",
-        "module": "content_summary 1.6.0",
-        "date": "2026-11-27"
+        "pack_version": "2026-11-28.10",
+        "module": "content_summary 1.9.0",
+        "date": "2026-11-28",
+        "raw_model_output": false,
+        "note": "Hand edit (Yanice: content summary is 2–3 sentences, no bullets). Prompt pack unchanged. Paragraph only (chart below). Ranking signal: first-seconds hook (08_tiktok_ranking_signals.md).",
+        "hand_edit": "2026-11-28",
+        "signal": "first-seconds hook"
       }
     },
     "topic_search": {
@@ -73,52 +84,54 @@ export default {
       "source": "model",
       "output": {
         "story": "verdict",
-        "basis": "worth_exploring true, fit high, proof carry-on finds about twice usual views, room wide, advice angle sub:2",
-        "key": "Your carry-on finds got about twice your usual views, so this topic fits you.",
+        "basis": "fit high, proof p33 carry-on finds above your median views; sub-topics Fashion & seasonal promos most posted, Tech & home finds next",
+        "key": "Your carry-on finds beat your usual views, so this suits you.",
         "lever": "angle",
-        "rest": "Tech & home finds is the closest match to your travel posts. Few creators post it yet.",
-        "bullets": [
-          "Try Tech & home finds as an honest review."
-        ],
+        "rest": "Go live with travel gear as tech & home finds, less crowded than fashion.",
+        "bullets": [],
         "refs": [
           "score:Relevance",
           "post:p33",
-          "sub:2",
-          "sub:1"
+          "sub:2"
         ],
         "safety_flag": "none",
         "next": null
       },
       "made": {
-        "pack_version": "2026-11-27.8",
-        "module": "topic_search 1.7.0",
-        "date": "2026-11-27"
+        "pack_version": "2026-11-28.10",
+        "module": "topic_search 1.8.0",
+        "date": "2026-11-28",
+        "raw_model_output": false,
+        "note": "Hand edit (Yanice: no scores or ratios in the text; say why it fits and what to do). Prompt pack unchanged. Paragraph only: a chart sits under this summary, so no bullets (Yanice 2026-11-28).",
+        "hand_edit": "2026-11-28"
       }
     },
     "post_overview": {
       "subject": "post:p44",
       "source": "model",
       "output": {
-        "story": "largest_gap",
-        "basis": "Reach 93 almost 3 times; gap Likes/1K 35.8 vs 80.1; 260 vs 210 likes; comments/1K 2.7 vs 2.1",
-        "key": "About 3 times your usual viewers saw Kyoto at dusk, but a smaller share of them liked it.",
+        "story": "contrast",
+        "basis": "radar Reach Strong (86), Likes Behind (4); top comment word itinerary",
+        "key": "Kyoto at dusk reached far more people than similar videos but got far fewer likes.",
         "lever": "series",
-        "rest": "It still got 260 likes, against about 210 on a usual post. 37% left in the first second, a little more than the 33% who usually do.",
-        "bullets": [
-          "Open Kyoto Part 2 on the lanterns.",
-          "Post it Thursday around 6 PM."
-        ],
+        "rest": "Reply to the itinerary asks with a video and pin Part 2.",
+        "bullets": [],
         "refs": [
           "area:Reach",
-          "area:Likes"
+          "area:Likes",
+          "post:p44"
         ],
         "safety_flag": "none",
         "next": null
       },
       "made": {
-        "pack_version": "2026-11-27.8",
-        "module": "post_overview 1.5.0",
-        "date": "2026-11-27"
+        "pack_version": "2026-11-28.11",
+        "module": "post_overview 1.8.0",
+        "date": "2026-11-28",
+        "raw_model_output": false,
+        "note": "Hand edit (Yanice: \"similar videos\", no ratios; why good or bad and what to do). Prompt pack unchanged. Paragraph only: a chart sits under this summary, so no bullets (Yanice 2026-11-28). Ranking signal: comments and video replies (08_tiktok_ranking_signals.md).",
+        "hand_edit": "2026-11-28",
+        "signal": "comments and video replies"
       }
     },
     "other_post": {
@@ -126,48 +139,50 @@ export default {
       "source": "model",
       "output": {
         "story": "largest_gap",
-        "basis": "largest_rate_gap Comments 3.8 vs 2.2; itinerary 32% of comments; your_match Amalfi, itinerary",
-        "key": "People comment on @budgetroutes' post much more often than on yours.",
+        "basis": "Favorites 17.1 vs 12.4 and Comments 3.8 vs 2.2 per 1K views; caption full receipts",
+        "key": "@budgetroutes’ viewers save and comment more than yours.",
         "lever": "detail",
-        "rest": "About a third of its comments ask for the itinerary. Itinerary is also the top word on your Amalfi post.",
-        "bullets": [
-          "Post your Amalfi itinerary with the budget.",
-          "Post it Thursday around 6 PM."
-        ],
+        "rest": "List every cost on screen and end with a question, like their receipts post.",
+        "bullets": [],
         "refs": [
           "row:comments",
+          "row:favorites",
           "topic:itinerary",
-          "post:p28"
+          "topic:budget"
         ],
         "safety_flag": "none",
         "next": null
       },
       "made": {
-        "pack_version": "2026-11-27.8",
-        "module": "other_post 1.6.0",
-        "date": "2026-11-27"
+        "pack_version": "2026-11-28.11",
+        "module": "other_post 1.8.0",
+        "date": "2026-11-28",
+        "raw_model_output": false,
+        "note": "Hand edit (Yanice: no \"1.7×\"; bullets ≤ 38 characters in the sheet). Prompt pack unchanged. Paragraph only: a chart sits under this summary, so no bullets (Yanice 2026-11-28). Ranking signal: saves and comments (08_tiktok_ranking_signals.md).",
+        "hand_edit": "2026-11-28",
+        "signal": "saves and comments"
       }
     },
     "curated_past": {
       "subject": null,
       "source": "model",
       "output": {
-        "topic": "Kyoto at dusk: a one-day itinerary",
+        "topic": "Kyoto at dusk, part 2: the itinerary you asked for",
         "rows": [
+          {
+            "ref": "fact:share",
+            "icon": "play",
+            "text": "Half your views came from Kyoto at dusk."
+          },
           {
             "ref": "fact:word",
             "icon": "chat",
-            "text": "Top word in comments: itinerary."
+            "text": "Its comments ask for the itinerary most."
           },
           {
-            "ref": "fact:median",
-            "icon": "chart",
-            "text": "Kyoto posts get 5.1K views, the rest 3.5K."
-          },
-          {
-            "ref": "fact:time",
-            "icon": "chart",
-            "text": "Viewers most active Thursday around 6 PM."
+            "ref": "signal:saves",
+            "icon": "bookmark",
+            "text": "A day plan is worth saving and sending."
           }
         ],
         "safety_flag": "none"
@@ -175,29 +190,32 @@ export default {
       "made": {
         "pack_version": "2026-11-27.6",
         "module": "topic_card 1.2.0",
-        "date": "2026-11-27"
+        "date": "2026-11-28",
+        "hand_edit": "2026-11-28",
+        "raw_model_output": false,
+        "note": "Hand edit (Yanice: more attractive Curated for me copy tied to ranking signals). Prompt pack unchanged."
       }
     },
     "curated_similar": {
       "subject": null,
       "source": "model",
       "output": {
-        "topic": "Amalfi by ferry: full itinerary and budget",
+        "topic": "Amalfi by ferry on a budget: every cost listed",
         "rows": [
           {
             "ref": "fact:gap",
-            "icon": "chart",
-            "text": "@budgetroutes' post got comments 1.7× as often."
+            "icon": "bookmark",
+            "text": "@budgetroutes’ viewers save more."
           },
           {
             "ref": "fact:ask",
             "icon": "chat",
-            "text": "Their viewers ask for the itinerary and budget."
+            "text": "Their viewers ask for costs and routes."
           },
           {
-            "ref": "fact:own",
+            "ref": "fact:draft",
             "icon": "play",
-            "text": "Your Amalfi by ferry: 7.7K views, usual 3.5K."
+            "text": "Your Amalfi draft lists every cost."
           }
         ],
         "safety_flag": "none"
@@ -205,26 +223,29 @@ export default {
       "made": {
         "pack_version": "2026-11-27.6",
         "module": "topic_card 1.2.0",
-        "date": "2026-11-27"
+        "date": "2026-11-28",
+        "hand_edit": "2026-11-28",
+        "raw_model_output": false,
+        "note": "Hand edit (Yanice: more attractive Curated for me copy tied to ranking signals). Prompt pack unchanged."
       }
     },
     "curated_trend": {
       "subject": null,
       "source": "model",
       "output": {
-        "topic": "Honest review: travel tech worth packing",
+        "topic": "Worth the carry-on space? Honest tech test",
         "rows": [
           {
             "icon": "trend",
-            "text": "In demand right now."
-          },
-          {
-            "icon": "target",
-            "text": "Close to your carry-on finds."
+            "text": "Live shop sales are in demand right now."
           },
           {
             "icon": "similar",
-            "text": "Room for new creators."
+            "text": "Your shares are only average so far."
+          },
+          {
+            "icon": "target",
+            "text": "A packing list is easy to send a friend."
           }
         ],
         "safety_flag": "none"
@@ -232,7 +253,10 @@ export default {
       "made": {
         "pack_version": "2026-11-27.6",
         "module": "topic_card 1.2.0",
-        "date": "2026-11-27"
+        "date": "2026-11-28",
+        "hand_edit": "2026-11-28",
+        "raw_model_output": false,
+        "note": "Hand edit (Yanice: more attractive Curated for me copy tied to ranking signals). Prompt pack unchanged."
       }
     },
     "weekly_report": {

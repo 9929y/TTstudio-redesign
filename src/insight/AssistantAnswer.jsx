@@ -123,16 +123,16 @@ function VideoMetrics({ m }) {
         {m.tiles.map((t) => <div key={t.label} className={`cax-vtile ${t.on ? 'on' : ''}`}><span className="cax-vtile-l">{t.label}</span><span className="cax-vtile-v">{t.value}</span></div>)}
       </div>
       <div className="cax-vchart">
-        <svg width="290" height="124" viewBox={c.viewBox} preserveAspectRatio="none" aria-hidden="true">
+        <svg width="290" height="124" viewBox={c.viewBox} preserveAspectRatio="none" aria-hidden="true" style={{ maxWidth: 'calc(100% - 44px)' }}>
           <defs><linearGradient id={gid} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#3d8eea" stopOpacity=".28" /><stop offset="1" stopColor="#3d8eea" stopOpacity=".02" /></linearGradient></defs>
           {c.grid.map((y) => <path key={y} d={`M${c.x[0]} ${y}H${c.x[1]}`} stroke="#e3e3e6" strokeWidth="1" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />)}
           <path d={`M${c.x[0]} ${c.base}H${c.x[1]}`} stroke="#e3e3e6" strokeWidth="1" vectorEffect="non-scaling-stroke" />
           <path d={area} fill={`url(#${gid})`} />
           <polyline points={c.points} fill="none" stroke="#3d8eea" strokeWidth="1.6" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
         </svg>
-        {c.yLabels.map(([l, top]) => <span key={l} className="cax-vlab" style={{ left: 300, top }}>{l}</span>)}
+        {c.yLabels.map(([l, top]) => <span key={l} className="cax-vlab" style={{ left: 'min(300px, calc(100% - 34px))', top }}>{l}</span>)}
         <span className="cax-vlab" style={{ left: 0, top: 128 }}>{c.xLabels[0]}</span>
-        <span className="cax-vlab" style={{ left: 266, top: 128 }}>{c.xLabels[1]}</span>
+        <span className="cax-vlab" style={{ left: 'min(266px, calc(100% - 68px))', top: 128 }}>{c.xLabels[1]}</span>
       </div>
     </div>
   );

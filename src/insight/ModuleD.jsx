@@ -10,6 +10,9 @@ import { CardHead, KeyBlock } from './CardParts.jsx';
 import { useEntering } from './entrance.js';
 
 function InfoDrawer({ info, host, onClose }) {
+  // Header divider only after the body scrolls (same rule as SheetFrame's is-scrolled)
+  const [scrolled, setScrolled] = useState(false);
+  const onBodyScroll = (e) => { const s = e.currentTarget.scrollTop > 0; if (s !== scrolled) setScrolled(s); };
   useEffect(() => {
     const k = (e) => { if (e.key === 'Escape') { e.stopPropagation(); onClose(); } };
     window.addEventListener('keydown', k, true);
@@ -18,14 +21,14 @@ function InfoDrawer({ info, host, onClose }) {
   return createPortal(
     <>
       <div className="imd-scrim" data-act="insight-d-info-scrim" onClick={onClose} />
-      <div className="imd-sheet" role="dialog" aria-modal="true" aria-label="About this comparison">
+      <div className={`imd-sheet${scrolled ? ' is-scrolled' : ''}`} role="dialog" aria-modal="true" aria-label="About this comparison">
         <div className="imd-sheet-head">
           <span>About this comparison</span>
           <button type="button" className="imd-sheet-x imd-press" aria-label="Close" data-act="insight-d-info-close" onClick={onClose}>
             <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="#161823" strokeWidth="2" strokeLinecap="round" /></svg>
           </button>
         </div>
-        <div className="imd-sheet-body">
+        <div className="imd-sheet-body" onScroll={onBodyScroll}>
           {(info || []).map((it, i) => (
             <div key={i} className="imd-item">
               <span className="imd-item-ic">
@@ -42,6 +45,37 @@ function InfoDrawer({ info, host, onClose }) {
       </div>
     </>,
     host,
+  );
+}
+
+// Double-bar comparison rows (2026-11-28): one label per metric, then two lines — label + value over a bar — for the two
+// things being compared. Shared by "Compared with your posts" (this file) and Content summary (ModuleA RoseCard, bars
+// presentation), so both cards are one component with one stylesheet (ModuleD.css .imd-*).
+// rows: [{ label, val, w, c, yv, yw, yc }]; labels: [first line, second line].
+// onPick (optional): makes each metric a button (press feedback only, no selected state); every value stays visible.
+export function CompareRows({ rows, labels, entering = false, onPick, act, className }) {
+  return (
+    <div className={['imd-rows', className].filter(Boolean).join(' ')}>
+      {(rows || []).map((r, ri) => {
+        const body = (
+          <>
+            <span className="imd-label">{r.label}</span>
+            <span className="imd-pair">
+              <span className="imd-line"><span>{labels[0]}</span><span className="imd-val">{r.val}</span></span>
+              <span className="imd-track"><span className={`imd-bar${entering ? ' enter-grow-x' : ''}`} style={{ width: r.w, background: r.c, animationDelay: entering ? `${0.12 + ri * 0.06}s` : undefined }} /></span>
+            </span>
+            <span className="imd-pair">
+              <span className="imd-line"><span>{labels[1]}</span><span className="imd-val">{r.yv}</span></span>
+              <span className="imd-track"><span className={`imd-bar${entering ? ' enter-grow-x' : ''}`} style={{ width: r.yw, background: r.yc, animationDelay: entering ? `${0.15 + ri * 0.06}s` : undefined }} /></span>
+            </span>
+          </>
+        );
+        return onPick
+          ? <button key={r.label} type="button" className="imd-row imd-row-btn imd-press" data-act={act ? `${act}-${ri}` : undefined}
+              aria-label={`${r.label}: ${labels[0]} ${r.val}, ${labels[1]} ${r.yv}`} onClick={() => onPick(r, ri)}>{body}</button>
+          : <div key={r.label} className="imd-row">{body}</div>;
+      })}
+    </div>
   );
 }
 
@@ -66,21 +100,7 @@ export function ModuleD({ ca = 'row', insight = MODULE_D, onAsk }) {
       {/* Final（Version 216）：标题 Compared with your posts + AI 星形 + ⓘ 一行，洞察在浅蓝块里；标题文字 Yanice 仍在三个候选里选 */}
       <CardHead title={D.cardTitle || 'Compared with your posts'} infoLabel="About this comparison" act="insight-d-info" onInfo={openInfo} />
       <KeyBlock k={D.key} rest={D.rest} bullets={D.bullets} next={D.next} />
-      <div className="imd-rows">
-        {(D.rows || []).map((r, ri) => (
-          <div key={r.label} className="imd-row">
-            <span className="imd-label"><span className="imd-dot" style={{ background: r.c }} />{r.label}</span>
-            <span className="imd-pair">
-              <span className="imd-line"><span>This post</span><span className="imd-val">{r.val}</span></span>
-              <span className="imd-track"><span className={`imd-bar${entering ? ' enter-grow-x' : ''}`} style={{ width: r.w, background: r.c, animationDelay: entering ? `${0.12 + ri * 0.06}s` : undefined }} /></span>
-            </span>
-            <span className="imd-pair">
-              <span className="imd-line"><span>Your typical post</span><span className="imd-val">{r.yv}</span></span>
-              <span className="imd-track"><span className={`imd-bar${entering ? ' enter-grow-x' : ''}`} style={{ width: r.yw, background: r.yc, animationDelay: entering ? `${0.15 + ri * 0.06}s` : undefined }} /></span>
-            </span>
-          </div>
-        ))}
-      </div>
+      <CompareRows rows={D.rows} labels={['This post', 'Your typical post']} entering={entering} />
       {caRow && (
         <AskRow act="assistant-pop-insights" seenKey="ask-D" prompts={D.ask?.prompts || ['Ask Creator Assistant']} onAsk={ask}
           icon={<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" style={{ flex: 'none' }}><defs><linearGradient id={gid} x1="16" y1="4" x2="7" y2="20" gradientUnits="userSpaceOnUse"><stop offset="0" stopColor="#4fe3e6" /><stop offset=".45" stopColor="#2f62f2" /><stop offset="1" stopColor="#1d0f8a" /></linearGradient></defs><path d="M21 8.9C20.1 6.4 17.9 5 15.2 5H9.6a7 7 0 0 0 0 14h5.6c2.7 0 4.9-1.4 5.8-3.9" fill="#fff" stroke={`url(#${gid})`} strokeWidth="3.2" /><circle cx="9.7" cy="12" r="1.55" fill="#1b1470" /><circle cx="14.3" cy="12" r="1.55" fill="#1b1470" /></svg>} />

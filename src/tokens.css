@@ -8,11 +8,18 @@
   --c-primary: #fe2c55;          /* Post / Done / Aplicar 按钮（o1g_0441、zaDQ_0105、91F_0349） */
   --c-primary-disabled: #f9a6b6; /* Done 置灰（o1g_0248） */
   --c-blue: #1e7ce8;             /* KPI 上升箭头圆、选中胶囊字（o1g_0036、o1g_0622） */
+  --c-blue-selected: #0d4a96;    /* 蓝色胶囊选中文字；2026-11-28 Yanice 确认 */
   --c-blue-weak: #e8f2fe;        /* 选中 KPI 卡底、Most views 胶囊底（o1g_0036/0622） */
   --c-blue-line: #9cc8f6;        /* 选中 KPI 卡描边（QKE_0042） */
   --c-chart: #3d8eea;            /* 趋势线（o1g_0045） */
   --c-chart-fill-top: rgba(61, 142, 234, 0.28);
   --c-chart-fill-bot: rgba(61, 142, 234, 0.02);
+  /* 同类对比雷达（2026-11-28）：自己深蓝，同类橙色 */
+  --c-radar-own: #0d4a96;
+  --c-radar-own-text: #1765c4;
+  --c-radar-peer: #e4a477;
+  --c-radar-peer-text: #a84c1e;
+  --c-radar-axis: #cfd0d4;
   --c-scheduled-bg: #e3f1fd;     /* Scheduled 徽标（zaDQ_0149） */
   --c-scheduled-fg: #2a85d8;
   --c-warn: #e8384f;             /* Warning received（QKE_0102） */
@@ -57,6 +64,9 @@
   --status-h: 54px;
   --tabbar-h: 83px;       /* 49 + home indicator 34 */
   --gutter: 16px;
+  --card-padding: 16px;
+  --card-gap: 12px;
+  --touch-target: 48px;
 
   /* 动效 —— iOS 标准值；录屏 30fps 只能估 */
   --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);

@@ -1,8 +1,8 @@
 // S1 · Curated for me (final) — Home dashboard card carousel and Create page rows.
 // Ported from design_final/home_s7/project/IMU-S1-Final.dc.html (states per FIN-S1-Page).
-// All content comes from the `insight` prop: { title, cards: [{ k, tip, topic, rows, bg, k_past|k_trend|k_similar }] }.
-import { useEffect, useId, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+// All content comes from the `insight` prop: { title, cards: [{ k, tip, topic, rows, k_past|k_trend|k_similar }] }.
+// Card colours and illustrations come from cardArt.js (the data's old gradient `bg` is no longer used).
+import { useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useApp } from '../store.js';
 import { CURATED as CURATED_DEMO } from './demo/curated.js';
@@ -10,20 +10,19 @@ import { buildCurated } from './build.js';
 // 来源短句里的数字由数据现算（7.3K、5.1K / 3.5K、1.7× 等），文案结构沿用画板
 const CURATED = buildCurated(CURATED_DEMO);
 import './CuratedForMe.css';
-import { S1_ART } from './s1Art.js';
+import { CARD_ARTS, currentArt, artKind } from './cardArt.js';
 
 const EASE_OUT = [0.23, 1, 0.32, 1];
 
-// ---- illustrations：直接用 Final 画板 IMU-S1-Final 的插画（scripts/sync_s1_art.py 生成 s1Art.js） ----
-// trend 在首页卡片和 Details 抽屉用「左侧渐隐」，在 Create 页的行里用「两侧渐隐」（与画板一致）
-function Illo({ card, variant = 'left' }) {
-  const u = useId().replace(/[^a-zA-Z0-9]/g, '');
-  const raw = card.k_past ? S1_ART.past : card.k_similar ? S1_ART.similar : card.k_trend ? (variant === 'both' ? S1_ART.trendBoth : S1_ART.trendLeft) : '';
-  if (!raw) return null;
-  // 同页多个实例：渐变 id 加实例后缀，避免互相引用
-  const html = raw.replace(/id="([^"]+)"/g, `id="$1${u}"`).replace(/url\(#([^)]+)\)/g, `url(#$1${u})`);
-  return <span style={{ display: 'block', width: '100%', height: '100%' }} dangerouslySetInnerHTML={{ __html: html }} />;
+// ---- illustrations：三套扁平方案，见 cardArt.js（CARD_ART 常量，或地址里 ?art=B / #art=C） ----
+// 插画完整画在卡片内（右侧留 12 的边距），不出血、不被裁；卡底同样用方案里的纯色，不再用渐变。
+const VIEWBOX = { card: '-10 -23 104 128', row: '-4 -4 90 90' };
+function Illo({ card, variant = 'card' }) {
+  const art = CARD_ARTS[currentArt()].art[artKind(card)];
+  if (!art) return null;
+  return <svg width="100%" height="100%" viewBox={VIEWBOX[variant]} preserveAspectRatio="xMidYMid meet" aria-hidden="true" dangerouslySetInnerHTML={{ __html: art }} />;
 }
+const bgOf = (card) => CARD_ARTS[currentArt()].bg[artKind(card)] || '#f4f5f7';
 
 // ---- reason-row icons (filled, #57585e), keyed by the i_* flag on a row ----
 const WHY_ICONS = {
@@ -35,13 +34,11 @@ const WHY_ICONS = {
   i_similar: 'M64.12,147.8a4,4,0,0,1-4,4.2H16a8,8,0,0,1-7.8-6.17,8.35,8.35,0,0,1,1.62-6.93A67.79,67.79,0,0,1,37,117.51a40,40,0,1,1,66.46-35.8,3.94,3.94,0,0,1-2.27,4.18A64.08,64.08,0,0,0,64,144C64,145.28,64,146.54,64.12,147.8Zm182-8.91A67.76,67.76,0,0,0,219,117.51a40,40,0,1,0-66.46-35.8,3.94,3.94,0,0,0,2.27,4.18A64.08,64.08,0,0,1,192,144c0,1.28,0,2.54-.12,3.8a4,4,0,0,0,4,4.2H240a8,8,0,0,0,7.8-6.17A8.33,8.33,0,0,0,246.17,138.89Zm-89,43.18a48,48,0,1,0-58.37,0A72.13,72.13,0,0,0,65.07,212,8,8,0,0,0,72,224H184a8,8,0,0,0,6.93-12A72.15,72.15,0,0,0,157.19,182.07Z',
   i_bookmark: 'M184,32H72A16,16,0,0,0,56,48V224a8,8,0,0,0,12.24,6.78L128,193.43l59.77,37.35A8,8,0,0,0,200,224V48A16,16,0,0,0,184,32Z',
 };
-const CHEV_DOWN = 'M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z';
-const CHEV_UP = 'M216.49,168.49a12,12,0,0,1-17,0L128,97,56.49,168.49a12,12,0,0,1-17-17l80-80a12,12,0,0,1,17,0l80,80A12,12,0,0,1,216.49,168.49Z';
 
-function Why({ rows, large }) {
-  const s = large ? 18 : 16;
+function Why({ rows }) {
+  const s = 16;
   return (
-    <div className={`cfm-why ${large ? 'lg' : ''}`}>
+    <div className="cfm-why">
       <div className="cfm-why-in">
         {(rows || []).map((w, i) => {
           const key = Object.keys(WHY_ICONS).find((k) => w[k]);
@@ -57,47 +54,9 @@ function Why({ rows, large }) {
   );
 }
 
-const Plus = () => (
-  <span className="cfm-plus"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></span>
-);
-const MoreChev = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6" /></svg>
-);
 const HeadChev = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#161823" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6" /></svg>
 );
-
-// ---- Details sheet (Home · tap Learn more) ----
-function Details({ card, host, onClose, onCreate }) {
-  useEffect(() => {
-    const k = (e) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', k);
-    return () => window.removeEventListener('keydown', k);
-  }, [onClose]);
-  return createPortal(
-    <>
-      <div className="cfm-scrim" data-act="curated-details-scrim" onClick={onClose} />
-      <div className="cfm-sheet" role="dialog" aria-modal="true" aria-label="Details">
-        <div className="cfm-sheet-head">
-          <span>Details</span>
-          <button type="button" className="cfm-sheet-x cfm-press" aria-label="Close" data-act="curated-details-close" onClick={onClose}>
-            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="#161823" strokeWidth="2" strokeLinecap="round" /></svg>
-          </button>
-        </div>
-        <div className="cfm-sheet-body">
-          <div className="cfm-hero" style={{ background: card.bg }}>
-            <span><span className="cfm-tip">{card.tip}</span></span>
-            <span><span className="cfm-topic cfm-clamp2">{card.topic}</span></span>
-            <span className="cfm-illo"><Illo card={card} /></span>
-          </div>
-          <Why rows={card.rows} large />
-          <button type="button" className="cfm-cta-full is-dark" data-act="curated-details-create" onClick={onCreate}><Plus />Create</button>
-        </div>
-      </div>
-    </>,
-    host,
-  );
-}
 
 // only：只显示某一类卡（新账号只有 Trending now 的依据，见 Final「Home · new US account」）
 export function CuratedForMe({ place = 'home', insight = CURATED, onCreate, onMore, only = '' }) {
@@ -105,16 +64,12 @@ export function CuratedForMe({ place = 'home', insight = CURATED, onCreate, onMo
   const cards = (data.cards || []).filter((c) => !only || c.k === only);
   const single = cards.length === 1;
   const title = data.title || 'Curated for me';
-  const [open, setOpen] = useState(-1); // Home: card whose Details sheet is open
   const [exp, setExp] = useState(-1);   // Create: row opened in place
   const reduce = useReducedMotion();
   const [page, setPage] = useState(0);  // Home: carousel position
-  const [host, setHost] = useState(null);
-  const ref = useRef(null);
 
-  // Create 直接进入选照片页（媒体选择器），首页卡片、详情抽屉和 Create 页的行都一样（2026-11-26 按反馈）
+  // Create 直接进入选照片页（媒体选择器），首页卡片和 Create 页的行都一样（2026-11-26 按反馈）
   const create = (card) => {
-    setOpen(-1);
     if (onCreate) return onCreate(card);
     useApp.getState().openModal('picker', { mode: 'upload' });
   };
@@ -123,20 +78,20 @@ export function CuratedForMe({ place = 'home', insight = CURATED, onCreate, onMo
 
   if (place !== 'home') {
     return (
-      <div className="cfm cfm-create" ref={ref}>
+      <div className="cfm cfm-create">
         <div className="cfm-panel">
-          <button type="button" className="cfm-head cfm-press" data-act="curated-more" onClick={() => onMore?.()}><span>{title}</span><HeadChev /></button>
+          {/* On Create the header is a plain title: the Home header's › leads to Create, and this already is Create (2026-11-28 QA). */}
+          <div className="cfm-head"><span>{title}</span></div>
           <div className="cfm-list">
             {cards.map((r, i) => {
               const open = exp === i;
               return (
-                // 收起和展开是同一个容器：标题区（高 56）不动，下面的说明和 Create 从 0 高度展开，箭头转 180°；
+                // 收起和展开是同一个容器：标题区（高 56）不动，下面的说明和 Create 从 0 高度展开（右上角 chevron 已于 2026-11-28 去掉，点整行展开 / 收起）；
                 // 其他行跟着被平滑推下去，不再整行硬切（2026-11-26 动效精修）
-                <div key={r.k || i} className={`cfm-item ${open ? 'is-open' : ''}`} style={{ background: r.bg }}>
+                <div key={r.k || i} className={`cfm-item ${open ? 'is-open' : ''}`} style={{ background: bgOf(r) }}>
                   <button type="button" className="cfm-row cfm-press" data-act="curated-row" aria-expanded={open} onClick={() => setExp(open ? -1 : i)}>
                     <span className="cfm-row-text"><span className="cfm-tip">{r.tip}</span><span className="cfm-topic cfm-clamp2">{r.topic}</span></span>
-                    <span className="cfm-illo"><Illo card={r} variant="both" /></span>
-                    <span className="cfm-row-chev"><svg width="16" height="16" viewBox="0 0 256 256" fill="#8a8b91" aria-hidden="true"><path d={CHEV_DOWN} /></svg></span>
+                    <span className="cfm-illo"><Illo card={r} variant="row" /></span>
                   </button>
                   <AnimatePresence initial={false}>
                     {open && (
@@ -146,7 +101,7 @@ export function CuratedForMe({ place = 'home', insight = CURATED, onCreate, onMo
                         exit={{ height: 0, opacity: 0, transition: { height: { duration: reduce ? 0 : 0.2, ease: EASE_OUT }, opacity: { duration: 0.12 } } }}>
                         <div className="cfm-exp-in">
                           <Why rows={r.rows} />
-                          <button type="button" className="cfm-cta-full cfm-press" data-act="curated-create" onClick={() => create(r)}><Plus />Create</button>
+                          <button type="button" className="cfm-cta-full cfm-press" data-act="curated-create" onClick={() => create(r)}>Create</button>
                         </div>
                       </motion.div>
                     )}
@@ -160,29 +115,26 @@ export function CuratedForMe({ place = 'home', insight = CURATED, onCreate, onMo
     );
   }
 
-  const pick = (i) => { setHost(ref.current?.closest('.screen-root') || document.body); setOpen(i); };
   return (
-    <div className={`cfm cfm-home ${single ? 'is-single' : ''}`} ref={ref}>
+    <div className={`cfm cfm-home ${single ? 'is-single' : ''}`}>
       <div className="cfm-panel">
         <button type="button" className="cfm-head cfm-press" data-act="curated-more" onClick={() => (onMore ? onMore() : useApp.getState().switchTab('create'))}><span>{title}</span><HeadChev /></button>
         <div className="cfm-track" onScroll={(e) => { const n = Math.max(0, Math.min(cards.length - 1, Math.round(e.currentTarget.scrollLeft / 308))); if (n !== page) setPage(n); }}>
           {cards.map((r, i) => (
-            // 2026-11-27 Yanice 定 E1：整张卡 = Create（深色按钮只是提示），右上角 Learn more 打开 Details。
-            // 两个点击区互不重叠：卡片底层铺一个整卡按钮，Learn more 是它的兄弟元素而不是子元素，按 Learn more 时卡片不会有按下反馈。
-            <div key={r.k || i} className="cfm-card" style={{ background: r.bg }}>
+            // 2026-11-27 Yanice 定 E1：整张卡 = Create（底部 Create 按钮只是提示）。
+            // 2026-11-28：右上角 Learn more 和它打开的 Details 抽屉去掉；Create 回到 11-26 的白底 + 0.5px 描边，不带 + 号 logo。
+            <div key={r.k || i} className="cfm-card" style={{ background: bgOf(r) }}>
               <button type="button" className="cfm-card-hit" data-act="curated-card" aria-label={`Create: ${r.topic}`} onClick={() => create(r)} />
               <span className="cfm-card-text"><span className="cfm-tip">{r.tip}</span><span className="cfm-topic cfm-clamp2">{r.topic}</span></span>
               <span className="cfm-card-cta-wrap">
-                <span className="cfm-card-cta" data-act="curated-create" aria-hidden="true"><Plus />Create</span>
+                <span className="cfm-card-cta" data-act="curated-create" aria-hidden="true">Create</span>
               </span>
               <span className="cfm-illo"><Illo card={r} /></span>
-              <button type="button" className="cfm-card-more" data-act="curated-learn-more" onClick={() => pick(i)}>Learn more<MoreChev /></button>
             </div>
           ))}
         </div>
         {!single && <div className="cfm-dots">{cards.map((r, i) => <span key={r.k || i} className={i === page ? 'on' : ''} />)}</div>}
       </div>
-      {open >= 0 && host && cards[open] && <Details card={cards[open]} host={host} onClose={() => setOpen(-1)} onCreate={() => create(cards[open])} />}
     </div>
   );
 }

@@ -1,0 +1,12 @@
+/* 2026-11-28 AI provenance line under every insight block (KeyBlock): "Based on data from <window>" + Helpful / Not helpful.
+   The date reuses the original product's Key metrics date caption (.sec-sub: 13px, --c-text-3, weight 400); the two
+   feedback buttons use the same size and grey and only turn darker when selected. Press = opacity 0.6, no hover. */
+.kb-meta { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; margin-top: 8px; font-size: 13px; line-height: 18px; }
+.kb-meta .sec-sub { margin-top: 0; }
+/* space-between: on one line the buttons sit at the right; when the line wraps (393pt) they start the next line on the left */
+.kb-fb { display: inline-flex; gap: 16px; }
+/* 13px text, 34px-tall tap target that does not change the line height */
+.kb-fb-btn { position: relative; font-size: 13px; line-height: 18px; font-weight: 400; color: var(--c-text-3); transition: opacity 160ms ease-out; }
+.kb-fb-btn::after { content: ''; position: absolute; inset: -8px -6px; }
+.kb-fb-btn.on { color: var(--c-text); }
+.kb-fb-btn:active { opacity: 0.6; transition: none; }

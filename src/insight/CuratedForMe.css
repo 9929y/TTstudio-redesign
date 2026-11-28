@@ -2,21 +2,13 @@
 /* 按下反馈按 iOS / TikTok 原生：按下立刻变暗，松手 160ms 恢复，不缩放 */
 .cfm-press { transition: opacity 160ms ease-out; }
 .cfm-press:active { opacity: 0.6; transition: none; }
-.cfm-scrim { animation: cfm-op 250ms ease-out; }
-/* 2026-11-26：弹层上滑按美国录屏实测（16 帧 267ms，cubic-bezier(.45,.2,.6,1)），与 SheetFrame 一致 */
-.cfm-sheet { animation: cfm-up 270ms cubic-bezier(0.45, 0.2, 0.6, 1); }
-@keyframes cfm-op { from { opacity: 0; } }
-@keyframes cfm-up { from { transform: translateY(100%); } }
-@media (prefers-reduced-motion: reduce) {
-  .cfm-sheet { animation: cfm-op 200ms ease-out; }
-}
 
 .cfm { color: #161823; }
 .cfm-home { padding: 0 8px 9px; }
 .cfm-create { padding: 16px 16px 0; }
 .cfm-panel { box-sizing: border-box; border-radius: 12px; background: #ffffff; padding: 16px 12px 12px; }
 .cfm-create .cfm-panel { box-shadow: inset 0 0 0 0.5px #dcdce0; }
-.cfm-head { box-sizing: border-box; width: 100%; height: 22px; padding: 0 4px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+.cfm-head { box-sizing: border-box; width: 100%; min-height: 22px; padding: 0; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
 .cfm-head > span { font-size: 17px; line-height: 22px; font-weight: 700; color: #161823; }
 .cfm-head > svg { flex: none; }
 
@@ -26,7 +18,6 @@
 .cfm-nowrap { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cfm-illo { position: absolute; }
 .cfm-illo svg { display: block; }
-.cfm-plus { flex: none; width: 22px; height: 15px; border-radius: 4px; background: #161823; display: grid; place-items: center; box-shadow: -2px 0 0 #25f4ee, 2px 0 0 #fe2c55; }
 
 /* Home: carousel of cards */
 .cfm-track { display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; margin-right: -12px; padding-right: 12px; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
@@ -34,77 +25,50 @@
 .cfm-card { position: relative; flex: none; box-sizing: border-box; width: 300px; height: 128px; border-radius: 8px; overflow: hidden; box-shadow: inset 0 0 0 0.5px #dcdce0; padding: 12px 104px 12px 12px; display: flex; flex-direction: column; align-items: flex-start; scroll-snap-align: start; text-align: left; transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1); }
 .cfm-card-text { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 4px; font-size: 15px; }
 .cfm-card-cta-wrap { margin-top: auto; }
-.cfm-card-cta { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 8px; background: #161823; color: #ffffff; font-size: 13px; line-height: 16px; font-weight: 600; }
-/* 2026-11-27 E1：整张卡 = Create。卡片底层是整卡按钮，文字、插画和 Create 提示都不接点击（穿透到整卡按钮）；
-   Learn more 在右上角单独接点击，点击区 44 高。按整卡时卡片缩到 0.98；按 Learn more 只有文字变淡，卡片不动。 */
+.cfm-card-cta { position: relative; z-index: 1; display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 8px; background: #ffffff; box-shadow: inset 0 0 0 0.5px #dcdce0; color: #161823; font-size: 13px; line-height: 16px; font-weight: 400; }
+/* 2026-11-27 E1：整张卡 = Create。卡片底层是整卡按钮，文字、插画和 Create 提示都不接点击（穿透到整卡按钮），按下时卡片缩到 0.98。
+   2026-11-28：右上角 Learn more 及其 Details 抽屉去掉；Create 回到 11-26 的白底 + 0.5px 浅灰描边，不带 + 号 logo，字重 400。 */
 .cfm-card-hit { position: absolute; inset: 0; z-index: 0; appearance: none; border: 0; margin: 0; padding: 0; background: transparent; cursor: pointer; border-radius: inherit; -webkit-tap-highlight-color: transparent; }
 .cfm-card > .cfm-card-text, .cfm-card > .cfm-card-cta-wrap, .cfm-card > .cfm-illo { pointer-events: none; }
 .cfm-card:has(> .cfm-card-hit:active) { transform: scale(0.98); }
-.cfm-card-more { position: absolute; z-index: 3; top: 6px; right: 8px; height: 28px; padding: 0 4px; appearance: none; border: 0; margin: 0; background: transparent; cursor: pointer; display: inline-flex; align-items: center; gap: 2px; font-family: inherit; font-size: 12px; line-height: 16px; font-weight: 400; color: #161823; transition: opacity 160ms ease-out; -webkit-tap-highlight-color: transparent; }
-.cfm-card-more::before { content: ''; position: absolute; left: -12px; right: -8px; top: -6px; bottom: -10px; }
-.cfm-card-more:active { opacity: 0.5; transition: none; }
-.cfm-card-cta .cfm-plus, .cfm-cta-full.is-dark .cfm-plus { background: #ffffff; }
-.cfm-card-cta .cfm-plus svg, .cfm-cta-full.is-dark .cfm-plus svg { stroke: #161823; }
 @media (prefers-reduced-motion: reduce) { .cfm-card:has(> .cfm-card-hit:active) { transform: none; opacity: 0.8; } }
 .cfm-card .cfm-illo { right: 0; bottom: 0; width: 104px; height: 128px; }
+/* 插画在 104×128 区域内完整显示（viewBox 已留 12 的右边距），不出血 */
 .cfm-dots { display: flex; justify-content: center; gap: 4px; padding-top: 12px; }
 .cfm-dots span { display: block; width: 4px; height: 4px; border-radius: 2px; background: #d4d4d8; transition: width 200ms ease, background-color 200ms ease; }
 .cfm-dots span.on { width: 12px; background: #161823; }
 
 /* Create: three rows, a row opens in place */
 .cfm-list { display: flex; flex-direction: column; gap: 8px; }
-.cfm-row { position: relative; box-sizing: border-box; width: 100%; min-height: 56px; border-radius: 8px; overflow: hidden; padding: 10px 124px 10px 12px; display: flex; flex-direction: column; justify-content: center; }
+.cfm-row { position: relative; box-sizing: border-box; width: 100%; min-height: 56px; border-radius: 8px; overflow: hidden; padding: 10px 108px 10px 12px; display: flex; flex-direction: column; justify-content: center; }
 /* Final：行内标题最多两行（13/18），提示 12/16 */
 .cfm-row .cfm-tip { font-size: 12px; line-height: 16px; }
 .cfm-row .cfm-topic { font-size: 13px; line-height: 18px; }
 .cfm-row-text { position: relative; z-index: 1; display: flex; flex-direction: column; min-width: 0; }
-.cfm-row .cfm-illo { right: 28px; top: 0; bottom: 0; width: 88px; }
-/* Final（2026-11-26 新一轮）：箭头贴顶 12px，不再垂直居中 */
-.cfm-row-chev { position: absolute; z-index: 2; right: 8px; top: 12px; display: grid; place-items: center; width: 16px; height: 16px; }
-.cfm-exp { position: relative; box-sizing: border-box; width: 100%; border-radius: 8px; overflow: hidden; padding: 0 0 12px; }
-.cfm-exp .cfm-illo { right: 28px; top: 0; bottom: 0; width: 88px; }
-.cfm-exp-head { position: relative; box-sizing: border-box; width: 100%; min-height: 56px; padding: 10px 124px 10px 12px; display: flex; flex-direction: column; justify-content: center; }
-.cfm-exp-head .cfm-tip { font-size: 12px; line-height: 16px; }
-.cfm-exp-head .cfm-topic { font-size: 13px; line-height: 18px; }
-.cfm-exp-chev { position: absolute; z-index: 2; right: 8px; top: 12px; display: grid; place-items: center; width: 16px; height: 16px; pointer-events: none; }
-.cfm-pad12 { padding: 12px 12px 0; }
+/* 2026-11-28：右上角 chevron 去掉（点整行仍然展开 / 收起）；插画右边距回到 12，与左侧文字内边距对称，文字列到插画留 8 */
+.cfm-row .cfm-illo { right: 12px; top: 0; bottom: 0; width: 88px; }
 
-/* Reasons list (expanded row and Details sheet) */
+/* Reasons list (expanded Create row) */
 .cfm-why { position: relative; z-index: 1; border-radius: 8px; background: #ffffff; box-shadow: inset 0 0 0 0.5px #dcdce0; overflow: hidden; }
 .cfm-why-in { margin-bottom: -1px; }
 .cfm-why-row { display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px; border-bottom: 0.5px solid #e8e8ea; }
 .cfm-why-ic { flex: none; display: grid; place-items: center; width: 16px; height: 20px; }
 .cfm-why-ic svg { flex: none; }
-.cfm-why-t { font-size: 13px; line-height: 20px; color: #57585e; }
-.cfm-why-t b { font-weight: 600; color: #161823; }
-.cfm-why.lg .cfm-why-row { padding: 12px 16px; }
-.cfm-why.lg .cfm-why-ic { width: 18px; }
-.cfm-why.lg .cfm-why-t { font-size: 14px; }
+.cfm-why-t { font-size: 13px; line-height: 20px; color: #57585e; text-wrap: pretty; } /* no single-word last line ("PM." alone), 2026-11-28 QA */
+.cfm-why-t b { font-weight: 400; color: #161823; }
 
-.cfm-cta-full { position: relative; z-index: 1; box-sizing: border-box; width: 100%; height: 46px; border-radius: 8px; background: #ffffff; box-shadow: inset 0 0 0 0.5px #dcdce0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; line-height: 20px; font-weight: 600; color: #161823; }
-/* Details 面板的 Create 与首页卡片一致：深色实底；按下缩到 0.97（画板 im-press），不变淡 */
-.cfm-cta-full.is-dark { background: #161823; color: #ffffff; box-shadow: none; transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1); }
-.cfm-cta-full.is-dark:active { transform: scale(0.97); }
-
-/* Details sheet: portalled into the phone screen (.screen-root) */
-.cfm-scrim { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 600; }
-.cfm-sheet { position: absolute; left: 0; right: 0; bottom: 0; background: #ffffff; border-radius: 12px 12px 0 0; z-index: 601; padding-bottom: 34px; display: flex; flex-direction: column; color: #161823; }
-.cfm-sheet-head { position: relative; height: 56px; display: grid; place-items: center; border-bottom: 0.5px solid #e8e8ea; }
-.cfm-sheet-head > span { font-size: 16px; line-height: 20px; font-weight: 700; }
-.cfm-sheet-x { position: absolute; right: 8px; top: 6px; width: 44px; height: 44px; display: grid; place-items: center; }
-.cfm-sheet-body { padding: 20px 24px 0; display: flex; flex-direction: column; gap: 16px; }
-.cfm-hero { position: relative; box-sizing: border-box; height: 96px; border-radius: 8px; overflow: hidden; box-shadow: inset 0 0 0 0.5px #dcdce0; padding: 12px 104px 12px 12px; display: flex; flex-direction: column; gap: 4px; }
-.cfm-hero > span:not(.cfm-illo) { position: relative; z-index: 1; }
-.cfm-hero .cfm-illo { right: 0; bottom: 0; width: 104px; height: 96px; }
+.cfm-cta-full { position: relative; z-index: 1; box-sizing: border-box; width: 100%; height: 46px; border-radius: 8px; background: #ffffff; box-shadow: inset 0 0 0 0.5px #dcdce0; display: flex; align-items: center; justify-content: center; font-size: 16px; line-height: 20px; font-weight: 400; color: #161823; }
 
 /* 只有一张卡（新账号）：卡片撑满面板宽度，不显示圆点 */
 .cfm-home.is-single .cfm-card { width: 100%; flex-basis: 100%; }
+.cfm-home .cfm-panel { padding-inline: 16px; }
+/* 轮播铺满面板两侧：第一张卡对齐 16 的页边距，下一张卡露出约 53，滑到底时最后一张右侧也对齐 16；
+   卡片只在面板圆角白底的边缘被遮住，不会在面板内 16 处被生硬切掉（2026-11-28「卡片左右不要有被 crop 的感觉」） */
+.cfm-home .cfm-track { margin-inline: -16px; padding-inline: 16px; scroll-padding-inline: 16px; }
+.cfm-home.is-single .cfm-track { margin-inline: 0; padding-inline: 0; }
 
 /* Create 行（手风琴）：一个容器包住标题区和展开内容（2026-11-26 动效精修） */
 .cfm-item { position: relative; border-radius: 8px; overflow: hidden; }
 .cfm-item > .cfm-row { background: transparent; border-radius: 0; overflow: visible; }
-.cfm-row-chev svg { display: block; transition: transform 240ms cubic-bezier(0.23, 1, 0.32, 1); }
-.cfm-item.is-open .cfm-row-chev svg { transform: rotate(180deg); }
 .cfm-exp-body { overflow: hidden; }
 .cfm-exp-in { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
-@media (prefers-reduced-motion: reduce) { .cfm-row-chev svg { transition: none; } }

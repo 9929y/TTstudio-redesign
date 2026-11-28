@@ -1,9 +1,9 @@
-/* Creator Assistant 入口：蓝色渐变描边（AI 按钮）、首次出现的出场光、文案轮播 */
+/* Creator Assistant 入口：蓝色渐变描边（AI 按钮，静止，无入场动效）、文案轮播 */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
 /* 轮播文字：固定一行高，旧文案上移淡出、新文案从下方淡入 */
 .ask-roll { position: relative; display: block; flex: 1; min-width: 0; overflow: hidden; text-align: left; }
-.ask-roll-t { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; will-change: transform, opacity; }
+.ask-roll-t { display: block; white-space: normal; overflow-wrap: anywhere; will-change: transform, opacity; }
 
 /* ---------- 首页主入口 ---------- */
 .ask-pill {
@@ -19,18 +19,16 @@
 }
 .ask-pill::after { content: none; }
 .ask-pill-in {
-  position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; height: 41px; padding: 0 12px 0 12px; border-radius: 8.5px; background: #ffffff;
+  position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; min-height: 41px; padding: 10px 12px; border-radius: 8.5px; background: #ffffff;
   color: #161823; font-family: var(--font); font-size: 15px; line-height: 20px; font-weight: 400;
 }
 .ask-pill-in .ca-ic { flex: none; }
-/* 出场描画层（2026-11-26 评审选定；11-27 夜 Yanice 要求从斜光改回）：SVG 描边盖在渐变环上、白色内层下面，只露出 1.5px 的边；描完即移除 */
-.ask-pill-draw { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; overflow: visible; }
 .ask-pill-in > :not(.sr-only) { position: relative; z-index: 1; } /* sr-only 保持绝对定位，不占 flex 的位置 */
-/* 浅色页面（Inbox 顶部）：外边距交给页面；边上的亮光用亮青色——近白的光在浅灰页面上像边框断了一截 */
+/* 浅色页面（Inbox 顶部）：外边距交给页面 */
 .ask-pill.is-light { margin-top: 0; }
 .ask-pill-go { flex: none; }
 /* TikTok iOS 的按钮按下：立刻变暗，松手 160ms 回来（不缩放） */
-.ask-pill:active { opacity: 0.72; transition: none; }
+.ask-pill:active { opacity: 0.6; transition: none; } /* DESIGN_SPEC press = 0.6 (was 0.72) */
 
 /* ---------- 模块卡入口行 ---------- */
 .ask-row {

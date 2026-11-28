@@ -23,11 +23,11 @@ export function ModuleC({ insight = demo, children, className }) {
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {rows.map((r, ri) => (
           <div key={r.name} style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '10px 0px' }}>
-            <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, lineHeight: '18px', fontWeight: 400, color: '#57585e' }}>
-                <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: r.color }} />{r.name}
+            <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
+              <span className="imc-name" style={{ flex: '1 1 auto', minWidth: 0, fontSize: 13, lineHeight: '18px', fontWeight: 400, color: '#57585e', overflowWrap: 'anywhere' }}>
+                {r.name}
               </span>
-              <span style={{ fontSize: 15, lineHeight: '20px', fontWeight: 600, color: '#161823' }}>{r.score}</span>
+              <span className="imc-score" style={{ flex: 'none', minWidth: 32, textAlign: 'right', fontSize: 15, lineHeight: '20px', fontWeight: 400, color: '#161823', fontVariantNumeric: 'tabular-nums' }}>{r.score}</span>
             </span>
             <span style={{ position: 'relative', display: 'block', height: 8, borderRadius: 4, background: '#f1f1f2', overflow: 'hidden' }}>
               <span className={entering ? 'enter-grow-x' : undefined} style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${r.score}%`, borderRadius: 4, background: r.color, animationDelay: entering ? `${0.12 + ri * 0.06}s` : undefined }} />

@@ -22,12 +22,14 @@
 
 .imd-rows { display: flex; flex-direction: column; }
 .imd-row { display: flex; flex-direction: column; gap: 8px; padding: 10px 0; }
-.imd-label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; line-height: 18px; font-weight: 600; color: #161823; }
-.imd-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+.imd-label { display: block; font-size: 13px; line-height: 18px; font-weight: 600; color: #161823; } /* 600 as on main ed30ab5 (owner 2026-11-28); no colour dot */
 .imd-pair { display: flex; flex-direction: column; gap: 4px; }
-.imd-line { display: flex; justify-content: space-between; align-items: baseline; }
+.imd-line { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.imd-line > :first-child { min-width: 0; overflow-wrap: anywhere; }
 .imd-line span { font-size: 13px; line-height: 18px; color: #161823; font-weight: 400; }
-.imd-line .imd-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+.imd-line .imd-val { min-width: 48px; flex: none; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; } /* 600 as on main */
+/* CompareRows with onPick (Content summary): the row is a button that looks exactly like the plain row */
+.imd-row-btn { appearance: none; -webkit-appearance: none; border: 0; margin: 0; background: transparent; font: inherit; color: inherit; text-align: left; width: 100%; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .imd-track { position: relative; display: block; height: 8px; border-radius: 4px; background: #f1f1f2; overflow: hidden; }
 .imd-bar { position: absolute; left: 0; top: 0; bottom: 0; min-width: 3px; border-radius: 4px; }
 
@@ -37,11 +39,16 @@
 
 /* ⓘ drawer: portalled into the phone screen (.screen-root), above the Analysis sheet (z 600/601) */
 .imd-scrim { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 610; }
-.imd-sheet { position: absolute; left: 0; right: 0; bottom: 0; background: #ffffff; border-radius: 12px 12px 0 0; z-index: 611; padding-bottom: 34px; display: flex; flex-direction: column; color: #161823; }
-.imd-sheet-head { position: relative; height: 54px; display: grid; place-items: center; border-bottom: 0.5px solid #e8e8ea; }
+.imd-sheet { position: absolute; left: 0; right: 0; bottom: 0; max-height: 86%; background: #ffffff; border-radius: 12px 12px 0 0; z-index: 611; padding-bottom: 34px; display: flex; flex-direction: column; color: #161823; }
+/* Header divider follows the SheetFrame rule (2026-11-28): hidden by default, fades in (120ms, opacity only)
+   once the body scrolls — ModuleD.jsx toggles .is-scrolled; no fade under reduced motion. */
+.imd-sheet-head { position: relative; flex: none; height: 54px; display: grid; place-items: center; }
+.imd-sheet-head::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; border-bottom: 0.5px solid #e8e8ea; opacity: 0; transition: opacity 120ms ease-out; pointer-events: none; }
+.imd-sheet.is-scrolled .imd-sheet-head::after { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .imd-sheet-head::after { transition: none; } }
 .imd-sheet-head > span { font-size: 16px; line-height: 20px; font-weight: 700; }
 .imd-sheet-x { position: absolute; right: 6px; top: 5px; width: 44px; height: 44px; display: grid; place-items: center; }
-.imd-sheet-body { padding: 20px 24px 0; display: flex; flex-direction: column; gap: 20px; }
+.imd-sheet-body { padding: 20px 24px 0; display: flex; flex-direction: column; gap: 20px; flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; }
 .imd-item { display: grid; grid-template-columns: 20px minmax(0, 1fr); column-gap: 12px; align-items: start; }
 .imd-item-ic { display: flex; height: 21px; align-items: center; }
 .imd-item-text { display: flex; flex-direction: column; gap: 2px; }

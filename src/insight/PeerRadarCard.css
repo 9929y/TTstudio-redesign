@@ -1,0 +1,75 @@
+/* Radar card: every text and box reuses an original TikTok Studio role (ref NEW_ELEMENT_MAPPING.md).
+   Only layout and the series colours are specific to the radar. */
+.peer-radar {
+  /* Series colours (2026-11-28 Yanice): own = original chart blue, peer = existing peer orange. */
+  --radar-own: var(--c-blue);
+  --radar-peer: var(--c-radar-peer);
+  /* Highlight + dim (same idea as the old RoseCard and the Content score rows): the selected axis stays
+     at full strength, the other axes recede. */
+  --radar-dim: 0.4;
+  display:flex; flex-direction:column; gap:var(--card-gap); min-width:0;
+}
+.peer-radar-chart { position:relative; width:345px; max-width:100%; align-self:center; }
+.peer-radar-chart > svg { display:block; position:absolute; left:0; top:0; overflow:visible; font-family:var(--font); }
+.peer-radar-spoke { stroke:var(--c-radar-axis); }
+/* Legend = original donut legend row: 13.5px / 400 / #161823. */
+.peer-radar-legend { display:flex; justify-content:center; align-items:center; gap:20px; color:var(--c-text); font-size:13.5px; line-height:18px; font-weight:400; }
+.peer-radar-legend span { display:flex; align-items:center; gap:6px; white-space:nowrap; }
+
+/* ---- Axis labels: name (.kpi-label) over value (.kd-abs) + status chip (.kd-pill), as in a Key metrics tile ---- */
+.peer-radar-hit {
+  position:absolute; appearance:none; border:0; margin:0; padding:1px 0; background:transparent; font:inherit; color:inherit;
+  min-height:44px; display:flex; align-items:center; cursor:pointer; outline:none;
+  transition:opacity 160ms ease-out; -webkit-tap-highlight-color:transparent;
+}
+.peer-radar-hit.is-middle { transform:translateX(-50%); justify-content:center; text-align:center; }
+.peer-radar-hit.is-end { transform:translateX(-100%); justify-content:flex-end; text-align:right; }
+.peer-radar-hit.is-start { justify-content:flex-start; text-align:left; }
+/* Press feedback (DESIGN_SPEC): opacity 0.6 immediately, 160ms back, no scale. */
+.peer-radar-hit:active { opacity:0.6; transition:none; }
+.peer-radar-pt-hit { cursor:pointer; }
+/* Box = original chart tooltip box (1px neutral line, radius 6, padding 4px 7px). Transparent until selected,
+   so selecting never moves the text. */
+.peer-radar-label {
+  display:flex; flex-direction:column; white-space:nowrap; padding:4px 7px; border:1px solid transparent; border-radius:6px; background:transparent;
+  transition:opacity 200ms ease, border-color 200ms ease;
+}
+.peer-radar-label.is-on { border-color:var(--c-card-line); background:var(--c-white, #fff); }
+.peer-radar-label:not(.is-on) { opacity:var(--radar-dim); }
+.peer-radar-hit:focus-visible .peer-radar-label { border-color:var(--c-blue-selected); box-shadow:0 0 0 1px var(--c-blue-selected); }
+/* Text uses the Key metrics classes themselves (.kpi-label, .kpi-delta, .kd-abs, .kd-pill); only layout is set here. */
+.peer-radar-label .kpi-label { overflow:visible; }
+.peer-radar-label .kpi-delta { margin-top:2px; }
+.peer-radar-hit.is-middle .kpi-delta { justify-content:center; }
+.peer-radar-hit.is-end .kpi-delta { justify-content:flex-end; }
+/* Status chip has no arrow: use the flat chip's symmetric padding. */
+.peer-radar-label .kd-pill { padding:1px 6px; }
+/* Points follow the same highlight: the selected axis keeps full strength. */
+.peer-radar-own-pt, .peer-radar-peer-pt { transition:opacity 200ms ease; }
+.peer-radar-own-pt:not(.is-on), .peer-radar-peer-pt:not(.is-on) { opacity:var(--radar-dim); }
+
+/* ---- Tabs = original page tabs (15/18, selected 600 #161823, others 500 #6D6E73, 2px underline) ---- */
+.screen .top-tabs.peer-radar-tabs { padding:0; background:var(--c-white); overflow-x:auto; scrollbar-width:none; }
+.peer-radar-tabs::-webkit-scrollbar { display:none; }
+.peer-radar-tabs button { flex:1 0 auto; min-height:var(--touch-target); min-width:44px; padding-inline:3px; white-space:nowrap; }
+.peer-radar-tabs .tt-line { bottom:0; }
+/* The shared TopTabs have no pressed state: same press rule as the rest of the app. No hover state. */
+.peer-radar-tabs button { transition:opacity 160ms ease-out; -webkit-tap-highlight-color:transparent; }
+.peer-radar-tabs button:active { opacity:0.6; transition:none; }
+.peer-radar-tabs button:not(.on):hover { color:var(--c-text-2b); }
+
+/* ---- Tiles = original Key metrics tiles; 2 + 1 (three across does not fit 393pt, see DESIGN_SPEC) ---- */
+.peer-radar-kpis .kpi { cursor:default; }
+.peer-radar-kpis .kpi:not(.sel):hover { border-color:#dddddd; }
+.peer-radar-kpis .kpi.sel:hover { background:#f3f8fd; }
+.peer-radar-kpis .peer-radar-rank { grid-column:1 / -1; }
+.peer-radar-kpis { container-type:inline-size; }
+/* Compact widths keep the 13px label but let it wrap instead of truncating its meaning. */
+@container (max-width: 330px) {
+  .peer-radar-kpis .kpi-label { white-space:normal; overflow:visible; min-height:32px; }
+  .peer-radar-kpis .peer-radar-rank .kpi-label { min-height:0; }
+  .peer-radar-kpis .kpi-delta { flex-wrap:wrap; row-gap:2px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .peer-radar-label, .peer-radar-hit, .peer-radar-tabs button, .peer-radar-own-pt, .peer-radar-peer-pt { transition:none; }
+}

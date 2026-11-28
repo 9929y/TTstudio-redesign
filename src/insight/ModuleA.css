@@ -22,3 +22,6 @@
   .rose-sheet { animation: rose-op 200ms ease-out; }
   .rose-seg { transition: fill-opacity 200ms ease; }
 }
+
+/* Content summary (2026-11-28): double-bar rows from ModuleD (CompareRows, ModuleD.css .imd-*), no card-specific styles.
+   The old score list (Overall score, score rows, selected-row dimming, dashed peer marker) is gone. */

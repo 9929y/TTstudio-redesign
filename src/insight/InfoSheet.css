@@ -1,0 +1,14 @@
+/* ⓘ sheets of the AI cards (InfoSheet.jsx). Values are the ones the rose-/ime- drawers used inline before. */
+.info-sheet-scrim { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); }
+.info-sheet { position: absolute; left: 0; right: 0; bottom: 0; max-height: 86%; background: #ffffff; border-radius: 12px 12px 0 0; padding-bottom: 34px;
+  display: flex; flex-direction: column; font-family: var(--font); color: #161823; text-align: left; }
+/* Header divider: hidden until the body scrolls, then a 120ms opacity fade (same as SheetFrame / imd-sheet). */
+.info-sheet-head { position: relative; flex: none; height: 54px; display: grid; place-items: center; touch-action: none; cursor: grab; }
+.info-sheet-head::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; border-bottom: 0.5px solid #e8e8ea; opacity: 0; transition: opacity 120ms ease-out; pointer-events: none; }
+.info-sheet.is-scrolled .info-sheet-head::after { opacity: 1; }
+.info-sheet-head > span { font-size: 16px; line-height: 20px; font-weight: 700; }
+.info-sheet-x { position: absolute; right: 6px; top: 5px; width: 44px; height: 44px; display: grid; place-items: center; appearance: none; border: 0; margin: 0; padding: 0; background: transparent; cursor: pointer; transition: opacity 160ms ease-out; }
+.info-sheet-x:active { opacity: 0.6; transition: none; }
+.info-sheet-body { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; padding: 20px 24px 0; display: flex; flex-direction: column; gap: 20px; }
+.info-sheet-body::-webkit-scrollbar { display: none; }
+@media (prefers-reduced-motion: reduce) { .info-sheet-head::after { transition: none; } }

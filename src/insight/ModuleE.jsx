@@ -2,14 +2,18 @@
 // Ported from design_final/post_topic/project/IMS6-Key-Blue.dc.html (inline style values are the spec).
 // All content comes from the `insight` prop (default: demo/moduleE.js).
 import { useEffect, useId, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import demo from './demo/moduleE.js';
 import './ModuleE.css';
+import { PeerRadarCard } from './PeerRadarCard.jsx';
+import { InfoSheet } from './InfoSheet.jsx';
+import { videoPeerComparison, peerInfo } from './peerComparison.js';
+import { groupSize } from './radarStats.js';
 import { AskRow } from './AskAssistant.jsx';
 import { placeLabel, LAB_GAP } from './labelFit.js';
-import { CardHead, KeyBlock, CARD_STYLE, AiStar } from './CardParts.jsx';
-import { useEntering, segIn, labDelay, isMouse } from './entrance.js';
+import { useChartWidth, fitRingGeometry } from './chartLayout.js';
+import { CardHead, KeyBlock, CARD_STYLE, AiStar, HistoryDash } from './CardParts.jsx';
+import { useEntering, segIn, labDelay } from './entrance.js';
 // 刻度线样式（2026-11-27 方案比较）：'gap' = 白色切缝；'tone' = 同色系加深（色块里用加深一档的蓝，灰底轨上用浅灰）
 // 2026-11-27 夜 Yanice：「那三条白线不要了」——刻度线整体关掉（保留代码，改回 true 即恢复）
 const SHOW_TIERS = false;
@@ -49,54 +53,41 @@ const DRAWER_ICONS = {
 // ⓘ drawer. Rendered into the phone screen (#phone-screen) so it overlays the phone, not the browser page.
 // items: [{ ic, t, lines: [] }]
 export function InsightDrawer({ title, items, onClose }) {
-  useEffect(() => { const k = (e) => { if (e.key === 'Escape') onClose(); }; window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k); }, [onClose]);
   const host = typeof document !== 'undefined' ? (document.getElementById('phone-screen') || document.body) : null;
   if (!host) return null;
-  return createPortal(
-    <>
-      <div className="ime-scrim" data-act="sheet-scrim-close" onClick={onClose} style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.5)', zIndex: 600 }} />
-      <div className="ime-sheet" role="dialog" aria-modal="true" aria-label={title}
-        style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: '#ffffff', borderRadius: '12px 12px 0px 0px', zIndex: 601, paddingBottom: 34, display: 'flex', flexDirection: 'column', fontFamily: IM_FONT, color: '#161823' }}>
-        <div style={{ position: 'relative', height: 54, display: 'grid', placeItems: 'center', borderBottom: '0.5px solid #e8e8ea' }}>
-          <span style={{ fontSize: 16, lineHeight: '20px', fontWeight: 700 }}>{title}</span>
-          <button type="button" aria-label="Close" data-act="sheet-close" onClick={onClose}
-            style={{ ...IM_BTN, position: 'absolute', right: 6, top: 5, width: 44, height: 44, display: 'grid', placeItems: 'center' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="#161823" strokeWidth="2" strokeLinecap="round" /></svg>
-          </button>
+  return (
+    <InfoSheet cls="ime-sheet" host={host} title={title} onClose={onClose} scrimAct="sheet-scrim-close" closeAct="sheet-close">
+      {items.map((it, i) => (
+        <div key={i} style={{ display: 'grid', gridTemplateColumns: '20px minmax(0, 1fr)', columnGap: 12, alignItems: 'start' }}>
+          <span style={{ display: 'flex', height: 21, alignItems: 'center' }}>
+            {DRAWER_ICONS[it.ic] && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161823" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{DRAWER_ICONS[it.ic]}</svg>}
+          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span style={{ fontSize: 15, lineHeight: '21px', fontWeight: 600, color: '#161823' }}>{it.t}</span>
+            {(it.lines || []).map((ln, j) => <span key={j} style={{ fontSize: 15, lineHeight: '21px', color: '#8a8b91' }}>{ln}</span>)}
+          </div>
         </div>
-        <div style={{ padding: '20px 24px 0px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {items.map((it, i) => (
-            <div key={i} style={{ display: 'grid', gridTemplateColumns: '20px minmax(0, 1fr)', columnGap: 12, alignItems: 'start' }}>
-              <span style={{ display: 'flex', height: 21, alignItems: 'center' }}>
-                {DRAWER_ICONS[it.ic] && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161823" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{DRAWER_ICONS[it.ic]}</svg>}
-              </span>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <span style={{ fontSize: 15, lineHeight: '21px', fontWeight: 600, color: '#161823' }}>{it.t}</span>
-                {(it.lines || []).map((ln, j) => <span key={j} style={{ fontSize: 15, lineHeight: '21px', color: '#8a8b91' }}>{ln}</span>)}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </>,
-    host,
+      ))}
+    </InfoSheet>
   );
 }
 
 // ---- rose geometry (345 × 258 canvas, centre 172.5 / 126, inner radius 54, outer 86) ----
-const CX = 172.5, CY = 126, RI = 54, RO = 86;
+const GEO = { CX: 172.5, CY: 126, RI: 54, RO: 86 };
 const r2 = (n) => Math.round(n * 100) / 100;
-const P = (r, a) => [r2(CX + r * Math.cos(a * Math.PI / 180)), r2(CY + r * Math.sin(a * Math.PI / 180))];
-const arc = (r, a0, a1) => { const s = P(r, a0), e = P(r, a1); return `M ${s[0]} ${s[1]} A ${r} ${r} 0 0 1 ${e[0]} ${e[1]}`; };
-const sector = (ri, ro, a0, a1) => {
-  const a = P(ri, a0), b = P(ro, a0), c = P(ro, a1), d = P(ri, a1);
-  return `M ${a[0]} ${a[1]} L ${b[0]} ${b[1]} A ${ro} ${ro} 0 0 1 ${c[0]} ${c[1]} L ${d[0]} ${d[1]} A ${ri} ${ri} 0 0 0 ${a[0]} ${a[1]} Z`;
-};
-const rad = (v, max) => RI + (RO - RI) * v / max;
+function geometry(CX, CY) {
+  const P = (r, a) => [r2(CX + r * Math.cos(a * Math.PI / 180)), r2(CY + r * Math.sin(a * Math.PI / 180))];
+  const arc = (r, a0, a1) => { const s = P(r, a0), e = P(r, a1); return `M ${s[0]} ${s[1]} A ${r} ${r} 0 0 1 ${e[0]} ${e[1]}`; };
+  const sector = (ri, ro, a0, a1) => {
+    const a = P(ri, a0), b = P(ro, a0), c = P(ro, a1), d = P(ri, a1);
+    return `M ${a[0]} ${a[1]} L ${b[0]} ${b[1]} A ${ro} ${ro} 0 0 1 ${c[0]} ${c[1]} L ${d[0]} ${d[1]} A ${ri} ${ri} 0 0 0 ${a[0]} ${a[1]} Z`;
+  };
+  return { P, arc, sector };
+}
 // Final：块按中心对锚点；名称行在上、分数在名称文字正下方居中；选中的扇区外扩 1.1 倍，标签跟着外移
 // 与模块 A 同一套标签规则（labelFit.js）：离圆环外沿固定 12pt，选中外扩时同步外移，放不下就沿圆弧滑
-function labelAt(i, r, step, name) {
-  const l = placeLabel(-90 + step * i + step / 2, r, CX, CY, 2 * CX, name);
+function labelAt(i, r, step, name, CX, CY, on) {
+  const l = placeLabel(-90 + step * i + step / 2, r, CX, CY, 2 * CX, name, 400);
   return { left: l.left, width: l.width, top: l.top, transform: 'translateY(-50%)', alignItems: l.align };
 }
 
@@ -110,7 +101,10 @@ function CaLogo({ size, id }) {
   );
 }
 
-export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant-pop-post' }) {
+function LegacyModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant-pop-post' }) {
+  const [chartRef, chartWidth] = useChartWidth();
+  const { CX, CY, RI, RO } = fitRingGeometry(GEO, chartWidth);
+  const { P, arc, sector } = geometry(CX, CY);
   const D = insight || demo;
   const ui = D.ui || {};
   const areas = D.areas || [];
@@ -124,7 +118,6 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
   const EASE_OUT = [0.23, 1, 0.32, 1];
   const tGrow = reduce ? { duration: 0 } : { duration: 0.24, ease: EASE_OUT };
   const entering = useEntering(1100); // 首次出现：卡片淡入、扇区从内圈依次长出（entrance.js）
-  const [hov, setHov] = useState(-1);  // 鼠标悬停预览
   const [drawer, setDrawer] = useState('');
   const gid = `ime-ca-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const tip = tipState >= 0 && tipState < areas.length ? tipState : -1;
@@ -160,17 +153,16 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
       <KeyBlock k={D.key} rest={D.rest} bullets={D.bullets} next={D.next} />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ position: 'relative', height: 258 }}>
-          <svg width="345" height="258" viewBox="0 0 345 258" aria-hidden="true" style={{ position: 'absolute', left: 0, top: 0 }}>
+        <div ref={chartRef} className="rose-chart" style={{ position: 'relative', height: 258, width: 345, maxWidth: '100%', alignSelf: 'center' }}>
+          <svg width="100%" height="258" viewBox={`0 0 ${chartWidth} 258`} aria-hidden="true" style={{ position: 'absolute', left: 0, top: 0 }}>
             {areas.map((x, i) => {
               const a0 = -90 + step * i, a1 = -90 + step * (i + 1), max = x.max || 100, on = tip === i;
               const RX = on ? RO * 1.1 : RO, radX = (v) => RI + (RX - RI) * v / max;
               return (
-                <g key={i} data-seg={i} onClick={(e) => { e.stopPropagation(); pick(i); }} style={{ cursor: 'pointer' }}
-                  onPointerEnter={(e) => isMouse(e) && setHov(i)} onPointerLeave={() => setHov(-1)}>
+                <g key={i} data-seg={i} onClick={(e) => { e.stopPropagation(); pick(i); }} style={{ cursor: 'pointer' }}>
                   <motion.path initial={entering ? { d: sector(RI, RI + 0.5, a0, a1) } : false} animate={{ d: sector(RI, RX, a0, a1) }} transition={entering ? segIn(i) : tGrow} fill="#f1f1f2" stroke="none" />
                   <motion.path className="ime-seg" initial={entering ? { d: sector(RI, RI + 0.5, a0, a1) } : false} animate={{ d: sector(RI, radX(Math.max(x.you, max * 0.06)), a0, a1) }} transition={entering ? segIn(i, 0.04) : tGrow} fill={colors[i]} stroke="none"
-                    style={{ fillOpacity: !hasTip ? (hov >= 0 && hov !== i ? 0.55 : 1) : on ? 1 : hov === i ? 0.45 : 0.25, filter: on ? 'drop-shadow(0px 1px 3px rgba(22, 24, 35, 0.28))' : 'drop-shadow(0px 1px 3px rgba(22, 24, 35, 0))' }} />
+                    style={{ fillOpacity: !hasTip || on ? 1 : 0.25, filter: on ? 'drop-shadow(0px 1px 3px rgba(22, 24, 35, 0.28))' : 'drop-shadow(0px 1px 3px rgba(22, 24, 35, 0))' }} />
                   {/* 刻度（2026-11-27 Yanice）：只画里面两条（1/3、2/3），不画最外圈；画在色块上面，白色晕边 + 深色细线，深蓝、浅蓝、灰底上都看得见；跟着扇区外扩 */}
                   {/* 2026-11-27 夜 Yanice：选中的那一块不画刻度线，只留前 7 天的虚线 */}
                   {SHOW_TIERS && !on && [1 / 3, 2 / 3].map((t) => {
@@ -185,7 +177,7 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
             {sx && (() => {
               const a0 = -90 + step * tip, a1 = a0 + step, max = sx.max || 100, radX = (v) => RI + (RO * 1.1 - RI) * v / max;
               const ry = radX(sx.you), rp = radX(sx.prev), r = Math.abs(rp - ry) < 3 ? ry + (sx.prev >= sx.you ? 3 : -3) : rp;
-              return <motion.path key={`prev${tip}`} initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18, delay: 0.1, ease: 'easeOut' }} d={arc(r, a0 + 2, a1 - 2)} fill="none" stroke="#161823" strokeWidth="1.5" strokeDasharray="3 2.5" strokeLinecap="round" />;
+              return <motion.path key={`prev${tip}`} initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18, delay: 0.1, ease: 'easeOut' }} d={arc(r, a0 + 2, a1 - 2)} fill="none" stroke="#161823" strokeWidth="1.5" strokeDasharray="3 2" strokeLinecap="round" />;
             })()}
           </svg>
           <div style={{ position: 'absolute', left: 0, right: 0, top: 126, transform: 'translateY(-50%)', display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
@@ -204,15 +196,14 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
             </button>
           </div>
           {areas.map((x, i) => {
-            const on = i === tip, pos = labelAt(i, (on ? RO * 1.1 : RO) + LAB_GAP, step, x.name);
+            const on = i === tip, pos = labelAt(i, (on ? RO * 1.1 : RO) + LAB_GAP, step, x.name, CX, CY, on);
             return (
-              <button key={i} type="button" className={`ime-press ime-lab${entering ? ' enter-fade' : ''}`} aria-pressed={on} data-act={`insight-e-area-${i}`}
+              <button key={i} type="button" className={`ime-press ime-lab${entering ? ' enter-fade' : ''}`} aria-pressed={on} aria-label={`${x.name}, ${x.you} out of ${x.max || 100}`} data-act={`insight-e-area-${i}`}
                 onClick={(e) => { e.stopPropagation(); pick(i); }}
-                onPointerEnter={(e) => isMouse(e) && setHov(i)} onPointerLeave={() => setHov(-1)}
                 style={{ ...IM_BTN, animationDelay: entering ? labDelay(i) : undefined, position: 'absolute', left: pos.left, width: pos.width, top: pos.top, transform: pos.transform, boxSizing: 'border-box', minHeight: 44, padding: '2px 0px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: pos.alignItems, textAlign: 'center' }}>
-                <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <span className="ime-fade" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, lineHeight: '18px', fontWeight: 400, whiteSpace: 'nowrap', color: !hasTip ? '#57585e' : (on ? '#161823' : '#6d6e73') }}>
-                    <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: colors[i], opacity: !hasTip ? (hov >= 0 && hov !== i ? 0.55 : 1) : on ? 1 : hov === i ? 0.45 : 0.25, transition: 'opacity 200ms ease' }} />{x.name}
+                <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: '100%' }}>
+                  <span className="ime-fade" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, lineHeight: '18px', fontWeight: 400, maxWidth: '100%', overflowWrap: 'anywhere', color: !hasTip ? '#57585e' : (on ? '#161823' : '#6d6e73') }}>
+                    <span style={{ display: 'inline-block', width: 8, height: 8, flexShrink: 0, borderRadius: '50%', background: colors[i], opacity: !hasTip || on ? 1 : 0.25, transition: 'opacity 200ms ease' }} />{x.name}
                   </span>
                 </span>
               </button>
@@ -228,7 +219,7 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
                 transition={{ duration: reduce ? 0 : 0.22, ease: EASE_OUT }}>
                 <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 8 }}>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, lineHeight: '16px', color: '#6d6e73' }}>
-                    <span style={{ display: 'inline-block', width: 14, height: 0, borderTop: '1.5px dashed #161823' }} />{ui.baseline || 'Your typical post'}
+                    <HistoryDash />{ui.baseline || 'Your typical post'}
                   </span>
                 </div>
               </motion.div>
@@ -241,7 +232,7 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
             initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0, transition: { duration: reduce ? 0 : 0.16, ease: EASE_OUT } }}
             transition={{ duration: reduce ? 0 : 0.22, ease: EASE_OUT }}>
-          <div aria-live="polite" style={{ position: 'relative', minHeight: 36, display: 'grid', alignItems: 'start', justifyItems: 'center', textAlign: 'center', padding: '0 8px' }}>
+          <div aria-live="polite" data-note style={{ position: 'relative', minHeight: 36, display: 'grid', alignItems: 'start', justifyItems: 'start', textAlign: 'left', padding: 0 }}>
             {/* 文字换文字不做交叉淡入（两句叠在一起会重影）：旧句 90ms 先淡出，新句再上浮进来 */}
             <AnimatePresence mode="wait" initial={false}>
               <motion.span key={tip} style={{ gridArea: '1 / 1' }}
@@ -276,4 +267,12 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
   );
 }
 
+export function ModuleE({ post, ca='row', insight=demo, onAsk, askAct='assistant-pop-post' }) {
+  if(!post)return <LegacyModuleE ca={ca} insight={insight} onAsk={onAsk} askAct={askAct}/>;
+  const areas=videoPeerComparison(post);
+  if(!areas)return null; // fewer than 5 comparable posts: no card (same rule as buildModuleE)
+  return <PeerRadarCard scope="post" insight={insight} areas={areas} group={groupSize('post', post)} ca={ca} act="insight-e" cardAct="E" onAsk={onAsk} ask={insight.ask} askAct={askAct}>
+    {close=><InsightDrawer title="About this comparison" items={peerInfo('post')} onClose={close}/>}
+  </PeerRadarCard>;
+}
 export default ModuleE;

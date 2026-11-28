@@ -84,14 +84,14 @@ export function Scroll({ id, children, className = '', onScroll, innerRef, style
 }
 
 // ---------- 顶部文字 Tab（Semi Tabs 的逻辑：受控 activeKey；视觉按录屏：黑色下划线） ----------
-export function TopTabs({ tabs, value, onChange, equal = true, id, className = '' }) {
+export function TopTabs({ tabs, value, onChange, equal = true, id, className = '', actPrefix }) {
   return (
     <div className={`top-tabs ${equal ? 'equal' : ''} ${className}`} role="tablist">
-      {tabs.map((t) => {
+      {tabs.map((t, i) => {
         const k = t.key ?? t; const label = t.label ?? t;
         const on = k === value;
         return (
-          <button key={k} role="tab" aria-selected={on} data-act={`tab-${k}`} className={on ? 'on' : ''} onClick={() => onChange(k)}>
+          <button key={k} role="tab" aria-selected={on} data-act={actPrefix ? `${actPrefix}-${i}` : `tab-${k}`} className={on ? 'on' : ''} onClick={() => onChange(k)}>
             <span>{label}</span>
             {on && <motion.i layoutId={`tt-${id}`} className="tt-line" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
           </button>
