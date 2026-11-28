@@ -692,6 +692,7 @@ test('13 外部学习：Custom 日期（单日 → Update）→ 多图发布页�
   expect(await deadCheck(page, 'composer')).toEqual([]);
 });
 
+const DEFAULT_ASK_A = /^(How can I earn Creator Rewards\?|Which post did best in the last 7 days\?|How do I compare with similar creators\?|What should I work on first\?)$/;
 test('14 评分图联动：选中维度 → 雷达框选 / Key metrics / Ask 行一起换；再点取消；点空白恢复', async ({ page }) => {
   await boot(page);
   await tap(page, 'tabbar-analytics');
@@ -723,7 +724,7 @@ test('14 评分图联动：选中维度 → 雷达框选 / Key metrics / Ask 行
   await area('Views');
   await isDefault();
   await expect(sel).toHaveCount(0);
-  await expect(ask).toHaveText('What should I work on first?');
+  await expect(ask).toHaveText(DEFAULT_ASK_A); // default state: the Ask row rotates through the card's prompts
   // 默认态点第一个 Tab（只是显示着）→ 进入选中态
   await area('Views');
   await expect(card).toHaveAttribute('data-tip', '0');
