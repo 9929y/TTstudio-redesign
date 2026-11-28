@@ -54,7 +54,7 @@ function OverviewTab({ p }) {
     <>
       {/* 模块 E（design_final/post_topic · IMS6-Key-Blue）：取代 Key metrics 与 Creator Assistant 卡 */}
       {insightE && <div style={{ padding: '8px 8px 0px' }}>
-        <ModuleE insight={insightE} ca={newAccount || market === 'store' ? 'none' : 'row'} onAsk={(q) => push('creatorAssistant', { postId: p.id, from: 'post', prompt: q })} />
+        <ModuleE post={p} insight={insightE} ca={newAccount || market === 'store' ? 'none' : 'row'} onAsk={(q) => push('creatorAssistant', { postId: p.id, from: 'post', prompt: q })} />
       </div>}
       <Section title="Retention rate" info="The percentage of viewers who are still watching at each moment of your video.">
         <div className="ret-head">On average, viewers watched {Math.round(p.avgPct * 100)}% of your video.</div>

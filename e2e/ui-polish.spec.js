@@ -22,11 +22,11 @@ for (const width of [320, 360, 393, 430]) {
         }
         const issues = await card.evaluate(el => {
           const bounds = el.getBoundingClientRect();
-          const chart = el.querySelector('.rose-chart');
-          const buttons = [...chart.querySelectorAll('.rose-lab')].map(button => ({
+          const chart = el.querySelector('.score-bar-rows');
+          const buttons = [...chart.querySelectorAll('.bar-row')].map(button => ({
             name: button.textContent.trim(),
             rect: button.getBoundingClientRect(),
-            label: button.querySelector('.rose-fade').getBoundingClientRect(),
+            label: button.querySelector('.bar-top').getBoundingClientRect(),
           }));
           const failures = [];
           for (const { name, rect, label } of buttons) {

@@ -698,7 +698,7 @@ test('14 评分图联动：选中维度 → 图中央 / Key metrics / Ask 行一
   await tap(page, 'tabbar-analytics');
   await page.waitForTimeout(1200);
   const card = page.locator('#phone-screen [data-insight="insight-a"]:visible');
-  const sel = page.locator('#phone-screen .kpi.sel .kpi-label:visible');
+  const sel = page.locator('#phone-screen button.kpi.sel .kpi-label:visible');
   const ask = card.locator('.ask-row .ask-roll-t').last();
   const area = async (name) => { await card.locator('[data-act^="insight-a-area-"]', { hasText: name }).click(); await page.waitForTimeout(600); };
   await expect(card).toHaveAttribute('data-tip', '-1');
@@ -708,7 +708,8 @@ test('14 评分图联动：选中维度 → 图中央 / Key metrics / Ask 行一
   await expect(card).toHaveAttribute('data-tip', '2');
   await expect(sel).toHaveText('Shares');
   await expect(ask).toHaveText('How can I get more shares?');
-  await expect(card.locator('[aria-live="polite"]')).toHaveText(/^Shares rose [\d.]+% from the previous 7 days, taking its score from \d+ to \d+\.$/);
+  await expect(card.locator('.peer-radar-kpis')).toContainText('64.72%');
+  await expect(card.locator('.peer-radar-kpis')).toContainText('7-day shares');
   await area('Views');
   await expect(card).toHaveAttribute('data-tip', '0');
   await expect(sel).toHaveText('Post views');

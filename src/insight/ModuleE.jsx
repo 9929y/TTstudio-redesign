@@ -6,6 +6,8 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import demo from './demo/moduleE.js';
 import './ModuleE.css';
+import { PeerRadarCard } from './PeerRadarCard.jsx';
+import { videoPeerComparison, peerInfo } from './peerComparison.js';
 import { AskRow } from './AskAssistant.jsx';
 import { placeLabel, LAB_GAP } from './labelFit.js';
 import { useChartWidth, fitRingGeometry } from './chartLayout.js';
@@ -113,7 +115,7 @@ function CaLogo({ size, id }) {
   );
 }
 
-export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant-pop-post' }) {
+function LegacyModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant-pop-post' }) {
   const [chartRef, chartWidth] = useChartWidth();
   const { CX, CY, RI, RO } = fitRingGeometry(GEO, chartWidth);
   const { P, arc, sector } = geometry(CX, CY);
@@ -282,4 +284,10 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
   );
 }
 
+export function ModuleE({ post, ca='row', insight=demo, onAsk, askAct='assistant-pop-post' }) {
+  if(!post)return <LegacyModuleE ca={ca} insight={insight} onAsk={onAsk} askAct={askAct}/>;
+  return <PeerRadarCard scope="post" insight={insight} areas={videoPeerComparison(post)} ca={ca} act="insight-e" cardAct="E" onAsk={onAsk} ask={insight.ask} askAct={askAct}>
+    {close=><InsightDrawer title="About this comparison" items={peerInfo('post')} onClose={close}/>}
+  </PeerRadarCard>;
+}
 export default ModuleE;

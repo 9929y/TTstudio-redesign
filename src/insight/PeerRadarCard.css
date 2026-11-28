@@ -1,0 +1,18 @@
+/* Only layout is specific to the radar. Typography, tabs and KPI cards
+   reuse the existing component definitions in kit.jsx/app.css. */
+.peer-radar { display:flex; flex-direction:column; gap:var(--card-gap); min-width:0; }
+.peer-radar-chart { width:345px; max-width:100%; align-self:center; display:flex; flex-direction:column; gap:var(--card-gap); }
+.peer-radar-chart > svg { display:block; overflow:visible; font-family:var(--font); }
+.peer-radar-legend { display:flex; justify-content:center; align-items:center; gap:20px; color:var(--c-text-2); font-size:var(--fs-sub); line-height:18px; }
+.peer-radar-legend span { display:flex; align-items:center; gap:6px; white-space:nowrap; }
+.screen .top-tabs.peer-radar-tabs { padding:0; background:var(--c-white); overflow-x:auto; scrollbar-width:none; }
+.peer-radar-tabs::-webkit-scrollbar { display:none; }
+.peer-radar-tabs button { flex:1 0 auto; min-height:var(--touch-target); min-width:44px; padding-inline:3px; white-space:nowrap; }
+.peer-radar-tabs .tt-line { bottom:0; }
+.peer-radar-kpis .kpi { cursor:default; }
+/* At compact widths preserve the existing 13px label font, but let the
+   paired read-only labels wrap instead of truncating their meaning. */
+.peer-radar-kpis { container-type:inline-size; }
+@container (max-width: 330px) {
+  .peer-radar-kpis .kpi-label { white-space:normal; overflow:visible; min-height:32px; }
+}

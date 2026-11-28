@@ -111,7 +111,7 @@ function InsightSlot({ Module, loading }) {
   return (
     <div style={{ padding: '8px 8px 0' }}>
       {/* 加载：和成品同形状的骨架；数据到了内容 200ms 淡入、上移 4px（2026-11-26） */}
-      {loading ? <InsightCardSkeleton half={Module !== ModuleA} /> : (
+      {loading ? <InsightCardSkeleton half={Module !== ModuleA} radar={isA} bars={!isA} /> : (
         <motion.div initial={{ opacity: 0, transform: 'translateY(4px)' }} animate={{ opacity: 1, transform: 'translateY(0px)' }} transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}>
           <Module ca={ca} insight={insight} onSelect={onSelect} clearToken={clearToken} onAsk={(q) => push('creatorAssistant', { from: Module === ModuleA ? 'analytics' : 'content', prompt: q })} />
         </motion.div>

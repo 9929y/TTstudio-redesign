@@ -16,6 +16,9 @@ const SHOW_TIERS = false;
 const TIER_STYLE = 'gap';
 const shade = (hex, k = 0.72) => '#' + [1, 3, 5].map((j) => Math.round(parseInt(hex.slice(j, j + 2), 16) * k).toString(16).padStart(2, '0')).join('');
 import './ModuleA.css';
+import { BarRows } from '../ui/kit.jsx';
+import { PeerRadarCard } from './PeerRadarCard.jsx';
+import { accountPeerComparison, peerInfo } from './peerComparison.js';
 
 const FONT = "var(--font, 'TikTok Sans', -apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif)";
 const BTN = { appearance: 'none', border: 0, margin: 0, padding: 0, background: 'transparent', font: 'inherit', color: 'inherit', textAlign: 'inherit', cursor: 'pointer' };
@@ -135,7 +138,7 @@ const UI_DEFAULT = { hint: 'Tap an area to see how it moved', legend: 'Previous 
 
 // ---------- 卡片本体：A、B 共用 ----------
 // geo = 几何参数；act = data-act 前缀（insight-a / insight-b）
-export function RoseCard({ geo, act, ca = 'row', title, insight: D, onAsk, onSelect, clearToken = 0, askAct = 'assistant-pop-analytics' }) {
+export function RoseCard({ geo, act, ca = 'row', title, insight: D, onAsk, onSelect, clearToken = 0, askAct = 'assistant-pop-analytics', presentation = 'rose' }) {
   const [chartRef, chartWidth] = useChartWidth();
   const holdOverview = act === "insight-a";
   const G = holdOverview ? geo : fitRingGeometry(geo, chartWidth);
@@ -202,14 +205,17 @@ export function RoseCard({ geo, act, ca = 'row', title, insight: D, onAsk, onSel
   return (
     <div ref={rootRef} data-insight={act} data-tip={tip}
       // 点卡片里的空白处（不是扇区、标签、ⓘ、Ask 行等按钮）恢复默认；抽屉是 portal，事件会冒泡上来，所以只认卡片自己的 DOM
-      onClick={(e) => { if (tip >= 0 && rootRef.current?.contains(e.target) && !e.target.closest('button, a, [data-seg]')) setTip(-1); }}
+      onClick={(e) => { if (tip >= 0 && rootRef.current?.contains(e.target) && !e.target.closest('button, a, [data-seg], [role=button]')) setTip(-1); }}
       className={entering ? 'enter-card' : undefined} style={CARD_STYLE}>
       {/* Final：标题 + AI 星形 + ⓘ 一行，洞察放在浅蓝块里 */}
       <CardHead title={title || D.cardTitle} infoLabel={ui.infoLabel} act={`${act}-info`} onInfo={() => setDrawer(true)} />
       <KeyBlock k={D.key} rest={D.rest} bullets={D.bullets} next={D.next} />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div ref={chartRef} className="rose-chart" style={{ position: 'relative', height: G.H, width: 345, maxWidth: '100%', alignSelf: 'center' }}>
+        {presentation === 'bars' ? <div className="content-score-list">
+          <div className="score-total"><span>Overall score</span><span className="score-total-value">{D.total}<span>/{D.max || 90}</span></span><span style={{padding:'1px 6px',borderRadius:999,background:D.total>D.prevTotal?'#e5f0fc':D.total<D.prevTotal?'#fdece3':'rgba(22, 24, 35, 0.06)',fontSize:12,lineHeight:'16px',fontWeight:600,color:D.total>D.prevTotal?'#1765c4':D.total<D.prevTotal?'#b4400c':'#57585e'}}>{(D.total-D.prevTotal>0?'↑ ':D.total-D.prevTotal<0?'↓ ':'')+Math.abs(D.total-D.prevTotal)}</span></div>
+          <BarRows rows={areas.map(a=>[a.name,a.you/(a.max||30)])} color={(_,i)=>D.colors[i]} formatValue={(_,v,i)=>`${areas[i].you}/${areas[i].max||30}`} onSelect={pick} selected={tip} actPrefix={`${act}-area`} markers={areas.map((a,i)=>tip===i?a.prev/(a.max||30):null)} className="score-bar-rows"/>
+        </div> :         <div ref={chartRef} className="rose-chart" style={{ position: 'relative', height: G.H, width: 345, maxWidth: '100%', alignSelf: 'center' }}>
           <svg width={holdOverview ? 345 : "100%"} height={G.H} viewBox={`0 0 ${holdOverview ? 345 : chartWidth} ${G.H}`} aria-hidden="true" style={{ position: 'absolute', left: 0, top: 0 }}>
             {areas.map((x, i) => {
               // Final：选中的扇区只向外长（外径 ×1.1，灰轨一起），带一层阴影；其他扇区 25%；不再整体放大
@@ -281,7 +287,7 @@ export function RoseCard({ geo, act, ca = 'row', title, insight: D, onAsk, onSel
               </button>
             );
           })}
-        </div>
+        </div>}
         <div>
           {/* 图例一行跟着选中长出来 / 收回去：高度 0↔24（16 + 下方 8 间距），卡片和下面的 Ask 行、Key metrics 平滑下移，不再一下跳 24px */}
           <AnimatePresence initial={false}>
@@ -363,8 +369,10 @@ export function ScoresNeedSevenDays() {
 
 const A7 = buildModuleA({ key: '7' });
 export function ModuleA({ ca = 'row', title, insight = A7, onAsk, onSelect, clearToken }) {
-  if (!insight) return <ScoresNeedSevenDays />;
-  return <RoseCard geo={GEO_FULL} act="insight-a" ca={ca} title={title} insight={insight} onAsk={onAsk} onSelect={onSelect} clearToken={clearToken} />;
+  if (!insight) return <div data-insight="scores-7d" style={{...CARD_STYLE,fontSize:14,lineHeight:'20px'}}>Choose Last 7 days to compare your performance with similar creators.</div>;
+  return <PeerRadarCard scope="account" insight={title?{...insight,cardTitle:title}:insight} areas={accountPeerComparison()} ca={ca} act="insight-a" onAsk={onAsk} onSelect={onSelect} clearToken={clearToken} ask={askA()} askAct="assistant-pop-analytics">
+    {close=><InfoDrawer host={document.getElementById('phone-screen')} act="insight-a" title="About this comparison" items={peerInfo('account')} onClose={close}/>}
+  </PeerRadarCard>;
 }
 
 export default ModuleA;

@@ -188,7 +188,7 @@ if (typeof window !== 'undefined') {
       e.source.postMessage({ type: 'studio-peek-result', state: {
         screen: st.tab === 'analytics' && st.aTab === 'overview' && card ? 'overview' : 'other',
         area: tip != null && tip >= 0 ? labs[tip] : null,
-        kpi: document.querySelector('#phone-screen .kpi.sel .kpi-label')?.textContent || null,
+        kpi: document.querySelector('#phone-screen button.kpi.sel .kpi-label')?.textContent || null,
         ask: (card ? [...card.querySelectorAll('.ask-row .ask-roll-t')].pop()?.textContent : null) || null, // 换文案时新旧两条短暂并存，取后进来的那条
         assistant: !!document.querySelector('#phone-screen .ca-head'),
       } }, '*');

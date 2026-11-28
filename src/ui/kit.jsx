@@ -84,14 +84,14 @@ export function Scroll({ id, children, className = '', onScroll, innerRef, style
 }
 
 // ---------- 顶部文字 Tab（Semi Tabs 的逻辑：受控 activeKey；视觉按录屏：黑色下划线） ----------
-export function TopTabs({ tabs, value, onChange, equal = true, id, className = '' }) {
+export function TopTabs({ tabs, value, onChange, equal = true, id, className = '', actPrefix }) {
   return (
     <div className={`top-tabs ${equal ? 'equal' : ''} ${className}`} role="tablist">
-      {tabs.map((t) => {
+      {tabs.map((t, i) => {
         const k = t.key ?? t; const label = t.label ?? t;
         const on = k === value;
         return (
-          <button key={k} role="tab" aria-selected={on} data-act={`tab-${k}`} className={on ? 'on' : ''} onClick={() => onChange(k)}>
+          <button key={k} role="tab" aria-selected={on} data-act={actPrefix ? `${actPrefix}-${i}` : `tab-${k}`} className={on ? 'on' : ''} onClick={() => onChange(k)}>
             <span>{label}</span>
             {on && <motion.i layoutId={`tt-${id}`} className="tt-line" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
           </button>
@@ -182,16 +182,17 @@ export function Delta({ d, pctv, money, suffix }) {
     </div>
   );
 }
-export function KpiCard({ k, selected, onPress, delay = 0, empty }) {
+export function KpiCard({ k, selected, onPress, delay = 0, empty, readOnly = false }) {
   // 美国 2026-11-22（usrec 0:38）：空数据时 Est. rewards 仍显示「$0.00」
   const val = empty ? (k.money ? <><small>$</small>0.00</> : '–') : k.money ? <><small>$</small>{k.value.toFixed(2)}</> : k.text ?? fmtFull0(k.value);
+  const Tag = readOnly ? motion.div : motion.button;
   return (
-    <motion.button className={`kpi ${selected ? 'sel' : ''}`} data-act={`kpi-${k.key}`} onClick={onPress}
+    <Tag className={`kpi ${selected ? 'sel' : ''}`} data-act={readOnly ? undefined : `kpi-${k.key}`} onClick={readOnly ? undefined : onPress}
       initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay, duration: 0.28, ease: [0.23, 1, 0.32, 1] }}>
       <div className="kpi-label">{k.label}</div>
       <div className="kpi-val">{val}</div>
       {empty ? <div className="kpi-delta flat">{k.money ? '+$0.00' : '–'}</div> : k.sub ? <div className="kpi-sub">{k.sub}</div> : k.delta !== undefined ? <Delta d={k.delta} pctv={k.deltaPct} money={k.money} /> : null}
-    </motion.button>
+    </Tag>
   );
 }
 const fmtFull0 = (v) => fmtStat(v);
@@ -233,19 +234,20 @@ export function KpiSkeleton({ n = 6 }) {
   );
 }
 // AI 卡的骨架：和成品同形状（标题行 + 浅色洞察块两行 + 圆环 + Ask 行），数据出来时位置不跳
-export function InsightCardSkeleton({ half = false }) {
+export function InsightCardSkeleton({ half = false, radar = false, bars = false }) {
   const ring = half ? { w: 232, h: 116, r: '116px 116px 0 0', hole: { w: 136, h: 68, r: '68px 68px 0 0' } } : { w: 172, h: 172, r: '50%', hole: { w: 108, h: 108, r: '50%' } };
   return (
     <div className="skel-card" aria-label="Loading" role="status">
       <div className="skel-row"><Skel w={150} h={18} r={5} /><Skel w={16} h={16} r={8} /><span style={{ flex: 1 }} /><Skel w={18} h={18} r={9} /></div>
       <div className="skel-key"><Skel h={14} /><Skel w="72%" h={14} style={{ marginTop: 8 }} /></div>
-      <div className="skel-chart" style={{ height: half ? 200 : 258 }}>
-        <div className={`skel-ring ${half ? 'half' : ''}`} style={{ width: ring.w, height: ring.h }}>
+      <div className="skel-chart" style={{ height: half ? 200 : 252 }}>
+        {bars ? <div style={{width:'100%',display:'flex',flexDirection:'column',gap:14}}>{[0,1,2].map(i=><div key={i}><Skel w="35%" h={14}/><Skel h={8} style={{marginTop:9}}/></div>)}</div> : radar ? <svg width="184" height="184" viewBox="0 0 184 184" aria-hidden="true"><circle cx="92" cy="92" r="91" stroke="var(--c-line)" fill="none"/><polygon points="92,16 164,68 137,155 47,155 20,68" fill="var(--c-skel)" stroke="var(--c-line)"/></svg> : <div className={`skel-ring ${half ? 'half' : ''}`} style={{ width: ring.w, height: ring.h }}>
           <Skel w={ring.w} h={ring.h} r={ring.r} />
           <span className="skel-hole" style={{ width: ring.hole.w, height: ring.hole.h, borderRadius: ring.hole.r }} />
-        </div>
+        </div>}
       </div>
       <Skel w="70%" h={12} style={{ margin: '0 auto' }} />
+      {radar && <><Skel h={48}/><div className="kpi-grid"><Skel h={75}/><Skel h={75}/></div></>}
       <div className="skel-ask"><Skel w={22} h={22} r={11} /><Skel w="62%" h={14} /></div>
     </div>
   );
@@ -279,15 +281,23 @@ export function useTabFirstLoad(tab, ms = 650) {
 }
 
 // ---------- 条形列表（Traffic source / Locations；有无 › 按证据区分，Q4） ----------
-export function BarRows({ rows, chevron, chevronFor, onRow, decimals = 1, color }) {
+export function BarRows({ rows, chevron, chevronFor, onRow, decimals = 1, color, formatValue, onSelect, selected, actPrefix, markers, className = '' }) {
   return (
-    <div className="bar-rows">
-      {rows.map(([label, v], idx) => { const ch = chevron || chevronFor?.(label); return (
-        <div key={label} className={`bar-row ${ch ? 'tap' : ''}`} data-act={ch ? `bar-${label}` : undefined} onClick={ch ? () => onRow?.(label) : undefined} {...(ch ? asButton(() => onRow?.(label)) : {})}>
-          <div className="bar-top"><span>{label}</span><span className="bar-v">{(v * 100).toFixed(decimals)}%{ch && <I.right size={14} />}</span></div>
-          <div className="bar-track"><motion.div className="bar-fill" style={{ originX: 0, ...(color ? { background: color } : {}) }} initial={{ scaleX: 0, width: `${Math.max(0.4, v * 100)}%` }} animate={{ scaleX: 1, width: `${Math.max(0.4, v * 100)}%` }} transition={{ duration: 0.55, ease: [0.23, 1, 0.32, 1], delay: idx * 0.04 }} /></div>
-        </div>
-      ); })}
+    <div className={`bar-rows ${className}`}>
+      {rows.map(([label, v], idx) => {
+        const ch = chevron || chevronFor?.(label), selectable = !!onSelect, clickable = selectable || ch;
+        const press = () => selectable ? onSelect(idx) : onRow?.(label);
+        const fill = typeof color === 'function' ? color(label, idx) : color;
+        return (
+          <div key={label} className={`bar-row ${clickable ? 'tap' : ''}`} data-act={actPrefix ? `${actPrefix}-${idx}` : ch ? `bar-${label}` : undefined}
+            aria-pressed={selectable ? selected === idx : undefined} onClick={clickable ? press : undefined} {...(clickable ? asButton(press) : {})}>
+            <div className="bar-top"><span>{label}</span><span className="bar-v">{formatValue ? formatValue(label, v, idx) : (v * 100).toFixed(decimals) + '%'}{ch && <I.right size={14} />}</span></div>
+            <div className="bar-track" style={markers ? {position:'relative'} : undefined}><motion.div className="bar-fill" style={{ originX: 0, ...(fill ? { background: fill } : {}) }} initial={{ scaleX: 0, width: `${Math.max(0.4, v * 100)}%` }} animate={{ scaleX: 1, width: `${Math.max(0.4, v * 100)}%` }} transition={{ duration: 0.55, ease: [0.23, 1, 0.32, 1], delay: idx * 0.04 }} />
+              {markers?.[idx] != null && <span aria-hidden="true" className="score-bar-marker" style={{left:`clamp(0px, ${markers[idx]*100}%, calc(100% - 2px))`}}/>}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
