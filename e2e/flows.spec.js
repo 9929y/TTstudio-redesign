@@ -598,9 +598,10 @@ test('12 子流程：Creator Assistant（Analytics 内嵌卡 → 欢迎页 → �
   await page.waitForTimeout(600);
   await tap(page, 'tabbar-inbox');
   await page.waitForTimeout(900);
-  await expect(act(page, 'inbox-assistant')).toContainText('Creator Assistant');
-  // 从 Inbox 会话行进入：同样只有 onboarding 第一屏
-  await tap(page, 'inbox-assistant');
+  await expect(act(page, 'inbox-ask')).toHaveClass(/ask-pill/);
+  await expect(act(page, 'inbox-assistant')).toHaveCount(0);
+  // Inbox 统一为唯一的顶栏 AskPill，打开同样的 onboarding 第一屏
+  await tap(page, 'inbox-ask');
   await page.waitForTimeout(900);
   await expect(page.locator('#phone-screen [data-act^="assistant-prompt-"]:visible')).toHaveCount(4);
   await expect(page.locator('#phone-screen .cax-me:visible')).toHaveCount(0);

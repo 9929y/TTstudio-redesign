@@ -54,8 +54,6 @@ export function InboxScreen({ pushed }) {
   const openSheet = useApp((s) => s.openSheet);
   const us = useApp((s) => s.market) !== 'store';
   const noAssistant = useApp((s) => s.newAccount) || !us; // 同 Home：新账号和美国商店版不显示 Creator Assistant 入口
-  const assistantOpened = useApp((s) => s.assistantOpened);
-  const assistantLast = useApp((s) => { const t = s.assistantThread; const m = t[t.length - 1]; return m ? m.text.split('\n')[0].slice(0, 80) : ''; });
   const list = inbox.filter((n) => filter === 'all' || n.type === filter);
   const open = (n) => {
     markRead(n.id);
@@ -74,12 +72,6 @@ export function InboxScreen({ pushed }) {
         )}
         <Pills variant="blue" className="inbox-pills" value={filter} onChange={setFilter}
           items={[{ key: 'all', label: 'All' }, { key: 'posts', label: 'Posts' }, { key: 'account', label: 'Account updates' }]} />
-        {assistantOpened && filter !== 'account' && (
-          <button className="ca-inbox" data-act="inbox-assistant" onClick={() => push('creatorAssistant')}>
-            <span className="ca-inbox-ava"><CaIcon size={32} /></span>
-            <span className="ca-inbox-t"><b>Creator Assistant</b><span><em>{assistantLast || 'Hi, I’m your personal Creator Assistant!'}</em> · now</span></span>
-          </button>
-        )}
         <AnimatePresence initial={false}>
           {list.map((n) => {
             const post = n.postId && POST_BY_ID[n.postId];
