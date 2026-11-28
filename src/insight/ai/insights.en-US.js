@@ -18,6 +18,13 @@
 // have bullets: [], and the next step is the last sentence.
 // 2026-11-28 ranking-signal pass (08_tiktok_ranking_signals.md): each chart-card summary ties the data to one signal
 // (made.signal); curated_past / curated_trend / curated_similar titles and reasons rewritten. Hand edits, pack unchanged.
+// 2026-11-28 copy pass 2 (Yanice: "not insightful"; data must not overlap the text): the five chart-card surfaces now
+// explain why from this creator's own posts (Kyoto at dusk is 12 s, too short for Creator Rewards; it was the only new
+// post; carry-on finds; what the comments ask for) and give one concrete step. No status words (Strong /
+// Typical / Room to grow), ratios or %. curated_trend row 2 drops "average". other_post ("Inspire me") reads what the
+// comments reveal people want (its rows show Engagement and Reach). Core rule (Yanice): every sentence is an
+// interpretation or a recommendation; facts only as the reason inside one. Each fits 3 lines at 393pt (about 120
+// characters, measured in the build). Hand edits, pack unchanged: port before re-export.
 export default {
   "generated_at": "2026-11-27T23:54:05.039Z",
   "pack_version": "2026-11-28.11",
@@ -28,16 +35,16 @@ export default {
       "subject": null,
       "source": "model",
       "output": {
-        "story": "contrast",
-        "basis": "radar status Views Strong (60), Shares Average (45); signal shares",
-        "key": "Views are strong, but shares are only average.",
-        "lever": "detail",
-        "rest": "Posts people pass on may help you reach more viewers, so add a route map they can send.",
+        "story": "why",
+        "basis": "Kyoto at dusk (p44, 12 s) top post for views, shares and new followers this week; Creator Rewards only count posts over 1 min (rewardsSplit: duration ≥ 60); draft d-seed-1 Kyoto Part 2",
+        "key": "Make Kyoto Part 2 over a minute, since the 12-second original drew your views but can’t count toward Creator Rewards.",
+        "lever": "duration",
+        "rest": "",
         "bullets": [],
         "refs": [
-          "area:Shares",
-          "area:Engagement",
-          "post:p44"
+          "post:p44",
+          "area:Rewards",
+          "draft:d-seed-1"
         ],
         "safety_flag": "none",
         "next": null
@@ -47,24 +54,25 @@ export default {
         "module": "account_overview 1.8.0",
         "date": "2026-11-28",
         "raw_model_output": false,
-        "note": "Hand edit (Yanice: plain, commercial, actionable; no \"6 in 10\"; why good or bad and what to do). Prompt pack unchanged. Paragraph only: a chart sits under this summary, so no bullets (Yanice 2026-11-28). Ranking signal: shares / sends (08_tiktok_ranking_signals.md).",
+        "note": "Hand edit, copy pass 2 (Yanice: summaries must explain why with this creator’s own posts and say what to do; never restate the chart; no status words, ratios or %). Prompt pack unchanged. Paragraph only (chart below).",
         "hand_edit": "2026-11-28",
-        "signal": "shares / sends"
+        "signal": "Creator Rewards qualified views (>1 min) and watch time"
       }
     },
     "content_summary": {
       "subject": null,
       "source": "model",
       "output": {
-        "story": "contrast",
-        "basis": "Followers 14 of 30 against typical 15; p44 the only new post, first second 37 left vs 33 on similar videos",
-        "key": "Followers are just under typical.",
-        "lever": "series",
-        "rest": "More viewers left Kyoto at dusk in the first second than on similar videos, so open on the finished shot.",
+        "story": "why",
+        "basis": "p44 the only post published in the 7 days; brought 27 of 60 new followers (most); draft d-seed-1 Kyoto Part 2",
+        "key": "With one new post this week, your growth rode on Kyoto at dusk alone.",
+        "lever": "cadence",
+        "rest": "Posting Part 2 within days may keep it going.",
         "bullets": [],
         "refs": [
+          "post:p44",
           "area:Followers",
-          "post:p44"
+          "draft:d-seed-1"
         ],
         "safety_flag": "none",
         "next": null
@@ -74,23 +82,22 @@ export default {
         "module": "content_summary 1.9.0",
         "date": "2026-11-28",
         "raw_model_output": false,
-        "note": "Hand edit (Yanice: content summary is 2–3 sentences, no bullets). Prompt pack unchanged. Paragraph only (chart below). Ranking signal: first-seconds hook (08_tiktok_ranking_signals.md).",
+        "note": "Hand edit, copy pass 2 (Yanice: summaries must explain why with this creator’s own posts and say what to do; never restate the chart; no status words, ratios or %). Prompt pack unchanged. Paragraph only (chart below).",
         "hand_edit": "2026-11-28",
-        "signal": "first-seconds hook"
+        "signal": "posting rhythm and series"
       }
     },
     "topic_search": {
       "subject": "live shop sale",
       "source": "model",
       "output": {
-        "story": "verdict",
-        "basis": "fit high, proof p33 carry-on finds above your median views; sub-topics Fashion & seasonal promos most posted, Tech & home finds next",
-        "key": "Your carry-on finds beat your usual views, so this suits you.",
+        "story": "why",
+        "basis": "p33 carry-on finds 6.6K views vs 3.6K public median; sub-topics Fashion & seasonal promos 43%, Tech & home finds 32%",
+        "key": "Viewers liked your carry-on finds, so go live with that gear as Tech & home finds, a less crowded spot than Fashion.",
         "lever": "angle",
-        "rest": "Go live with travel gear as tech & home finds, less crowded than fashion.",
+        "rest": "",
         "bullets": [],
         "refs": [
-          "score:Relevance",
           "post:p33",
           "sub:2"
         ],
@@ -102,7 +109,7 @@ export default {
         "module": "topic_search 1.8.0",
         "date": "2026-11-28",
         "raw_model_output": false,
-        "note": "Hand edit (Yanice: no scores or ratios in the text; say why it fits and what to do). Prompt pack unchanged. Paragraph only: a chart sits under this summary, so no bullets (Yanice 2026-11-28).",
+        "note": "Hand edit, copy pass 2 (Yanice: summaries must explain why with this creator’s own posts and say what to do; never restate the chart; no status words, ratios or %). Prompt pack unchanged. Paragraph only (chart below).",
         "hand_edit": "2026-11-28"
       }
     },
@@ -110,16 +117,16 @@ export default {
       "subject": "post:p44",
       "source": "model",
       "output": {
-        "story": "contrast",
-        "basis": "radar Reach Strong (86), Likes Behind (4); top comment word itinerary",
-        "key": "Kyoto at dusk reached far more people than similar videos but got far fewer likes.",
-        "lever": "series",
-        "rest": "Reply to the itinerary asks with a video and pin Part 2.",
+        "story": "why",
+        "basis": "p44 duration 12 s, likes rank 4 among similar videos; top comment word itinerary",
+        "key": "At 12 seconds, Kyoto at dusk gives viewers little to act on.",
+        "lever": "video_reply",
+        "rest": "Reply to the itinerary asks with a video of the route.",
         "bullets": [],
         "refs": [
-          "area:Reach",
+          "post:p44",
           "area:Likes",
-          "post:p44"
+          "word:itinerary"
         ],
         "safety_flag": "none",
         "next": null
@@ -129,7 +136,7 @@ export default {
         "module": "post_overview 1.8.0",
         "date": "2026-11-28",
         "raw_model_output": false,
-        "note": "Hand edit (Yanice: \"similar videos\", no ratios; why good or bad and what to do). Prompt pack unchanged. Paragraph only: a chart sits under this summary, so no bullets (Yanice 2026-11-28). Ranking signal: comments and video replies (08_tiktok_ranking_signals.md).",
+        "note": "Hand edit, copy pass 2 (Yanice: summaries must explain why with this creator’s own posts and say what to do; never restate the chart; no status words, ratios or %). Prompt pack unchanged. Paragraph only (chart below).",
         "hand_edit": "2026-11-28",
         "signal": "comments and video replies"
       }
@@ -138,17 +145,16 @@ export default {
       "subject": "other:insp3",
       "source": "model",
       "output": {
-        "story": "largest_gap",
-        "basis": "Favorites 17.1 vs 12.4 and Comments 3.8 vs 2.2 per 1K views; caption full receipts",
-        "key": "@budgetroutes’ viewers save and comment more than yours.",
-        "lever": "detail",
-        "rest": "List every cost on screen and end with a question, like their receipts post.",
+        "story": "borrow",
+        "basis": "comment topics: Asking for the itinerary, Budget questions (otherPostTopics insp3); the card rows show Engagement and Reach, so the summary reads the comments; draft d-seed-1 Kyoto Part 2",
+        "key": "People here want to copy the trip, not just watch it.",
+        "lever": "borrow",
+        "rest": "Show the route and costs on screen in your Kyoto Part 2.",
         "bullets": [],
         "refs": [
-          "row:comments",
-          "row:favorites",
           "topic:itinerary",
-          "topic:budget"
+          "topic:budget",
+          "draft:d-seed-1"
         ],
         "safety_flag": "none",
         "next": null
@@ -158,9 +164,9 @@ export default {
         "module": "other_post 1.8.0",
         "date": "2026-11-28",
         "raw_model_output": false,
-        "note": "Hand edit (Yanice: no \"1.7×\"; bullets ≤ 38 characters in the sheet). Prompt pack unchanged. Paragraph only: a chart sits under this summary, so no bullets (Yanice 2026-11-28). Ranking signal: saves and comments (08_tiktok_ranking_signals.md).",
+        "note": "Hand edit, copy pass 2 (Yanice: summaries must explain why with this creator’s own posts and say what to do; never restate the chart; no status words, ratios or %). Prompt pack unchanged. Paragraph only (chart below).",
         "hand_edit": "2026-11-28",
-        "signal": "saves and comments"
+        "signal": "saves and shares"
       }
     },
     "curated_past": {
@@ -241,7 +247,7 @@ export default {
           },
           {
             "icon": "similar",
-            "text": "Your shares are only average so far."
+            "text": "One post brought most of your shares."
           },
           {
             "icon": "target",
@@ -256,7 +262,7 @@ export default {
         "date": "2026-11-28",
         "hand_edit": "2026-11-28",
         "raw_model_output": false,
-        "note": "Hand edit (Yanice: more attractive Curated for me copy tied to ranking signals). Prompt pack unchanged."
+        "note": "Hand edit (Yanice: more attractive Curated for me copy tied to ranking signals). Prompt pack unchanged. 2026-11-28 copy pass 2: no “average” status word."
       }
     },
     "weekly_report": {
