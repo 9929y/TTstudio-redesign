@@ -7,6 +7,7 @@
 // Port these to the prompt pack before the next export, or they will be overwritten.
 // 2026-11-27 night hand edit (Yanice: "paragraph 2–3 sentences, 1–2 bullets"): five KeyBlock surfaces rewritten from pack .8 output; no links, no semicolons.
 // 2026-11-27 night: performance_summary = raw model output, pack .8 live run 1 (Yanice chose it over the hand edit).
+// (Superseded: performance_summary has been a hand edit since 2026-11-28; see its made block.)
 // 2026-11-27 (Yanice: scores now compare with similar creators, not the previous 7 days): content_summary rest drops the
 // week-over-week sentence; post_overview is not used until the pack is re-run with the similar-creator baseline (build.js).
 // 2026-11-28 QA: post_overview and other_post regenerated on pack .11 ("similar videos", no percent, bullets ≤ 38 characters).
@@ -25,6 +26,9 @@
 // comments reveal people want (its rows show Engagement and Reach). Core rule (Yanice): every sentence is an
 // interpretation or a recommendation; facts only as the reason inside one. Each fits 3 lines at 393pt (about 120
 // characters, measured in the build). Hand edits, pack unchanged: port before re-export.
+// 2026-11-28 r3: weekly_report (its screen, CA7, was removed on 2026-11-26) and creator_assistant (its subject no longer
+// matched any question, and its copy used the old week-over-week frame) were dropped; the Assistant's answers are derived
+// in build.js (summaryAnswer, trafficAnswer).
 export default {
   "generated_at": "2026-11-27T23:54:05.039Z",
   "pack_version": "2026-11-28.11",
@@ -64,10 +68,10 @@ export default {
       "source": "model",
       "output": {
         "story": "why",
-        "basis": "p44 the only post published in the 7 days; brought 27 of 60 new followers (most); draft d-seed-1 Kyoto Part 2",
-        "key": "With one new post this week, your growth rode on Kyoto at dusk alone.",
+        "basis": "p44 the only post published in the 7 days; brought 27 of 60 new followers (the most, not all); draft d-seed-1 Kyoto Part 2",
+        "key": "Your only new post, Kyoto at dusk, brought the most new followers.",
         "lever": "cadence",
-        "rest": "Posting Part 2 within days may keep it going.",
+        "rest": "Posting Part 2 within days may help keep them coming.",
         "bullets": [],
         "refs": [
           "post:p44",
@@ -84,6 +88,7 @@ export default {
         "raw_model_output": false,
         "note": "Hand edit, copy pass 2 (Yanice: summaries must explain why with this creator’s own posts and say what to do; never restate the chart; no status words, ratios or %). Prompt pack unchanged. Paragraph only (chart below).",
         "hand_edit": "2026-11-28",
+        "r3_note": "2026-11-28 r3: “rode on Kyoto at dusk alone” overstated it (27 of 60 new followers); now “the most”, payoff hedged.",
         "signal": "posting rhythm and series"
       }
     },
@@ -263,67 +268,6 @@ export default {
         "hand_edit": "2026-11-28",
         "raw_model_output": false,
         "note": "Hand edit (Yanice: more attractive Curated for me copy tied to ranking signals). Prompt pack unchanged. 2026-11-28 copy pass 2: no “average” status word."
-      }
-    },
-    "weekly_report": {
-      "subject": null,
-      "source": "model",
-      "output": {
-        "insight": "Fewer people followed you than in a usual week.",
-        "post_lines": [
-          {
-            "ref": "post:p44",
-            "text": "Kyoto at dusk brought 27 new followers, against 11 usually."
-          }
-        ],
-        "refs": [
-          "m:followers",
-          "post:p44"
-        ],
-        "bullets": [
-          "Kyoto at dusk got 7.3K views.",
-          "Post Kyoto Part 2 Thursday around 6 PM."
-        ]
-      },
-      "made": {
-        "pack_version": "2026-11-27.6",
-        "module": "weekly_report 1.4.0",
-        "date": "2026-11-27"
-      }
-    },
-    "creator_assistant": {
-      "subject": "How can I get more people to react?",
-      "source": "model",
-      "output": {
-        "insight": "Your likes and comments fell the most, mostly tied to one big post.",
-        "bullets": [
-          "Likes fell 38.2% and comments 25.5% from the previous 7 days.",
-          "Kyoto at dusk, when the lanterns come on brought 50% of views, 33% of likes.",
-          "For every view, it got about half the likes your other posts get.",
-          "Itinerary is its top comment word, so try a follow-up that lays out the route."
-        ],
-        "module": {
-          "id": "key_metrics"
-        },
-        "follow_ups": [
-          "Which post did best this week?",
-          "Why are my shares doing well?"
-        ],
-        "start_creating": null,
-        "refs": [
-          "area:Engagement",
-          "m:Engagement:0",
-          "m:Engagement:1",
-          "d:Engagement",
-          "d:Views",
-          "post:p44"
-        ],
-        "safety_flag": "none"
-      },
-      "made": {
-        "pack_version": "2026-11-27.6",
-        "module": "creator_assistant 1.2.0",
-        "date": "2026-11-27"
       }
     }
   }
