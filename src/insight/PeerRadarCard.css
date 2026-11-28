@@ -5,11 +5,11 @@
      My account = that blue as the line and the hollow points' ring, fill at 50%. Similar = the same blue at 50% for the
      line and ring, fill at 25% (Yanice's values); the similar polygon is drawn underneath, mine on top. Rings = thin grey
      dashes. Only the selected label uses the primary blue (--radar-sel below). */
-  /* Lines and point rings = primary blue (--c-blue #1e7ce8); fills = deep blue #0d4a96 at 50% (mine) / 20% (similar). */
+  /* Lines and point rings = primary blue (--c-blue #1e7ce8); fills = deep blue #0d4a96 at 18% (mine) / 5% (similar). */
   --radar-own: var(--c-blue);
-  --radar-own-fill: rgba(13, 74, 150, 0.5);
+  --radar-own-fill: rgba(13, 74, 150, 0.18);
   --radar-peer: rgba(30, 124, 232, 0.5);
-  --radar-peer-fill: rgba(13, 74, 150, 0.2);
+  --radar-peer-fill: rgba(13, 74, 150, 0.05);
   --radar-ring: var(--c-radar-axis);
   /* Selected label: both lines in the primary blue --c-blue (#1e7ce8; tokens.css --c-primary is the red Post button). */
   --radar-sel: var(--c-blue);
