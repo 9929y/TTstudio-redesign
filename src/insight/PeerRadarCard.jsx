@@ -121,14 +121,14 @@ function Radar({ areas, scope, selected, act, onPick, entering }) {
       {/* Rings: thin grey dashed circles. */}
       {[.25,.5,.75,1].map(f => <circle key={f} className="peer-radar-ring" cx={cx} cy={cy} r={radius*f} fill="none" strokeWidth=".75" strokeDasharray="2 3"/>)}
       {areas.map((a,i) => { const [x,y] = xy(radius, i); return <line key={a.name} className={`peer-radar-spoke${selected === i ? ' is-on' : ''}`} x1={cx} y1={cy} x2={x} y2={y} strokeDasharray="2 3" strokeWidth=".75"/>; })}
-      <motion.polygon className="peer-radar-peer" points={points(() => peerR)} style={{ fill: C.peerFill, stroke: C.peer, ...grow }} strokeWidth="1.4" strokeLinejoin="round" vectorEffect="non-scaling-stroke"
+      <motion.polygon className="peer-radar-peer" points={points(() => peerR)} style={{ fill: C.peerFill, stroke: C.peer, ...grow }} strokeWidth="1.15" strokeLinejoin="round" vectorEffect="non-scaling-stroke"
         initial={entering ? { scale: 0, opacity: 0 } : false} animate={{ scale: 1, opacity: 1 }} transition={segIn(0, 0.08)}/>
-      <motion.polygon className="peer-radar-own" points={points(ownR)} style={{ fill: C.ownFill, stroke: C.own, ...grow }} strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke"
+      <motion.polygon className="peer-radar-own" points={points(ownR)} style={{ fill: C.ownFill, stroke: C.own, ...grow }} strokeWidth="1.75" strokeLinejoin="round" vectorEffect="non-scaling-stroke"
         initial={entering ? { scale: 0 } : false} animate={{ scale: 1 }} transition={segIn(0)}/>
-      {areas.map((a,i) => { const [x,y] = xy(peerR,i); return <circle key={a.name} className={`peer-radar-peer-pt${dim(i)}${entering ? ' enter-fade' : ''}`} cx={x} cy={y} r="3" style={{ fill: 'var(--c-white, #fff)', stroke: C.peer, animationDelay: entering ? `${PT_DELAY + 0.08 + i * 0.05}s` : undefined }} strokeWidth="1.4"/>; })}
+      {areas.map((a,i) => { const [x,y] = xy(peerR,i); return <circle key={a.name} className={`peer-radar-peer-pt${dim(i)}${entering ? ' enter-fade' : ''}`} cx={x} cy={y} r="3" style={{ fill: 'var(--c-white, #fff)', stroke: C.peer, animationDelay: entering ? `${PT_DELAY + 0.08 + i * 0.05}s` : undefined }} strokeWidth="1.15"/>; })}
       {/* Own points: solid blue with a white ring. Default: every point at full strength. User selection: that axis's
           point grows, the others dim. */}
-      {areas.map((a,i) => { const [x,y] = xy(ownR(a),i), on = selected === i; return <motion.circle key={a.name} className={`peer-radar-own-pt${dim(i)}`} cx={x} cy={y} r={on ? 4.6 : 3.4} style={{ fill: 'var(--c-white, #fff)', stroke: C.own, transformOrigin: `${x}px ${y}px`, transformBox: 'view-box' }} strokeWidth="2"
+      {areas.map((a,i) => { const [x,y] = xy(ownR(a),i), on = selected === i; return <motion.circle key={a.name} className={`peer-radar-own-pt${dim(i)}`} cx={x} cy={y} r={on ? 4.6 : 3.4} style={{ fill: 'var(--c-white, #fff)', stroke: C.own, transformOrigin: `${x}px ${y}px`, transformBox: 'view-box' }} strokeWidth="1.75"
         initial={entering ? { scale: 0 } : false} animate={{ scale: 1 }} transition={ptIn(i)}/>; })}
       {/* Points select too (14pt hit circle); the label button below is the accessible control. */}
       {areas.map((a,i) => { const [x,y] = xy(ownR(a),i); return <circle key={a.name} className="peer-radar-pt-hit" cx={x} cy={y} r="14" fill="transparent" data-act={`${act}-point-${i}`} aria-hidden="true" onClick={e => { e.stopPropagation(); onPick(a.key); }}/>; })}
