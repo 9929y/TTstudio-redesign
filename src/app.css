@@ -96,7 +96,7 @@ input, textarea { font: inherit; color: inherit; }
 .pill { flex: none; height: 32px; padding: 0 13px; border-radius: var(--r-pill); background: var(--c-pill); font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; color: var(--c-text); white-space: nowrap; transition: background .15s, color .15s; }
 .pills.black .pill.on { background: var(--c-text); color: #fff; }
 .pills.blue .pill { height: 30px; border-radius: 6px; font-size: 13px; padding: 0 11px; color: var(--c-text-2); }
-.pills.blue .pill.on { background: var(--c-blue-weak); color: var(--c-blue); }
+.pills.blue .pill.on { background: var(--c-blue-weak); color: var(--c-blue-selected); }
 .range-pills { padding: 12px 16px 4px; background: #fff; }
 .inbox-pills { padding: 6px 16px 12px; }
 
@@ -1079,7 +1079,7 @@ input, textarea { font: inherit; color: inherit; }
 .ib-body.open .ib-chev { margin-left: 2px; }
 .ib-exp { display: none; }
 .pills.inbox-pills .pill { background: #e9e9ea; color: var(--c-text); font-weight: 500; height: 34px; padding: 0 14px; border-radius: 9px; font-size: 15px; }
-.pills.inbox-pills .pill.on { background: #d3eef7; color: #0e7fa0; }
+.pills.inbox-pills .pill.on { background: var(--c-blue-weak); color: var(--c-blue-selected); }
 
 .scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .cover > .cover-text, .cover > .cover-dur { z-index: 1; }
@@ -1338,7 +1338,7 @@ html:has(.stage-root.embed), html:has(.stage-root.embed) body { background: tran
 /* Inbox（0119）：选中胶囊是青色；卡片左右 16、间距 16、圆角 8；标题 17 粗体，正文 14/20 */
 .inbox-pills { padding: 10px 16px 14px; }
 .inbox-pills .pill { height: 32px; border-radius: 6px; font-size: 14px; padding: 0 14px; background: #e6e6e6; color: var(--c-text); }
-.inbox-pills .pill.on { background: #cfedf5; color: #177a86; }
+.inbox-pills .pill.on { background: var(--c-blue-weak); color: var(--c-blue-selected); }
 .inbox-card { margin: 0 16px 16px; border-radius: 8px; padding: 16px 16px 17px; }
 .ib-tag { font-weight: 600; color: var(--c-text); line-height: 16px; }
 .ib-row { margin-top: 15px; }
@@ -1529,7 +1529,7 @@ html:has(.stage-root.embed), html:has(.stage-root.embed) body { background: tran
    重新在帧 0119 上量：选中底 #cfedf5、字最深 #1f656f，未选中底 #e6e6e6，高 31–32pt，圆角 5–7pt，胶囊间距 9.4pt */
 .pills.inbox-pills { gap: 9px; }
 .pills.inbox-pills .pill { height: 32px; border-radius: 6px; font-size: 14px; padding: 0 14px; background: #e6e6e6; color: var(--c-text); }
-.pills.inbox-pills .pill.on { background: #cfedf5; color: #177a86; }
+.pills.inbox-pills .pill.on { background: var(--c-blue-weak); color: var(--c-blue-selected); }
 
 /* Creator Assistant 原型说明：输入框下方一行 + 说明弹层（2026-11-26） */
 .cax-disc-more { font: inherit; color: #1765c4; text-decoration: underline; text-underline-offset: 2px; padding: 0; transition: opacity 160ms ease-out; }
@@ -1607,8 +1607,12 @@ html:has(.stage-root.embed), html:has(.stage-root.embed) body { background: tran
 }
 .pills.touch-rail.black .pill.on .pill-visual { background: var(--c-text); color: #fff; }
 .pills.touch-rail.blue .pill-visual { height: 31px; border-radius: 6px; color: var(--c-text-2); font-size: 14px; font-weight: 500; }
-.pills.touch-rail.blue .pill.on .pill-visual { background: var(--c-blue-weak); color: var(--c-blue); }
+.pills.touch-rail.blue .pill.on .pill-visual { background: var(--c-blue-weak); color: var(--c-blue-selected); }
 .pills.touch-rail .pill:focus-visible .pill-visual { outline: 2px solid var(--c-blue); outline-offset: -2px; }
+/* The blue pill is one semantic selection family, not a page-specific colour. */
+.pills.blue .pill:focus-visible { outline: 2px solid var(--c-blue-selected); outline-offset: -2px; }
+.pills.touch-rail.blue .pill:focus-visible { outline: none; }
+.pills.touch-rail.blue .pill:focus-visible .pill-visual { outline-color: var(--c-blue-selected); }
 /* Keep the prior Top posts dropdown and chip appearance; the 48px hit row uses only the existing vertical gaps. */
 .pills.top-posts-rank { margin-block: -8.5px; }
 .hd-tiles { margin-inline: 0; gap: 8px; }

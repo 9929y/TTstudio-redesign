@@ -18,22 +18,22 @@ The redesign adds AI insights where creators already look at their data, and lin
 
 | Area · 范围 | What was designed · 设计内容 |
 | --- | --- |
-| Analytics › Overview | **Performance summary**: five-area score chart, AI insight (a 2–3 sentence paragraph and 1–2 bullets, the last one a next step), Ask Creator Assistant row · 五维评分图、AI 洞察（2–3 句段落 + 1–2 条要点，最后一条是下一步）、Ask 行 |
-| Analytics › Content | **Content summary**: three-area score chart for content performance · 三维评分图 |
+| Analytics › Overview | **Performance summary**: five-area peer-comparison radar chart, AI insight (a 2–3 sentence paragraph and 1–2 bullets, the last one a next step), Ask Creator Assistant row · 五维同类创作者对比雷达图、AI 洞察（2–3 句段落 + 1–2 条要点，最后一条是下一步）、Ask 行 |
+| Analytics › Content | **Content summary**: three-area horizontal score bars for content performance · 三维横向评分条 |
 | Analytics › Viewers / Followers | **Viewer / Follower summary**: audience insight in the same paragraph-and-bullets format, Ask Creator Assistant row; date picker moved into Key metrics · 同样格式的观众洞察和 Ask 行；日期选择移到 Key metrics |
-| Post analysis · 作品分析 | **Post summary**: compares a post with your typical post · 和你的典型作品对比 |
+| Post analysis · 作品分析 | **Post summary**: five-area radar comparing with similar videos · 五维同类视频对比雷达图 |
 | Post › Engagement | **Comment topics**: what viewers ask or say most · 评论话题 |
 | Another creator's post · 他人作品 | **Compared with your posts**: their metrics against your typical post · 对方数据和你的典型作品对比 |
 | Topic search · 话题搜索 | **Topic scores**: popularity, relevance and competition · 热度、相关度、竞争度 |
 | Home, Create | **Curated for me**: post ideas from your top post, trends and similar creators · 来自你的爆款、趋势和同类创作者的选题推荐 |
-| Creator Assistant | Entry on Home and at the top of Inbox with rotating questions; an Ask row under each AI card whose question follows what you select; chat screen · 首页和 Inbox 顶部入口轮播问题；每张 AI 卡底部的 Ask 行随选择换问题；对话页 |
+| Creator Assistant | Entry on Home and below the Inbox filters with rotating questions; an Ask row under each AI card whose question follows what you select; chat screen · 首页和 Inbox 筛选 Tab 下方入口轮播问题；每张 AI 卡底部的 Ask 行随选择换问题；对话页 |
 | System · 系统 | One change-colour rule (up blue, down orange, flat grey), shared card frame, TikTok-native press feedback and sheet motion · 统一涨跌色、统一卡片外框、还原 TikTok 原生的按下反馈与弹层动效 |
 
 ### Linked score chart · 评分图联动
 
-Tap a slice or its label to select an area. The centre score, the note under the chart, the matching Key metrics tile (on Content, the Top posts order) and the Ask row's question change together. Tap the selected area again, the centre or blank space in the card to go back.
+Tap an area tab in the Overview / Post summary radar, or a score bar in Content summary. The selected metric and comparison values, matching Key metrics tile (on Content, the Top posts order), and Ask row question update together. Tap the selected area again or the card’s blank space to reset.
 
-点扇区或标签选中一个维度，中央分数、图下说明、下方 Key metrics 对应的卡（Content 页是 Top posts 排序）和 Ask 行的问题一起切换。再点已选中的项、图中央或卡片空白处恢复默认。
+点击 Overview / Post summary 的维度 Tab 或 Content summary 的横条，联动对应指标、Key metrics（Content 页是 Top posts 排序）与 Ask 行。再点已选项或卡片空白处恢复默认。
 
 | Area · 维度 | Key metrics | Ask row · Ask 行 |
 | --- | --- | --- |
@@ -105,3 +105,17 @@ These apply to people and coding agents alike. 人和 coding agent 都适用。
 Photos are stock images from [Pexels](https://www.pexels.com/license/); sources are in `illustrations/PHOTO_SOURCES.csv`. TikTok and TikTok Studio are trademarks of their owners. This is an independent design study and is not affiliated with TikTok.
 
 照片来自 [Pexels](https://www.pexels.com/license/)，来源见 `illustrations/PHOTO_SOURCES.csv`。TikTok 与 TikTok Studio 是其所有者的商标。本项目为独立设计作品，与 TikTok 无关联。
+
+
+### Shared UI rule: blue selection pills · 蓝色筛选胶囊规范
+
+Use the existing `Pills variant="blue"` for metric, ranking and filter chips. Do not create a page-specific colour variant.
+
+| State | Token / value | Usage |
+| --- | --- | --- |
+| Selected text | `--c-blue-selected` / `#0D4A96` | Every blue selection pill, including Top posts, audience breakdowns, active times, Home trends, Inbox filters, and reward filters |
+| Selected background | `--c-blue-weak` / `#E8F2FE` | The same pale blue selection surface |
+| Unselected | Existing neutral pill background and secondary label | Preserve the component's neutral state |
+| Keyboard focus | `--c-blue-selected` | Visible 2px inset focus ring, including the expanded touch rail |
+
+选中态的文字统一为深蓝，底色统一为浅蓝；焦点描边也使用同一深蓝色。所有 `Pills variant="blue"` 实例共享此规则，包括 Inbox。日期黑色胶囊、黑色导航文字 Tab 和数据图表的蓝色不受此规则影响。颜色只在 `src/tokens.css` 定义，由 `src/app.css` 的共享组件样式消费。

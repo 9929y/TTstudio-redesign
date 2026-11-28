@@ -25,7 +25,8 @@
   /* 品牌/操作色 */
   --c-primary: #fe2c55;          /* Post / Done / Aplicar 按钮（o1g_0441、zaDQ_0105、91F_0349） */
   --c-primary-disabled: #f9a6b6; /* Done 置灰（o1g_0248） */
-  --c-blue: #1e7ce8;             /* KPI 上升箭头圆、选中胶囊字（o1g_0036、o1g_0622） */
+  --c-blue: #1e7ce8;             /* KPI 上升箭头圆、图表主色（o1g_0036） */
+  --c-blue-selected: #0d4a96;    /* 蓝色筛选/指标胶囊选中文字及 focus；2026-11-28 Yanice 确认 */
   --c-blue-weak: #e8f2fe;        /* 选中 KPI 卡底、Most views 胶囊底（o1g_0036/0622） */
   --c-blue-line: #9cc8f6;        /* 选中 KPI 卡描边（QKE_0042） */
   --c-chart: #3d8eea;            /* 趋势线（o1g_0045） */
