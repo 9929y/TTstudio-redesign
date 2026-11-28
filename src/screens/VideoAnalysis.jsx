@@ -13,7 +13,7 @@ import { fmt, fmtFull, fmtStat, monDayYear, time12, postViewerStats, secToClock 
 import { CommentTopicsCard } from '../insight/CommentTopicsCard.jsx';
 import { CommentRow } from './Manage.jsx';
 import { ModuleE } from '../insight/ModuleE.jsx';
-import { buildModuleE, askE } from '../insight/build.js';
+import { buildModuleE, askE, sincePostedWindow } from '../insight/build.js';
 
 const TRAFFIC_INFO = 'It shows the places where your viewers discover your post. The main source types on TikTok are the For You feed, the Following feed, sound pages, profile pages, search pages, and direct messages. The other types are grouped together as "Other".';
 const ORDER = ['For You', 'Following', 'Direct messages', 'Personal profile', 'Sound', 'Search', 'Other']; // 18Y_0030 顺序
@@ -132,7 +132,7 @@ function EngagementTab({ p }) {
         ) : <div className="muted-note">Top word insights are not ready yet. Please check back later.</div>}
       </Section>
       {/* Final（IMC-Comment-Topics）：白色 AI 卡，左右 8px 留边 */}
-      <CommentTopicsCard seed={p.id.length + (p.comments || 0)} comments={p.comments || 0} onOpen={(k, t) => push('relatedComments', { id: p.id, word: k, words: [[k, 4]], topic: t })} />
+      <CommentTopicsCard seed={p.id.length + (p.comments || 0)} comments={p.comments || 0} period={sincePostedWindow(p)} onOpen={(k, t) => push('relatedComments', { id: p.id, word: k, words: [[k, 4]], topic: t })} />
       <Section title="Likes" info="When viewers liked your post.">
         <div className="muted-note small">Most viewers liked this video at {secToClock(peak).replace(/^0/, '')}. Check out the moment where most viewers liked your video.</div>
         <div className="ret-preview">

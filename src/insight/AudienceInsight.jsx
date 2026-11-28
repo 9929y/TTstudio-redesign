@@ -44,6 +44,9 @@ function askFollowers(range) {
 }
 
 function InfoSheet({ info, host, onClose }) {
+  // Header divider only after the body scrolls (same rule as SheetFrame's is-scrolled)
+  const [scrolled, setScrolled] = useState(false);
+  const onBodyScroll = (e) => { const s = e.currentTarget.scrollTop > 0; if (s !== scrolled) setScrolled(s); };
   useEffect(() => {
     const k = (e) => { if (e.key === 'Escape') { e.stopPropagation(); onClose(); } };
     window.addEventListener('keydown', k, true);
@@ -52,14 +55,14 @@ function InfoSheet({ info, host, onClose }) {
   return createPortal(
     <>
       <div className="imd-scrim" data-act="audience-info-scrim" onClick={onClose} />
-      <div className="imd-sheet" role="dialog" aria-modal="true" aria-label="About this insight">
+      <div className={`imd-sheet${scrolled ? ' is-scrolled' : ''}`} role="dialog" aria-modal="true" aria-label="About this insight">
         <div className="imd-sheet-head">
           <span style={{ fontSize: 17, lineHeight: '22px' }}>About this insight</span>
           <button type="button" className="imd-sheet-x imd-press" aria-label="Close" data-act="audience-info-close" onClick={onClose}>
             <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="#161823" strokeWidth="2" strokeLinecap="round" /></svg>
           </button>
         </div>
-        <div className="imd-sheet-body">
+        <div className="imd-sheet-body" onScroll={onBodyScroll}>
           {info.map((it) => (
             <div key={it.t} className="imd-item">
               <span className="imd-item-ic">

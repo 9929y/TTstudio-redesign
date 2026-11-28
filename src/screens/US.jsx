@@ -13,7 +13,7 @@ import { VideoStage } from './VideoAnalysis.jsx';
 import { CommentTopicsCard } from '../insight/CommentTopicsCard.jsx';
 import { Illo, illoBg } from '../ui/illo.jsx';
 import { ModuleD } from '../insight/ModuleD.jsx';
-import { buildModuleD, otherPostTopics, rewardsSplit } from '../insight/build.js';
+import { buildModuleD, otherPostTopics, rewardsSplit, sincePostedWindow } from '../insight/build.js';
 
 const hash = (s) => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -297,7 +297,7 @@ export function AnalysisSheet({ id }) {
               <Pills variant="blue" items={AN_PILLS} value={metric} onChange={setMetric} />
               <TrendChart data={data} hatchLast={false} animKey={metric} xLabel={(d) => String(d.h)} tooltipLabel={(d) => `Day ${d.h}`} />
             </section>
-            <CommentTopicsCard seed={item.id.length + item.comments} comments={item.comments} onOpen={(k, t) => { close(); push('relatedComments', { id: item.id, word: k, words: [[k, 4]], topic: t }); }} />
+            <CommentTopicsCard seed={item.id.length + item.comments} comments={item.comments} period={sincePostedWindow(item)} onOpen={(k, t) => { close(); push('relatedComments', { id: item.id, word: k, words: [[k, 4]], topic: t }); }} />
             <section className="section"><div className="sec-head"><div className="sec-title">Top words used in comments <I.info size={15} /></div></div>
               <div className="bar-rows">{words.map(([w, c]) => (
                 <div key={w} className="bar-row tap" data-act="analysis-word" onClick={() => { close(); push('relatedComments', { id: item.id, word: w }); }} {...asButton(() => { close(); push('relatedComments', { id: item.id, word: w }); })}>

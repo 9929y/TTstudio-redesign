@@ -12,3 +12,7 @@
 .info-sheet-body { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; padding: 20px 24px 0; display: flex; flex-direction: column; gap: 20px; }
 .info-sheet-body::-webkit-scrollbar { display: none; }
 @media (prefers-reduced-motion: reduce) { .info-sheet-head::after { transition: none; } }
+
+/* No single-word last lines in any AI ⓘ sheet (rose-/ime- drawers here, imd- sheets of Compared with your posts,
+   Comment topics and the audience cards): the browser rebalances the last two lines. */
+.info-sheet-body span, .imd-item-text span { text-wrap: pretty; }
