@@ -359,9 +359,9 @@ export function ScoresNeedSevenDays() {
 }
 
 const A7 = buildModuleA({ key: '7' });
-export function ModuleA({ ca = 'row', title, insight = A7, onAsk, onSelect, syncTo, initialArea }) {
+export function ModuleA({ ca = 'row', title, insight = A7, onAsk, onSelect, syncTo, initialArea, clearToken }) {
   if (!insight) return <div data-insight="scores-7d" style={{...CARD_STYLE,fontSize:14,lineHeight:'20px'}}>Choose Last 7 days to compare your performance with similar creators.</div>;
-  return <PeerRadarCard scope="account" insight={title?{...insight,cardTitle:title}:insight} areas={accountPeerComparison()} ca={ca} act="insight-a" onAsk={onAsk} onSelect={onSelect} syncTo={syncTo} initialArea={initialArea} ask={askA()} askAct="assistant-pop-analytics">
+  return <PeerRadarCard scope="account" insight={title?{...insight,cardTitle:title}:insight} areas={accountPeerComparison()} ca={ca} act="insight-a" onAsk={onAsk} onSelect={onSelect} syncTo={syncTo} initialArea={initialArea} resetToken={clearToken} ask={askA()} askAct="assistant-pop-analytics">
     {close=><InfoDrawer host={document.getElementById('phone-screen')} act="insight-a" title="About this comparison" items={peerInfo('account', insight.period)} onClose={close}/>}
   </PeerRadarCard>;
 }
