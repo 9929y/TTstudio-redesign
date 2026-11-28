@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Insight Prompt Design</title>
+<meta name="description" content="How the AI insights in the TikTok Studio redesign are prompted, checked and localised.">
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--line:#d1d9e0;--soft:#f6f8fa;--accent:#0969da;--code:#eff2f5}
+@media (prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--line:#3d444d;--soft:#151b23;--accent:#4493f8;--code:#1c2128}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+main{max-width:860px;margin:0 auto;padding:40px 16px 80px}
+h1{font-size:30px;line-height:1.25;margin:0 0 8px}
+h2{font-size:22px;margin:48px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:28px 0 8px}
+p,li{color:var(--fg)}
+.lead{color:var(--muted);font-size:17px;margin:0 0 20px}
+a{color:var(--accent)}
+code{font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--code);padding:1px 5px;border-radius:5px}
+pre{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;word-break:break-word}
+pre code{background:none;padding:0}
+.table{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--soft)}
+blockquote{margin:12px 0;padding:4px 16px;border-left:4px solid var(--line);color:var(--muted)}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0}
+.flow span{border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--soft);font-size:14px}
+.flow b{font-weight:400;color:var(--muted)}
+.note{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:12px 16px;font-size:14px;color:var(--muted)}
+ul,ol{padding-left:1.4em}
+</style>
+</head>
+<body>
+<main>
+<h1>AI Insight Prompt Design</h1>
+<p class="lead">How the AI insights in the TikTok Studio redesign are prompted, checked and adapted to other markets. Prototype: <a href="../">TikTok Studio redesign</a>. Prompts are in English; numbers and examples come from the prototype's seeded data. This is an independent design concept, not affiliated with or endorsed by TikTok.</p>
+
+<h2>1. What an AI insight has to do</h2>
+<p>An insight combines all the data on its card, picks the one to three findings that matter most, and turns them into advice: what it means for this creator and what to do next. It does not restate the chart under it.</p>
+<ul>
+<li>Plain words for a creator new to analytics: no "rate", "median", "percentile", score numbers or ratios the chart already shows.</li>
+<li>A card with a chart under it gets a short paragraph, at most 3 lines on a 393 pt phone.</li>
+<li>Growth advice is hedged ("may help"). No claims about how recommendations work.</li>
+</ul>
+
+<h2>2. Code computes, the model interprets</h2>
+<div class="flow"><span>Studio data</span><b>→</b><span>Code: baselines, ranks, judgements</span><b>→</b><span>Model writes the line</span><b>→</b><span>Code checks</span><b>→</b><span>AI review (offline)</span><b>→</b><span>Screen</span></div>
+<p>The model never calculates. Code ranks each area against a typical similar creator, words the rank ("ahead of 6 in 10 similar creators"), and pre-computes the judgements a line can be built on, for example that one post brought half the views but only a third of the likes. A line that fails a check is sent back once with the errors; if it fails again, a fixed template is shown.</p>
+
+<h3>From the shared system prompt</h3>
+<pre><code>You are a senior creator growth strategist on TikTok's creator team. You read one creator's own numbers and tell them, in one glance, what it means for their next post.
+
+&lt;data_contract&gt;
+…
+- &lt;data&gt;: JSON produced by Studio's code. It is the only source of facts.
+…
+Grounding:
+- Use only facts in &lt;data&gt; and &lt;untrusted_text&gt;. No outside knowledge about TikTok, trends,
+  the creator, or how recommendations work.
+- Every number you write must appear in &lt;data&gt; exactly as written there (already formatted
+  for the locale). Do not calculate, round, convert or estimate.
+- A field that is null or missing is unknown, not zero. Do not mention it.
+…
+&lt;/data_contract&gt;
+
+&lt;insight_quality&gt;
+…
+A line is worth reading when it tells the creator something the chart alone does not:
+1. Meaning, not a recap. The chart already shows scores and numbers. Say what they mean for the next post.
+2. Connect two signals when the data has them: reach up while reactions fall, people commenting more often
+   explained by what viewers ask for, one post carrying the week.
+3. Name a concrete object: an area, a post title, a second in the video, a comment word, a sub-topic, a format.
+4. The action changes one lever (hook, ask, format, length, angle, detail, topic, posting time, series)
+   and says how, in terms the creator can do tomorrow.
+Never write generic advice that fits any creator: post consistently, keep posting, engage with your
+audience, use trending sounds, keep it up, create quality content.
+…
+&lt;/insight_quality&gt;</code></pre>
+<p>"…" marks lines left out of this excerpt; the rest is word for word. The role line is part of the concept's prompt, not a TikTok document.</p>
+
+<h3>Example: Performance summary</h3>
+<p>The data behind the card, as code hands it over (last 7 days, against a typical similar creator):</p>
+<div class="table"><table>
+<tr><th>Area</th><th>This creator</th><th>Typical similar creator</th><th>What else code knows</th></tr>
+<tr><td>Views</td><td>14.7K</td><td>13.1K</td><td>Kyoto at dusk, a 12-second post, brought half of them</td></tr>
+<tr><td>Engagement</td><td>783 likes, 41 comments</td><td>567 likes</td><td>"itinerary" is the top word in Kyoto's comments</td></tr>
+<tr><td>Shares</td><td>80</td><td>94</td><td>lowest of the five areas, still about level</td></tr>
+<tr><td>Profile visits</td><td>132</td><td>109</td><td></td></tr>
+<tr><td>Rewards</td><td>$1.47</td><td>$1.15</td><td>$0.96 from gifts, $0.51 from Creator Rewards, which only counts posts of a minute or more</td></tr>
+</table></div>
+<p>The line on screen, edited by hand from a model draft and kept after the review in section 5:</p>
+<blockquote>Make Kyoto Part 2 over a minute, since the 12-second original drew your views but can't count toward Creator Rewards.</blockquote>
+<p>It skips what the chart already says and joins two facts the chart doesn't show (the top post's length and the Creator Rewards rule) into one step the creator can take on the next post.</p>
+
+<h2>3. Checks in code</h2>
+<ul>
+<li><b>Grounding</b>: every number in the line must appear in the data; post ids and links never appear.</li>
+<li><b>Plain words</b>: a per-language list of analytics terms is rejected, and so are score numbers next to an area name.</li>
+<li><b>Plain numbers</b> on post cards: no percent signs, "N times" or decimal multiples; "1 in 3", "3×", "1/2" instead.</li>
+<li><b>Same words as the chart</b>: account cards say "similar creators", post cards say "similar videos", because that is the chart legend.</li>
+<li><b>Fits the screen</b>: character limits measured at 393 pt, per surface (a bullet in the narrower bottom sheet gets 38 characters, a full-width card 45) and per language.</li>
+<li><b>No assumed gender</b>, in every language.</li>
+</ul>
+
+<h2>4. Other languages and markets</h2>
+<h3>Write natively, and say less in longer languages</h3>
+<p>The model writes in the creator's language, not a translation. The same message needs about 28% more characters in Brazilian Portuguese and 22% more in Indonesian, while a phone line holds fewer of them, so limits scale per language and the prompt asks the model to drop the least useful detail instead of abbreviating.</p>
+<div class="table"><table>
+<tr><th>Language</th><th>Characters per line (measured in the 289 px text column)</th><th>Limit vs English</th></tr>
+<tr><td>English (US, UK)</td><td>41</td><td>1.00</td></tr>
+<tr><td>Portuguese (Brazil), Indonesian</td><td>38.5</td><td>0.94</td></tr>
+<tr><td>German</td><td>39.8</td><td>0.97</td></tr>
+<tr><td>Japanese</td><td>17.5</td><td>0.43</td></tr>
+<tr><td>Burmese</td><td>22.7</td><td>0.55</td></tr>
+</table></div>
+<p>Portuguese marks gender on words about the reader (animado / animada), so the prompt writes around them. Each language also has its own list of growth-hack words the model may not use, such as "viralizar" and "garantido" in Brazil or "fyp" and "dijamin" in Indonesia.</p>
+
+<h3>Market rules, on top of platform-wide categories</h3>
+<div class="table"><table>
+<tr><th>Market</th><th>Extra blocked topics</th><th>Local rules passed to the model</th><th>Paid-partnership wording</th><th>Assistant</th></tr>
+<tr><td>US</td><td>none</td><td>none beyond the platform-wide list</td><td>a clear paid-partnership disclosure (FTC Endorsement Guides)</td><td>on</td></tr>
+<tr><td>UK</td><td>paid promotion of less healthy food or drink</td><td>Online Safety Act children's codes; FCA rules on promoting investments or crypto</td><td>#ad at the start</td><td>off</td></tr>
+<tr><td>Indonesia</td><td>SARA incitement (ethnicity, religion, race, inter-group), blasphemy</td><td>online gambling is a crime; no growth tactics aimed at children</td><td>the Paid Partnership label</td><td>off</td></tr>
+<tr><td>Brazil</td><td>racism, homophobia, anti-democratic content</td><td>fixed-odds betting and its advertising banned (MP 1.394/2026); minors' protection (ECA Digital); AI may not recommend candidates</td><td>the paid-partnership toggle or #publi</td><td>on</td></tr>
+</table></div>
+<p>Moderation has two lines. Code runs first: it normalises spelling tricks (t1gr1nho, s l o t, gacoooor), matches local slang (in Brazil "bet", "tigrinho", "plataforma pagando"; "bet" only counts there) and drops comments with phone numbers, payment keys or links. The model is the second line and flags anything that slips through. In a language-by-moderation test on an earlier version of the prompts, 25 of 26 cases passed; model cases ran 3 times each, cases that code settles alone ran once.</p>
+<p>An example answer written into the Assistant prompt, showing how a blocked request in Brazil is handled:</p>
+<pre><code>Creator (Brazil): Vale a pena divulgar casa de apostas pra ganhar mais?
+Assistant: Não ajudo a divulgar apostas, que são proibidas no Brasil.
+ • Posso mostrar quais posts seus trazem mais seguidores.
+ • Posso sugerir temas próximos ao que seu público assiste.
+ • Em publi de marcas, use o selo de parceria paga ou #publi.</code></pre>
+
+<h2>5. AI review: a fact checker and a new creator</h2>
+<p>Code can check format and sources, not whether a creator understands a line and would act on it. So two more models review each line, separately:</p>
+<div class="table"><table>
+<tr><th></th><th>Fact checker</th><th>New creator</th></tr>
+<tr><td>Sees</td><td>the line and all the data</td><td>only what is on screen: card title, the chart in words, the line</td></tr>
+<tr><td>Judges</td><td>is each claim supported, overstated, or against the chart?</td><td>what does it tell me, what would I do, which words lost me, what don't I believe?</td></tr>
+<tr><td>Why separate</td><td colspan="2">A reviewer who sees the data fills in what the line leaves out, so it cannot tell when a creator would be lost.</td></tr>
+</table></div>
+<pre><code>You are a TikTok creator who posts travel videos and has about 20K followers. You started opening TikTok Studio a few weeks ago. You know views, likes, comments, shares and followers. You do not know analytics words such as rate, percentile, median, baseline or engagement, and you have never seen how this app scores you.
+
+You are looking at one card on your phone. You see the card title, what the chart under it shows, and the AI summary above the chart. You do not see any data behind it.
+
+Read the summary once, the way you would between other tasks. Then answer honestly, as yourself:
+1. understood: in your own words, what is it telling you? One sentence.
+2. what_i_would_do: what would you do after reading it? One sentence, or "nothing" if it gives you nothing to do.
+3. confusing: words or numbers you did not understand or had to read twice. Quote them, or [].
+4. doubts: anything that seems to disagree with the chart, or a promise you do not believe. Quote it, or [].
+5. would_act: how likely you are to act on it this week, 1 to 5.
+6. one_change: one change that would make it more useful to you.
+
+Do not judge grammar or style. Do not guess what the designers meant. If something is unclear, say so.
+Return only a JSON object with those six keys.</code></pre>
+<p>A line passes when the creator's paraphrase matches the intended meaning, nothing confused them, nothing seemed to contradict the chart, and they would likely act (4 or 5). Otherwise their notes go back to the writing model for one rewrite. Today the review runs offline, before copy goes into the prototype; in a live product it would run on a sample.</p>
+
+<h3>What it caught on the Performance summary</h3>
+<div class="table"><table>
+<tr><th>Version</th><th>Would act (1–5)</th><th>What the new creator flagged</th></tr>
+<tr><td>"Your views beat most similar creators, but shares are falling behind…"</td><td>4</td><td>"falling behind" disagrees with the chart, which shows shares about level</td></tr>
+<tr><td>"Make Kyoto Part 2 over a minute, since the 12-second original drew your views but can't count toward Creator Rewards." (kept)</td><td>4</td><td>did not know what Creator Rewards is, and doubted "can't count toward Creator Rewards"</td></tr>
+<tr><td>"Kyoto at dusk was your biggest post, but at 12 seconds it earned no Creator Rewards. A Part 2 over a minute may let your next hit earn."</td><td>3</td><td>"hit" is slang; "earned no Creator Rewards" seems to contradict Rewards "ahead" on the chart</td></tr>
+</table></div>
+<p>The third version passed every code check and the fact checker, and still scored lowest, so it was dropped. The conflict it exposed belongs to the design: Rewards mixes gifts with Creator Rewards, so the Rewards detail should show them apart. Each version was reviewed once here, so a one-point gap is not conclusive; the plan is to review each line three times and take the majority.</p>
+
+<h2>6. Limits</h2>
+<ul>
+<li>Data is seeded for the prototype; the prompts have not run on real creator data.</li>
+<li>Non-English copy and the market rules were judged by models and desk research, not native speakers or legal review. Brazil's betting rule is a provisional measure and is due for review by March 2027.</li>
+<li>The "new creator" is a model playing one persona. It needs calibrating against interviews with real new creators, and more personas.</li>
+</ul>
+<p class="note">Last updated 28 November 2026.</p>
+</main>
+</body>
+</html>
