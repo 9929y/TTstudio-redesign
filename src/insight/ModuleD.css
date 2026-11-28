@@ -62,8 +62,3 @@
 .imd-item-text span { font-size: 15px; line-height: 21px; color: #8a8b91; }
 
 /* Inspiration post takeaways (2026-11-28 Yanice: simpler than four double bars; what to borrow from the content) */
-.imd-take { display: flex; flex-direction: column; }
-.imd-take-row { display: flex; flex-direction: column; gap: 2px; padding: 10px 0; border-top: 0.5px solid #e8e8ea; }
-.imd-take-row:first-child { border-top: 0; padding-top: 2px; }
-.imd-take-label { font-size: 13px; line-height: 18px; font-weight: 400; color: #57585e; }
-.imd-take-t { font-size: 15px; line-height: 21px; font-weight: 400; color: #161823; }

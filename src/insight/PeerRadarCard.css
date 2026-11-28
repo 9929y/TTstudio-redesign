@@ -1,17 +1,17 @@
 /* Radar card: every text and box reuses an original TikTok Studio role (ref NEW_ELEMENT_MAPPING.md).
    Only layout and the series colours are specific to the radar. */
 .peer-radar {
-  /* Series colours (2026-11-28 Yanice): everything from ONE deep blue, the theme's selected blue --c-blue-selected
-     (#0d4a96 = 13, 74, 150). My account = that blue as the line, hollow points (white, deep ring). Similar = the same blue
-     at 50% for the line and the points' ring. Fills = the same blue for both at a 7:5 opacity ratio, so the overlap reads
-     darker than either shape. Rings = thin grey dashes. */
+  /* Series colours (2026-11-28 Yanice): both series from ONE deep blue, --c-blue-selected (#0d4a96 = 13, 74, 150).
+     My account = that blue as the line and the hollow points' ring, fill at 50%. Similar = the same blue at 50% for the
+     line and ring, fill at 25% (Yanice's values); the similar polygon is drawn underneath, mine on top. Rings = thin grey
+     dashes. Only the selected label uses the primary blue (--radar-sel below). */
   --radar-own: var(--c-blue-selected);
-  --radar-own-fill: rgba(13, 74, 150, 0.28);
+  --radar-own-fill: rgba(13, 74, 150, 0.5);
   --radar-peer: rgba(13, 74, 150, 0.5);
-  --radar-peer-fill: rgba(13, 74, 150, 0.2);
+  --radar-peer-fill: rgba(13, 74, 150, 0.25);
   --radar-ring: var(--c-radar-axis);
-  /* Selected label: both lines in the primary selected blue. */
-  --radar-sel: var(--c-blue-selected);
+  /* Selected label: both lines in the primary blue --c-blue (#1e7ce8; tokens.css --c-primary is the red Post button). */
+  --radar-sel: var(--c-blue);
   /* Highlight + dim (same idea as the old RoseCard and the Content score rows): only after a user selection.
      The selected axis stays at full strength, the other axes recede. Default state: nothing dims. */
   --radar-dim: 0.4;

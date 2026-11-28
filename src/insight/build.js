@@ -544,7 +544,7 @@ export function buildModuleD(item, { topics = null, words = [] } = {}) {
   ];
   const rows = rows0.map((r, i) => {
     const m = Math.max(r.a, r.b) || 1;
-    return { label: r.label, val: r.f(r.a), yv: r.f(r.b), yours: `Yours ${r.f(r.b)}`, c: D_COLORS[i][0], yc: D_COLORS[i][1], w: `${((r.a / m) * 62).toFixed(1)}%`, yw: `${((r.b / m) * 62).toFixed(1)}%` };
+    return { label: r.label, a: r.a, b: r.b, val: r.f(r.a), yv: r.f(r.b), yours: `Yours ${r.f(r.b)}`, c: D_COLORS[i][0], yc: D_COLORS[i][1], w: `${((r.a / m) * 62).toFixed(1)}%`, yw: `${((r.b / m) * 62).toFixed(1)}%` };
   });
   // 播放量取决于账号大小，最大差距只在三个「每千次播放」里选
   const rated = rows0.slice(1).map((r) => ({ ...r, gap: Math.max(r.a / r.b, r.b / r.a) }));

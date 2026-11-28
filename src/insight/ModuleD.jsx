@@ -8,7 +8,7 @@ import './ModuleD.css';
 import { AskRow } from './AskAssistant.jsx';
 import { CardHead, KeyBlock } from './CardParts.jsx';
 import { useEntering } from './entrance.js';
-import { inspoTakeaways, INSPO_TITLE } from './inspoTakeaways.js';
+import { inspoTakeaways, INSPO_TITLE, INSPO_LABELS } from './inspoTakeaways.js';
 
 function InfoDrawer({ info, host, onClose }) {
   // Header divider only after the body scrolls (same rule as SheetFrame's is-scrolled)
@@ -115,13 +115,8 @@ export function ModuleD({ ca = 'row', insight = MODULE_D, onAsk }) {
       {/* Final（Version 216）：标题 Compared with your posts + AI 星形 + ⓘ 一行，洞察在浅蓝块里；标题文字 Yanice 仍在三个候选里选 */}
       <CardHead title={takeaways ? INSPO_TITLE : (D.cardTitle || 'Compared with my posts')} infoLabel={takeaways ? 'About this summary' : 'About this comparison'} act="insight-d-info" onInfo={openInfo} />
       <KeyBlock k={D.key} rest={D.rest} bullets={D.bullets} next={D.next} />
-      {takeaways ? (
-        <div className={`imd-take${entering ? ' enter-fade' : ''}`}>
-          {takeaways.map((r) => (
-            <div key={r.k} className="imd-take-row"><span className="imd-take-label">{r.label}</span><span className="imd-take-t">{r.t}</span></div>
-          ))}
-        </div>
-      ) : <CompareRows rows={D.rows} labels={['This post', 'My typical post']} entering={entering} />}
+      {/* Inspire you: two double bars (Engagement, Reach), view-only like Content summary; no pills here. */}
+      <CompareRows className={takeaways ? 'insp-compare' : undefined} rows={takeaways || D.rows} labels={takeaways ? INSPO_LABELS : ['This post', 'My typical post']} entering={entering} />
       {caRow && (
         <AskRow act="assistant-pop-insights" seenKey="ask-D" prompts={D.ask?.prompts || ['Ask Creator Assistant']} onAsk={ask}
           icon={<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" style={{ flex: 'none' }}><defs><linearGradient id={gid} x1="16" y1="4" x2="7" y2="20" gradientUnits="userSpaceOnUse"><stop offset="0" stopColor="#4fe3e6" /><stop offset=".45" stopColor="#2f62f2" /><stop offset="1" stopColor="#1d0f8a" /></linearGradient></defs><path d="M21 8.9C20.1 6.4 17.9 5 15.2 5H9.6a7 7 0 0 0 0 14h5.6c2.7 0 4.9-1.4 5.8-3.9" fill="#fff" stroke={`url(#${gid})`} strokeWidth="3.2" /><circle cx="9.7" cy="12" r="1.55" fill="#1b1470" /><circle cx="14.3" cy="12" r="1.55" fill="#1b1470" /></svg>} />

@@ -12,8 +12,8 @@ import { withRadarStats, rewardsBreakdown } from './radarStats.js';
 import { useEntering, segIn, labDelay, ENTER_EASE } from './entrance.js';
 import './PeerRadarCard.css';
 
-// Monochrome blue (2026-11-28 Yanice, structure of the Xiaohongshu reference in our theme colour): one deep blue for
-// both series, my line full strength, similar at 50%, fills 7:5. All resolve in PeerRadarCard.css.
+// Monochrome blue (2026-11-28 Yanice, structure of the Xiaohongshu reference): one deep blue (--c-blue-selected) for
+// both series, my line full strength, similar at 50%, fills 50% / 25%. All resolve in PeerRadarCard.css.
 const C = { own: 'var(--radar-own)', ownFill: 'var(--radar-own-fill)', peer: 'var(--radar-peer)', peerFill: 'var(--radar-peer-fill)' };
 const LABELS = {
   account: { selfLabel: 'My account', peerLabel: 'Similar creators', group: 'of similar creators' },
