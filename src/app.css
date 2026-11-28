@@ -1573,7 +1573,5 @@ html:has(.stage-root.embed), html:has(.stage-root.embed) body { background: tran
 /* Mobile has only selected / unselected states: no browser focus ring after a tap (2026-11-28 Yanice). */
 #phone-screen :focus, #phone-screen :focus-visible { outline: none; }
 #phone-screen button, #phone-screen [role="button"], #phone-screen a { -webkit-tap-highlight-color: transparent; }
-/* Home (2026-11-28 Yanice): Ask pill spans the same width as the Curated for me card below (8pt side margins);
-   the dark→light fade ends a little higher. */
-.hd-dark .ask-pill { width: calc(100% + 16px); margin-left: -8px; margin-right: -8px; }
-.hd-dark::after { bottom: -96px; height: 96px; }
+/* Home (2026-11-28 Yanice): shorter dark→light fade behind the Curated card, so the dark barely shows beside it. */
+.hd-dark::after { bottom: -40px; height: 40px; background: linear-gradient(180deg, #2a2a2a 0%, #f2f2f2 100%); }
