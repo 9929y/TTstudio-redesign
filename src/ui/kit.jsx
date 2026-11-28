@@ -233,19 +233,36 @@ export function KpiSkeleton({ n = 6 }) {
   );
 }
 // AI 卡的骨架：和成品同形状（标题行 + 浅色洞察块两行 + 圆环 + Ask 行），数据出来时位置不跳
-export function InsightCardSkeleton({ half = false }) {
+export function InsightCardSkeleton({ half = false, radar = false, bars = false }) {
   const ring = half ? { w: 232, h: 116, r: '116px 116px 0 0', hole: { w: 136, h: 68, r: '68px 68px 0 0' } } : { w: 172, h: 172, r: '50%', hole: { w: 108, h: 108, r: '50%' } };
   return (
     <div className="skel-card" aria-label="Loading" role="status">
       <div className="skel-row"><Skel w={150} h={18} r={5} /><Skel w={16} h={16} r={8} /><span style={{ flex: 1 }} /><Skel w={18} h={18} r={9} /></div>
       <div className="skel-key"><Skel h={14} /><Skel w="72%" h={14} style={{ marginTop: 8 }} /></div>
-      <div className="skel-chart" style={{ height: half ? 200 : 258 }}>
-        <div className={`skel-ring ${half ? 'half' : ''}`} style={{ width: ring.w, height: ring.h }}>
-          <Skel w={ring.w} h={ring.h} r={ring.r} />
-          <span className="skel-hole" style={{ width: ring.hole.w, height: ring.hole.h, borderRadius: ring.hole.r }} />
+      {/* 2026-11-28 new cards: Content = three double-bar rows (ModuleD layout); Overview = radar + tabs + two tiles */}
+      {bars ? (
+        <div className="skel-bars" style={{ display: 'flex', flexDirection: 'column' }}>
+          {[0, 1, 2].map((i) => (
+            <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '10px 0' }}>
+              <Skel w="30%" h={14} />
+              {[0, 1].map((j) => <div key={j} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}><Skel w="45%" h={12} /><Skel h={8} r={4} /></div>)}
+            </div>
+          ))}
         </div>
-      </div>
-      <Skel w="70%" h={12} style={{ margin: '0 auto' }} />
+      ) : (
+        <div className="skel-chart" style={{ height: radar ? 266 : half ? 200 : 258 }}>
+          {radar ? (
+            <Skel w={184} h={184} r={0} style={{ clipPath: 'polygon(50% 2%, 97% 36%, 79% 92%, 21% 92%, 3% 36%)' }} />
+          ) : (
+            <div className={`skel-ring ${half ? 'half' : ''}`} style={{ width: ring.w, height: ring.h }}>
+              <Skel w={ring.w} h={ring.h} r={ring.r} />
+              <span className="skel-hole" style={{ width: ring.hole.w, height: ring.hole.h, borderRadius: ring.hole.r }} />
+            </div>
+          )}
+        </div>
+      )}
+      {!bars && <Skel w="70%" h={12} style={{ margin: '0 auto' }} />}
+      {radar && <><Skel h={44} /><div className="kpi-grid"><Skel h={66} r={8} /><Skel h={66} r={8} /></div></>}
       <div className="skel-ask"><Skel w={22} h={22} r={11} /><Skel w="62%" h={14} /></div>
     </div>
   );

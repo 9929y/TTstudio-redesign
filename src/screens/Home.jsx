@@ -9,7 +9,7 @@ import { TrendChart } from '../ui/charts.jsx';
 import { SheetFrame } from '../shell/Overlays.jsx';
 import { I } from '../ui/Icons.jsx';
 import { INSPIRATION, POSTS, ACCOUNT, NOW, DAY_MS, PERIOD_END, DAILY } from '../data/seed.js';
-import { fmt, fmtStat, overviewKpis, fmtMoney, monDay } from '../data/agg.js';
+import { fmt, fmtStat, overviewKpis, followerKpis, fmtMoney, monDay } from '../data/agg.js';
 import { VideoStage } from './VideoAnalysis.jsx';
 import { CreatorTimeline } from './V4.jsx';
 import { RankBadge, Flame, TOPICS as US_TOPICS } from './US.jsx';
@@ -102,12 +102,13 @@ function HomeDashboard() {
   const [chip, setChip] = useState('topics');
   const [expanded, setExpanded] = useState({});
   const k = overviewKpis({ key: '7' });
+  const [, net] = followerKpis({ key: '7' }); // same 7-day value and delta as Analytics › Followers › Net followers
   const na = useApp((s) => s.newAccount);
   const market = useApp((s) => s.market);
   const noAssistant = na || market === 'store'; // assistant entries are hidden for new accounts and the US store build
   const tiles = na ? ['Post views', 'Net followers', 'Likes'].map((label) => ({ label, v: '0', d: -0 })) : [
     { label: 'Post views', v: fmtStat(k[0].value), d: k[0].deltaPct },
-    { label: 'Net followers', v: fmtStat(DAILY.followersNet.slice(PERIOD_END - 6, PERIOD_END + 1).reduce((a, b) => a + b, 0)), d: 0 },
+    { label: 'Net followers', v: fmtStat(net.value), d: net.deltaPct },
     // 美国 2026-11-22 录屏（usrec 0:34）第 3 张是 Likes；巴西 2026-11 变现账号是 Est. rewards
     { label: 'Likes', v: fmtStat(k[2].value), d: k[2].deltaPct },
   ];

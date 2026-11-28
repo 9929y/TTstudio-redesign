@@ -1,5 +1,5 @@
 // 底部弹层 / 系统 Alert / Toast —— 统一在手机屏幕内渲染
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useDragControls } from 'framer-motion';
 import { useApp } from '../store.js';
 import { I } from '../ui/Icons.jsx';
@@ -12,12 +12,21 @@ export function SheetFrame({ title, children, footer, onClose, full, noHeader, d
   const close = useApp((s) => s.closeSheet);
   const controls = useDragControls();
   const doClose = onClose || close;
+  // 标题栏分隔线：默认不显示，内容往上滚动后才淡入（2026-11-28 评审「非必要不加线」）。
+  // 用捕获阶段监听，内容里自己滚动的竖向容器也算；只横向滚动的容器（没有竖向溢出）不参与。
+  const [scrolled, setScrolled] = useState(false);
+  const onBodyScroll = (e) => {
+    const t = e.target;
+    if (!(t instanceof Element) || t.scrollHeight - t.clientHeight < 1) return;
+    const s = t.scrollTop > 0;
+    if (s !== scrolled) setScrolled(s);
+  };
   useEffect(() => { const k = (e) => { if (e.key === 'Escape') doClose(); }; window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k); }, [doClose]);
   return (
     <>
       <motion.div className="sheet-scrim" data-act="sheet-scrim-close" onClick={doClose}
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }} />
-      <motion.div role="dialog" aria-modal="true" aria-label={typeof title === 'string' ? title : undefined} className={`sheet ${full ? 'full' : ''} ${dark ? 'dark' : ''}`} style={height ? { height } : undefined}
+      <motion.div role="dialog" aria-modal="true" aria-label={typeof title === 'string' ? title : undefined} className={`sheet ${full ? 'full' : ''} ${dark ? 'dark' : ''} ${scrolled ? 'is-scrolled' : ''}`} style={height ? { height } : undefined}
         initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={SHEET_T}
         drag="y" dragListener={false} dragControls={controls} dragConstraints={{ top: 0, bottom: 0 }} dragElastic={{ top: 0, bottom: 0.9 }}
         onDragEnd={(_, info) => { if (info.offset.y > 110 || info.velocity.y > 600) doClose(); }}>
@@ -29,7 +38,7 @@ export function SheetFrame({ title, children, footer, onClose, full, noHeader, d
             </div>
           )}
         </div>
-        <div className="sheet-body">{children}</div>
+        <div className="sheet-body" onScrollCapture={onBodyScroll}>{children}</div>
         {footer && <div className="sheet-foot">{footer}</div>}
       </motion.div>
     </>

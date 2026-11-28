@@ -63,15 +63,15 @@ function answerPlus(q, ctx) {
     const Em = buildModuleE(post);
     const area = (n) => Em?.areas.find((a) => a.name === n);
     const lines = (a) => a.lines.slice(1).map((x, i) => `${i + 1}. ${x}`).join('\n');
-    if (Em && /typical post/i.test(q)) return { text: `${Em.key}${Em.rest}\n\n${Em.areas.map((a, i) => `${i + 1}. ${a.name} ${a.you}: ${a.lines[1]}`).join('\n')}`, cards: [] };
+    if (Em && /similar (creators|videos)/i.test(q)) return { text: `${Em.key}${Em.rest}\n\n${Em.areas.map((a, i) => `${i + 1}. ${a.name} ${a.you}: ${a.lines[1]}`).join('\n')}`, cards: [] };
     if (/views come from/i.test(q)) {
       const src = Object.entries(post.traffic).sort((a, b) => b[1] - a[1]).slice(0, 3);
       const sq = post.searchQueries?.length ? [`Top search term: “${post.searchQueries[0][0]}”`] : ['Search traffic is too low to show search terms yet'];
       return { text: `“${postName(post)}” has ${fmt(post.views)} views.\n\n${[...src.map(([k, v]) => `${(v * 100).toFixed(1)}% from ${k}`), ...sq].map((x, i) => `${i + 1}. ${x}`).join('\n')}`, cards: [] };
     }
-    if (Em && /likes per view/i.test(q)) return { text: `Likes score ${area('Likes').you} against 50 for your typical post.\n\n${lines(area('Likes'))}`, cards: [] };
-    if (Em && /shares and saves/i.test(q)) return { text: `Shares score ${area('Shares').you} against 50 for your typical post.\n\n${lines(area('Shares'))}`, cards: [] };
-    if (Em && /new followers\?/i.test(q)) return { text: `Follows score ${area('Follows').you} against 50 for your typical post.\n\n${lines(area('Follows'))}`, cards: [] };
+    if (Em && /like this post|more likes/i.test(q)) return { text: `Likes score ${area('Likes').you} against 50 for a typical post by similar creators.\n\n${lines(area('Likes'))}`, cards: [] };
+    if (Em && /share this post|shares and saves/i.test(q)) return { text: `Shares score ${area('Shares').you} against 50 for a typical post by similar creators.\n\n${lines(area('Shares'))}`, cards: [] };
+    if (Em && /new followers\?|into followers/i.test(q)) return { text: `Follows score ${area('Follows').you} against 50 for a typical post by similar creators.\n\n${lines(area('Follows'))}`, cards: [] };
   }
   // 账号（首页、模块 A / B 的入口）
   if (/today/i.test(q)) {
@@ -96,7 +96,7 @@ function answerPlus(q, ctx) {
   if (/visiting my profile|profile visits/i.test(q)) {
     const pv = by.profile.value, pvp = pv - by.profile.delta, v = by.views.value, vp = v - by.views.delta;
     const A = buildModuleA({ key: '7' }), vis = A?.areas.find((a) => a.name === 'Visits');
-    return { text: `Profile views ${pv < pvp ? 'fell' : 'rose'} ${Math.abs(by.profile.deltaPct * 100).toFixed(1)}% to ${pv}, but views fell more, so more of your viewers went on to your profile.\n\n1. Profile views per 1K views: ${n1((pvp / vp) * 1000)} → ${n1((pv / v) * 1000)}\n2. Visits score ${vis ? `${vis.prev} → ${vis.you}` : '—'}, the best of your last 12 weeks\n3. End with a reason to check your other posts`, cards: [] };
+    return { text: `Profile views ${pv < pvp ? 'fell' : 'rose'} ${Math.abs(by.profile.deltaPct * 100).toFixed(1)}% to ${pv}, but views fell more, so more of your viewers went on to your profile.\n\n1. Profile views per 1K views: ${n1((pvp / vp) * 1000)} → ${n1((pv / v) * 1000)}\n2. Visits score ${vis ? vis.you : '—'}, against 50 for a typical similar creator\n3. End with a reason to check your other posts`, cards: [] };
   }
   if (/rewards (are )?worked out|on track for creator rewards/i.test(q)) {
     const { total, crp, gifts } = rewardsSplit(7);
@@ -122,10 +122,14 @@ function answer(q, ctx) {
   if (plusAns) return plusAns;
   const { by, top, k28 } = weekStats();
   const post = ctx?.postId ? POST_BY_ID[ctx.postId] : null;
-  if (/engagement|likes drop/i.test(q)) return { text: `Your likes are ${pctTxt(by.likes.deltaPct)} and comments ${pctTxt(by.comments.deltaPct)} versus the previous 7 days. Try:\n\n1. Ask a question in the first 3 seconds\n2. Pin a comment that asks where to go next\n3. Reply with a video to your most-liked question`, cards: [{ label: 'Reply to comments', go: ['tab', 'manage', 'comments'] }] };
+  // 2026-11-28：和卡片同一口径（同类创作者），不再和前 7 天比
+  if (/engagement|likes and comments|like my posts|likes drop/i.test(q)) {
+    const eg = buildModuleA({ key: '7' })?.areas.find((a) => a.name === 'Engagement');
+    return { text: `${eg ? `Your engagement ${eg.sentence}` : 'Here is how to get more likes and comments.'} Try:\n\n1. Ask a question in the first 3 seconds\n2. Pin a comment that asks where to go next\n3. Reply with a video to your most-liked question`, cards: [{ label: 'Reply to comments', go: ['tab', 'manage', 'comments'] }] };
+  }
   if (/shares/i.test(q)) {
-    const sh = topPosts('views', { key: '7' }, 1)[0];
-    return { text: `Shares ${by.shares.deltaPct >= 0 ? 'rose' : 'fell'} ${Math.abs(by.shares.deltaPct * 100).toFixed(1)}% to ${fmt(by.shares.value)} this week${Object.values(by).filter((x) => x.delta > 0).length === 1 ? ', the only key metric that went up' : ''}. Your top post this week is “${sh ? sh.post.title.split(/[#,]/)[0].trim() : '—'}”. To keep it going:\n\n1. Ask viewers to send it to the friend they would go with\n2. Pin a comment that asks who they would take`, cards: [{ label: 'View key metrics', go: ['analytics', 'overview'] }] };
+    const sa = buildModuleA({ key: '7' })?.areas.find((a) => a.name === 'Shares');
+    return { text: `${sa ? `${sa.lines[1]} for a typical similar creator, a score of ${sa.you}.` : `You got ${fmt(by.shares.value)} shares in the last 7 days.`} To get more:\n\n1. Ask viewers to send it to the friend they would go with\n2. Pin a comment that asks who they would take`, cards: [{ label: 'View key metrics', go: ['analytics', 'overview'] }] };
   }
   const src28 = trafficSources({ key: '28' });
   if (/traffic/i.test(q)) return { text: `In the last 28 days your posts got ${fmt(k28.views.value)} views (${pctTxt(k28.views.deltaPct)}) and ${fmt(k28.profile.value)} profile views. Most of your views came from the ${src28[0][0]} feed, followed by ${src28[1][0] === 'Personal profile' ? 'your profile page' : src28[1][0]}.`, cards: [{ label: 'View traffic source', go: ['analytics', 'overview'] }] };
@@ -222,7 +226,8 @@ function kindFor(q) {
   if (exact) return exact;
   if (t === summaryAnswer()?.question || /work on first/i.test(t)) return 'summary'; // 页面级问题：回答「最弱的一项先改」
   if (/post next|did best|most views\?/i.test(t)) return 'next';
-  if (/weekly performance|compare this week/i.test(t)) return 'traffic';
+  if (/^how do i compare with similar creators\?$/i.test(t)) return 'summary'; // 2026-11-27：模块 A 的分数改成和同类创作者比
+  if (/weekly performance/i.test(t)) return 'traffic';
   if (/video performance|performing|viewers leave|doing\?$/i.test(t)) return 'video';
   return null;
 }
