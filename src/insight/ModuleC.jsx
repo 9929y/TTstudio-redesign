@@ -18,7 +18,7 @@ export function ModuleC({ insight = demo, children, className }) {
     <div data-insight="C" className={[className, entering && 'enter-card'].filter(Boolean).join(' ') || undefined}
       style={{ ...CARD_STYLE, margin: 0, border: 0, boxShadow: '0 0 0 0.5px rgba(22, 24, 35, 0.12), 0 2px 12px rgba(22, 24, 35, 0.05)' }}>
       {/* Final：标题 Topic scores + AI 星形 + ⓘ（data-act 沿用旧卡的 ai-info，e2e 在用），洞察在浅蓝块里 */}
-      <CardHead title={D.cardTitle || 'Topic scores'} infoLabel={ui.infoLabel || 'About these scores'} act="ai-info" onInfo={() => setDrawer('info')} />
+      <CardHead title={D.cardTitle || 'Topic Analysis'} infoLabel={ui.infoLabel || 'About this analysis'} act="ai-info" onInfo={() => setDrawer('info')} />
       <KeyBlock k={D.key} rest={D.rest} bullets={D.bullets} next={D.next} />
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {rows.map((r, ri) => (
