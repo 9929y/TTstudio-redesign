@@ -28,20 +28,20 @@ const ICONS = {
 // 草稿里正好有「Kyoto at dusk, part 2」和「Amalfi on a budget」两条（Kyoto 播放多，Amalfi 带来的关注约是 Kyoto 的 6 倍）、
 // Creators your viewers also watched。每条控制在一行内（393pt 下文字区 289px，最长一条 286px）。
 const ASK_VIEWERS = [
-  'How can more people find me in search?', // 2026-11-28 copy pass 2: follows the summary (few found you through search)
-  'How do I get new viewers to follow me?',
-  'Who are my new viewers?', // 2026-11-28 QA: the old Kyoto question contradicted the summary (Kyoto isn't in these numbers yet)
+  'How can more people find you in search?', // 2026-11-28 copy pass 2: follows the summary (few found you through search)
+  'How can you get new viewers to follow you?',
+  'Who are your new viewers?', // 2026-11-28 QA: the old Kyoto question contradicted the summary (Kyoto isn't in these numbers yet)
   'When should I post Kyoto Part 2?',
-  'What else do my viewers watch?',
+  'What else do your viewers watch?',
 ];
 // Followers 第一条跟着卡片结论变（少了 / 多了 / 掉粉 / 持平），和结论句用同一份 followerKpis（delta = 和上一段同长时间相比）
 function askFollowers(range) {
   const [, net] = followerKpis(range);
   const first = net.value < 0 ? 'Why did I lose followers?'
     : net.delta < 0 ? 'Why did I gain fewer followers?'
-      : net.delta > 0 ? 'What brought me more followers?'
+      : net.delta > 0 ? 'What brought you more followers?'
         : 'How can I gain more followers?';
-  return [first, 'What do my followers want to see next?', 'Should I post more Kyoto or Amalfi?', 'When should I post for my followers?'];
+  return [first, 'What do your followers want to see next?', 'Should I post more Kyoto or Amalfi?', 'When should you post for your followers?'];
 }
 
 function InfoSheet({ info, host, onClose }) {

@@ -45,7 +45,7 @@ export function CreateScreen() {
           ))}
         </div>
         <button className="upload-btn" data-act="create-upload" onClick={() => openModal('picker', { mode: 'upload' })}><I.plus size={18} /> Upload</button>
-        {/* FIN-S1-Page: Curated for me sits between Upload and Drafts */}
+        {/* FIN-S1-Page: Curated for you sits between Upload and Drafts */}
         <CuratedForMe place="create" only={newAccount ? 'trend' : ''} />
         <div className="drafts-title">{market === 'store' ? 'Projects' : 'Drafts'}</div>
         {drafts.length === 0 ? (

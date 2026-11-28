@@ -1,36 +1,32 @@
 // Content summary (Analytics › Content) double-bar rows — 2026-11-28 Yanice:
 // 「在 Content 里面不希望用户是点来看信息的」→ the card shows every comparison at once, in the same double-bar rows as
-// "Compared with your posts" (ModuleD CompareRows). One metric per score area: Views, Engagement, Followers.
-// Each row = your last 7 days vs a typical similar creator (median of the same cohort and window the scores use).
-// Views and Engagement come straight from accountRadar(), so they are the numbers the Overview radar shows;
-// Followers is net followers, the metric the Followers score is ranked on (build.js B_DEFS, weekTotals().net).
-import { DAILY, PERIOD_END } from '../data/seed.js';
-import { COHORT, PEER_WEEKS } from '../data/peers.js';
-import { fmtStat } from '../data/agg.js';
+// "Compared with my posts" (ModuleD CompareRows). Two metrics (2026-11-28 Yanice: the Followers group is gone):
+// Views and Engagement, each your last 7 days vs a typical similar creator (median of the same cohort and window).
+// Both come straight from accountRadar(), so they are the numbers the Overview radar shows.
 import { accountRadar, D_COLORS, aiInfo } from './build.js';
+import { change } from './radarStats.js';
 
-// Row names follow the radar legend ("Your account" / "Similar creators"); the peer value is the group median,
+// Row names follow the radar legend ("My account" / "Similar creators"); the peer value is the group median,
 // so it is named the way the cards say it elsewhere: "a typical similar creator".
-export const CONTENT_SELF = 'Your account';
+export const CONTENT_SELF = 'My account';
 export const CONTENT_PEER = 'Typical similar creator';
 // Bar colours (owner 2026-11-28): same rule as "Compared with your posts" — metric i takes D_COLORS[i]: solid for you, its tint for the typical creator.
 
-const median = (xs) => { const s = [...xs].sort((a, b) => a - b), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
-const weekSum = (arr) => { let t = 0; for (let i = PERIOD_END - 6; i <= PERIOD_END; i++) t += arr[i] || 0; return t; };
 // Same scale as ModuleD (build.js buildModuleD): the larger of the pair fills 62% of the track.
 const widths = (a, b) => { const m = Math.max(a, b, 0) || 1; const w = (x) => `${((Math.max(0, x) / m) * 62).toFixed(1)}%`; return [w(a), w(b)]; };
 
 export function contentCompareRows() {
   const radar = Object.fromEntries(accountRadar().map((r) => [r.name, r]));
-  const net = { own: weekSum(DAILY.followersNet), peer: median(PEER_WEEKS.map((w) => w.net)) };
   const rows = [
-    { label: 'Views', own: radar.Views.own, peer: radar.Views.peer, val: radar.Views.ownText, yv: radar.Views.peerText },
-    { label: 'Reactions', own: radar.Engagement.own, peer: radar.Engagement.peer, val: radar.Engagement.ownText, yv: radar.Engagement.peerText },
-    { label: 'Followers', own: net.own, peer: net.peer, val: fmtStat(net.own), yv: fmtStat(net.peer) },
+    // Views and Engagement also show the change vs the previous 7 days (Yanice 2026-11-28), the radar's tile-1 baseline:
+    // Views = Analytics › Key metrics Post views delta; Engagement = (likes + comments) / views against the same previous
+    // 7 days (Key metrics has no Engagement tile).
+    { label: 'Views', own: radar.Views.own, peer: radar.Views.peer, val: radar.Views.ownText, yv: radar.Views.peerText, pill: change(radar.Views.own, radar.Views.usual?.base) },
+    { label: 'Engagement', own: radar.Engagement.own, peer: radar.Engagement.peer, val: radar.Engagement.ownText, yv: radar.Engagement.peerText, pill: change(radar.Engagement.own, radar.Engagement.usual?.base) },
   ];
   return rows.map((r, i) => {
     const [w, yw] = widths(r.own, r.peer);
-    return { label: r.label, val: r.val, yv: r.yv, w, yw, c: D_COLORS[i][0], yc: D_COLORS[i][1] };
+    return { label: r.label, val: r.val, yv: r.yv, pill: r.pill || null, w, yw, c: D_COLORS[i][0], yc: D_COLORS[i][1] };
   });
 }
 

@@ -39,7 +39,7 @@ const INBOX_PROMPTS = [
   'Anything here I need to act on?',
   'Why is “Kyoto at dusk” doing so well?',
   'Which comments should I answer first?',
-  'Why was my lounge video taken down?',
+  'Why was your lounge video taken down?',
 ];
 
 export function InboxScreen({ pushed }) {

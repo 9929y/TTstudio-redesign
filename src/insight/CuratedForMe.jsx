@@ -1,4 +1,4 @@
-// S1 · Curated for me (final) — Home dashboard card carousel and Create page rows.
+// S1 · Curated for you (final) — Home dashboard card carousel and Create page rows.
 // Ported from design_final/home_s7/project/IMU-S1-Final.dc.html (states per FIN-S1-Page).
 // All content comes from the `insight` prop: { title, cards: [{ k, tip, topic, rows, k_past|k_trend|k_similar }] }.
 // Card colours and illustrations come from cardArt.js (the data's old gradient `bg` is no longer used).
@@ -173,7 +173,7 @@ export function CuratedForMe({ place = 'home', insight = CURATED, onCreate, onMo
   const data = insight || CURATED;
   const cards = (data.cards || []).filter((c) => !only || c.k === only);
   const single = cards.length === 1;
-  const title = data.title || 'Curated for me';
+  const title = data.title || 'Curated for you';
   const [exp, setExp] = useState(-1);   // Create: row opened in place
   const reduce = useReducedMotion();
   const [page, setPage] = useState(0);  // Home: carousel position (real card index)

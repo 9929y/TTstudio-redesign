@@ -7,8 +7,8 @@ export const ASSISTANT_DEMO = {
     greeting: 'Hi, I’m your personal Creator Assistant! I can help you understand your account traffic, video performance and how to monetize on TikTok.',
     lead: 'Feel free to ask me questions like:',
     questions: [
-      { icon: 'traffic', text: 'How’s my account traffic?' },
-      { icon: 'video', text: 'How’s my video performance?' },
+      { icon: 'traffic', text: 'How’s your account traffic?' },
+      { icon: 'video', text: 'How’s your video performance?' },
       { icon: 'quality', text: 'What makes a video high quality?' },
       { icon: 'money', text: 'What monetization tools are there on TikTok?' },
     ],
@@ -23,7 +23,7 @@ export const ASSISTANT_DEMO = {
     traffic: trafficAnswer(),
     video: {
       from: 'From Video analysis · Kyoto at dusk',
-      question: 'How’s my video performance?',
+      question: 'How’s your video performance?',
       headline: 'Most viewers leave Kyoto at dusk at 0:01.', // 实际回答由 insight/build.js videoAnswer() 按作品生成，这里只作样例
       bullets: [
         'Viewers watched 31% of it on average.',
@@ -50,7 +50,7 @@ export const ASSISTANT_DEMO = {
           points: '48,682 52,685 56,693 60,702 64,710 68,718 72,722 76,718 80,714 84,710 88,705 92,702 96,713 100,732 104,751 108,769 112,788 116,797 120,786 124,774 128,763 132,751 136,741 140,745 144,750 148,756 152,761 156,766 160,771 164,773 168,774 172,776 176,778 180,779 184,787 188,799 192,811 196,822 200,834 204,840 208,832 212,825 216,818 220,811 224,804 228,805 232,806 236,808 240,809 244,810 248,812 252,816 256,821 260,825 264,830 268,834 272,836 276,836 280,836 284,836 288,836 292,837 296,842 300,847 304,852 308,857 312,862 316,864 320,865 324,866 328,866 332,867 336,866 340,864 344,861 348,858 352,856 356,853 360,853 364,853 368,853 372,853 376,853 380,853 384,856 388,858 392,861 396,863 400,865 404,867 408,868 412,870 416,871 420,872 424,872 428,871 432,869 436,868 440,866 444,865 448,867 452,870 456,873 460,876 464,879 468,881 472,881 476,881 480,881 484,881 488,881 492,882 496,882 500,883 504,884 508,884 512,884 516,883 520,881 524,880 528,878 532,877 536,877 540,879 544,880 548,882 552,883 556,884 560,883 564,883 568,882 572,882 576,881 580,883 584,884 588,885 592,887 596,888 600,889 604,889 608,889 612,889 616,889 620,889',
         },
       },
-      chips: ['Help me write a stronger hook', 'Where else do viewers leave?'],
+      chips: ['Write a stronger hook', 'Where else do viewers leave?'],
     },
     next: {
       question: 'What should I post next?',
@@ -72,7 +72,7 @@ export const ASSISTANT_DEMO = {
         ],
         cta: 'Start creating',
       },
-      chips: ['Give me 3 Kyoto ideas', 'When should I post?'],
+      chips: ['Suggest 3 Kyoto ideas', 'When should I post?'],
     },
     // shares：2026-11-26 改为公式算分后 Shares 不再是最弱项；Overview 进来的回答改由 insight/build.js summaryAnswer() 生成
   },

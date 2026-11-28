@@ -28,6 +28,12 @@
 .imd-line > :first-child { min-width: 0; overflow-wrap: anywhere; }
 .imd-line span { font-size: 13px; line-height: 18px; color: #161823; font-weight: 400; }
 .imd-line .imd-val { min-width: 48px; flex: none; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; } /* 600 as on main */
+.imd-line .imd-end { display: inline-flex; align-items: center; gap: 6px; flex: none; white-space: nowrap; }
+/* Key metrics pill inside a row: the .kd-pill box and tone colours, at the Key metrics delta size (12/16, 500). */
+.imd-line .kd-pill { font-size: 12px; line-height: 16px; font-weight: 500; }
+.imd-line .kd-pill.up { color: #1765c4; }
+.imd-line .kd-pill.down { color: #b4400c; }
+.imd-line .kd-pill.flat { color: #57585e; }
 /* CompareRows with onPick (Content summary): the row is a button that looks exactly like the plain row */
 .imd-row-btn { appearance: none; -webkit-appearance: none; border: 0; margin: 0; background: transparent; font: inherit; color: inherit; text-align: left; width: 100%; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .imd-track { position: relative; display: block; height: 8px; border-radius: 4px; background: #f1f1f2; overflow: hidden; }
