@@ -76,7 +76,7 @@
    当前卡（左边在 16）不受影响，滑走的卡是淡出而不是在某条线上被硬切 */
 .cfm-home .cfm-track.is-loop { -webkit-mask-image: linear-gradient(to right, transparent 8px, #000 16px); mask-image: linear-gradient(to right, transparent 8px, #000 16px); }
 /* 桌面鼠标拖动时暂停吸附，跟手移动；松手后再吸附到一张 */
-.cfm-home .cfm-track.is-loop { cursor: grab; }
+.cfm-home .cfm-track.is-loop { cursor: grab; user-select: none; -webkit-user-select: none; } /* 鼠标拖动不选中卡片文字（选中色会把卡和 Create 染暗） */
 .cfm-home .cfm-track.is-drag { scroll-snap-type: none; cursor: grabbing; user-select: none; -webkit-user-select: none; }
 @media (prefers-reduced-motion: reduce) { .cfm-dots span { transition: none; } }
 

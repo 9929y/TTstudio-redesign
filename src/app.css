@@ -1354,6 +1354,9 @@ html:has(.stage-root.embed), html:has(.stage-root.embed) body { background: tran
 /* Home 仪表盘（0034 / 0000）：深色区从 #0e0e0e 渐变；头像 64；KPI 卡 #2b2b2b、高 97、左右内缩 20 */
 .home-dash-wrap { background: #0e0e0e; }
 .home-dash { background: #f3f3f3; }
+/* Home 顶栏随仪表盘滚走（2026-11-28）：顶栏在滚动内容里占 44，深色底与原来浮层下方一致；外层只留状态栏一条深色 */
+.home-dash-wrap { padding-top: var(--status-h); }
+.home-top.in-dash { position: relative; top: auto; flex: none; background: #0e0e0e; }
 .hd-dark, .home-dash-wrap .hd-dark { background: linear-gradient(#0e0e0e, #262626); padding: 22px 16px 14px; }
 /* Ask 胶囊（或 Start creating）到 Curated for me 卡 14，和 KPI 卡到胶囊的 14 一致（原来 17 + 10 = 27；
    真机 usrec 0:34 开始创作按钮到第一张卡约 15pt）2026-11-28 */

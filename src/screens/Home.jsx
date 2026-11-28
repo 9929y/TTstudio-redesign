@@ -1,7 +1,7 @@
 // Home（2026 iOS：Home | Inspiration 全屏竖版视频流，右侧 Insights；QKE_0038）
 // Insights 弹层（ZrMm_0036，Android 平板：Post / Creator）
 // 2024–25 版 Home 仪表盘（o1g 0:21、rpfqP，放在「2024–25 IA」开关后）
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion, animate, useMotionValue } from 'framer-motion';
 import { useApp } from '../store.js';
 import { Avatar, Pills, Section, KpiCard, Cover, Scroll, LargeHeader, Spinner, CapText, asButton } from '../ui/kit.jsx';
@@ -93,7 +93,11 @@ function Spark({ seed }) {
   return <svg width="26" height="12" viewBox="0 0 26 12"><polyline points={pts.map((y, i) => `${i * 3.6},${Math.max(1, y)}`).join(' ')} fill="none" stroke="#c4c4c8" strokeWidth="1.4" /></svg>;
 }
 
-function HomeDashboard() {
+function HomeDashboard({ nav }) {
+  // Discover 期间仪表盘是 display:none，浏览器会丢掉滚动位置；切回 Home 时放回切走前的位置
+  const homeTab = useApp((s) => s.homeTab);
+  const scrollRef = useRef(null);
+  useLayoutEffect(() => { const y = useApp.getState().scroll['home-dashboard']; if (homeTab === 'home' && y && scrollRef.current) scrollRef.current.scrollTop = y; }, [homeTab]);
   const switchTab = useApp((s) => s.switchTab);
   const push = useApp((s) => s.push);
   const openSheet = useApp((s) => s.openSheet);
@@ -116,7 +120,10 @@ function HomeDashboard() {
     : chip === 'posts' ? INSPIRATION.slice(0, 5).map((x) => ({ id: x.id, title: x.caption, views: x.views, item: x }))
       : INSPIRATION.slice(0, 5).map((x) => ({ id: x.id, title: `@${x.creator}`, views: x.creatorStats.followers, item: x, creator: true }));
   return (
-    <Scroll id="home-dashboard" className="with-tabbar home-dash" onScroll={(e) => { const v = e.currentTarget.scrollTop > 120; if (v !== useApp.getState().homeScrolled) useApp.setState({ homeScrolled: v }); }}>
+    // 2026-11-28 Yanice「滚动后上面应该就不会留在最上面的位置了」：Home | Discover 顶栏放进滚动内容，和深色仪表盘一起滚走；
+    // 只有状态栏那一条留在深色底上（不再变成浅色顶栏，所以也不再写 homeScrolled）
+    <Scroll id="home-dashboard" className="with-tabbar home-dash" innerRef={scrollRef}>
+      {nav}
       <div className="hd-dark">
         <div className="hd-profile"><Avatar size={64} label="ML" /><div><div className="hd-name">{ACCOUNT.name}</div><div className="hd-sub"><b>{na ? 0 : fmt(total)}</b> followers <span>|</span> <b>{na ? 1 : POSTS.length}</b> {na ? 'post' : 'posts'}</div></div></div>
         <div className="hd-tiles">
@@ -214,7 +221,6 @@ export function HomeScreen() {
   const push = useApp((s) => s.push);
   const newAccount = useApp((s) => s.newAccount);
   const us = market === 'store';
-  const homeScrolledRaw = useApp((s) => s.homeScrolled);
   const [feedLoading, setFeedLoading] = useState(false);
   const feedSeen = useRef(false);
   useEffect(() => { if (homeTab === 'inspiration' && !feedSeen.current) { feedSeen.current = true; setFeedLoading(true); const t = setTimeout(() => setFeedLoading(false), 650); return () => clearTimeout(t); } }, [homeTab]);
@@ -224,25 +230,29 @@ export function HomeScreen() {
   // 美国版全屏视频流：顶部「Trending | Inspiration」（appstore_inspiration_insights）；非美区：「Home | Inspiration」（QKE_0038）
   // 美国 2026-11-22 / 巴西 2026-11：Home | Discover（首页 | 发现）；2026-08 英语区为 Home | Inspiration
   const tabs = us ? [['trending', 'Trending'], ['inspiration', 'Inspiration']] : [['home', 'Home'], ['inspiration', 'Discover']];
-  const scrolled = homeScrolledRaw && homeTab === 'home' && !us;
+  // Home 仪表盘上顶栏在滚动内容里（随内容滚走）；Discover / 美国版视频流上仍浮在视频上方
+  const navInDash = homeTab === 'home' && !us;
+  const nav = (
+    <div className={`home-top ${navInDash ? 'in-dash' : ''}`}>
+      {homeTab !== 'home' ? <button aria-label="Create" data-act="home-create" onClick={() => openModal('picker', { mode: 'upload' })}><I.plusCircleFill size={28} /></button> : <span style={{ width: 28 }} />}
+      <div className="home-tabs">
+        {tabs.map(([t, l]) => (
+          <button key={t} data-act={`home-tab-${t}`} className={homeTab === t ? 'on' : ''} onClick={() => setHomeTab(t)}>
+            {l}{homeTab === t && <motion.i layoutId="ht" className="ht-line" />}
+          </button>
+        ))}
+      </div>
+      <button aria-label="Search" data-act="open-topic-search" onClick={() => push('topicSearch')}>{us ? <I.search size={26} /> : <I.searchSpark size={26} />}</button>
+    </div>
+  );
   return (
     <div className="screen black">
       <div style={{ display: homeTab === 'inspiration' ? 'block' : 'none' }}><Feed items={INSPIRATION} k="inspiration" /></div>
       {/* 美国 2026-11-22（usrec 1:33–1:35）：首次进入 Discover 是白底 + 两点 loading */}
       {feedLoading && homeTab === 'inspiration' && <div className="feed-loading"><Spinner /></div>}
       {us && <div style={{ display: homeTab === 'trending' ? 'block' : 'none' }}><Feed items={[...INSPIRATION].reverse()} k="trending" /></div>}
-      {!us && <div className="home-dash-wrap" style={{ display: homeTab === 'home' ? 'flex' : 'none' }}><HomeDashboard /></div>}
-      <div className={`home-top ${scrolled ? 'light' : ''}`}>
-        {homeTab !== 'home' ? <button aria-label="Create" data-act="home-create" onClick={() => openModal('picker', { mode: 'upload' })}><I.plusCircleFill size={28} /></button> : <span style={{ width: 28 }} />}
-        <div className="home-tabs">
-          {tabs.map(([t, l]) => (
-            <button key={t} data-act={`home-tab-${t}`} className={homeTab === t ? 'on' : ''} onClick={() => setHomeTab(t)}>
-              {l}{homeTab === t && <motion.i layoutId="ht" className="ht-line" />}
-            </button>
-          ))}
-        </div>
-        <button aria-label="Search" data-act="open-topic-search" onClick={() => push('topicSearch')}>{us ? <I.search size={26} /> : <I.searchSpark size={26} />}</button>
-      </div>
+      {!us && <div className="home-dash-wrap" style={{ display: homeTab === 'home' ? 'flex' : 'none' }}><HomeDashboard nav={navInDash ? nav : null} /></div>}
+      {!navInDash && nav}
     </div>
   );
 }
