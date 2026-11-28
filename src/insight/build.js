@@ -199,9 +199,9 @@ function accountKeyA(areas) {
   const hi = content.reduce((a, b) => (b.you > a.you ? b : a)), lo = content.reduce((a, b) => (b.you < a.you ? b : a));
   const bullets = [peerFact(lo, lo.def?.[0]), A_REST[lo.name].trim()].filter(Boolean);
   if (areas.every((a) => Math.abs(a.you - 50) < 8)) return { key: 'You are close to a typical similar creator in every area.', rest: '', bullets, lo };
-  if (hi.you < 50) return { key: `Every area is below a typical similar creator, ${A_NOUN[lo.name].toLowerCase()} most of all.`, rest: '', bullets, lo };
+  if (hi.you < 50) return { key: `${A_NOUN[lo.name]} has the most room to grow against similar creators.`, rest: '', bullets, lo };
   const verb = A_NOUN[hi.name].endsWith('s') ? 'are' : 'is';
-  return { key: `Against similar creators, ${A_NOUN[hi.name].toLowerCase()} ${verb} your strongest area, while ${A_NOUN[lo.name].toLowerCase()} trails.`, rest: '', bullets, lo };
+  return { key: `Against similar creators, ${A_NOUN[hi.name].toLowerCase()} ${verb} your strongest area, and ${A_NOUN[lo.name].toLowerCase()} has the most room to grow.`, rest: '', bullets, lo };
 }
 const B_HI = { Views: 'Reach', Engagement: 'Engagement', Followers: 'Follower growth' };
 const B_LO = { Views: 'reach', Engagement: 'engagement', Followers: 'new followers' };
@@ -214,8 +214,8 @@ function accountKeyB(areas) {
   const hi = areas.reduce((a, b) => (b.you > a.you ? b : a)), lo = areas.reduce((a, b) => (b.you < a.you ? b : a));
   const bullets = [peerFact(lo, lo.def?.[0]), B_REST[lo.name].trim()].filter(Boolean);
   if (areas.every((a) => Math.abs(a.you - 15) < 3)) return { key: 'You are close to a typical similar creator at every step.', rest: '', bullets };
-  if (hi.you < 15) return { key: `All three steps are below a typical similar creator, ${B_LO[lo.name]} most of all.`, rest: '', bullets };
-  return { key: `Against similar creators, ${B_HI[hi.name].toLowerCase()} holds up best, while ${B_LO[lo.name]} trails.`, rest: '', bullets };
+  if (hi.you < 15) return { key: `${cap(B_LO[lo.name])} have the most room to grow against similar creators.`, rest: '', bullets };
+  return { key: `Against similar creators, ${B_HI[hi.name].toLowerCase()} holds up best, and ${B_LO[lo.name]} have the most room to grow.`, rest: '', bullets };
 }
 
 // 卡片 ⓘ 的「Compared with」一句（A、B 共用）
@@ -313,34 +313,10 @@ export const dropMoment = (p) => secToClock(Math.max(1, biggestDrop(p.retention)
 // 2026-11-27 晚：不说 per view / rate，改成创作者听得懂的说法（「viewers liked it less often」）
 // 2026-11-27 Yanice 改：比较对象从「你的同类作品」换成「同类创作者的同类作品」
 const PEER_POST = 'a typical post by similar creators';
-// 2026-11-28 copy pass (Yanice: the summary picks the most important signal and says why it is good or bad and what to
-// do; no "1 in 4", no "78×", the numbers are on the radar). Paragraph = finding against similar videos + one lesson;
-// bullets = the first-second fact + a next step, one line each.
-const E_HI = { Reach: 'reached more viewers', Retention: 'held viewers longer', Likes: 'got liked more often', Shares: 'got shared more often', Follows: 'got more viewers to follow you' };
-const E_LO = { Reach: 'it reached fewer viewers', Retention: 'fewer watched to the end', Likes: 'viewers liked it less often', Shares: 'fewer shared it', Follows: 'fewer viewers followed you' };
-// "similar videos" (matches the radar legend), not "similar creators’ posts" (QA M6)
-const E_LO_ONLY = {
-  Reach: 'This post reached fewer viewers than similar videos.',
-  Retention: 'Fewer viewers watched this post to the end than similar videos.',
-  Likes: 'Viewers liked this post less often than similar videos.',
-  Shares: 'Viewers shared this post less often than similar videos.',
-  Follows: 'Fewer viewers followed you from this post than from similar videos.',
-};
-// The lesson: what to change when an area trails similar videos, what to repeat when it leads
-const E_LO_LESSON = {
-  Reach: 'Use searchable words in your caption.',
-  Retention: 'Show the best moment sooner.',
-  Likes: 'Give viewers a payoff worth a like.',
-  Shares: 'Add a tip or cost people want to send.',
-  Follows: 'Say what’s coming next at the end.',
-};
-const E_HI_LESSON = {
-  Reach: 'Reuse its topic and format next.',
-  Retention: 'Keep this length and pace next time.',
-  Likes: 'Make a follow-up on the same topic.',
-  Shares: 'Make more posts people want to pass on.',
-  Follows: 'Make it a series so they stay.',
-};
+// 2026-11-28 copy pass 2 (Yanice: "not insightful"; the radar already shows how each area compares, so the text never
+// restates it): sentence 1 = why, from this post's own data (length, comment words, first-second drop, search share);
+// sentence 2 = one concrete step. No status words, ratios or %. "similar videos" matches the radar legend.
+const ASK_WORD = { itinerary: 'the itinerary', budget: 'the budget', crowds: 'crowd tips' };
 // Same thresholds as the radar status words (radarStats.js STATUS_STRONG / STATUS_BEHIND)
 const RADAR_STRONG = 60, RADAR_BEHIND = 40;
 // Near-ties (within 5 points) go to the area that matters most to growth
@@ -405,26 +381,39 @@ export function buildModuleE(p) {
   const top = Math.max(...areas.map(R));
   const hi = E_ORDER.map((name) => areas.find((a) => a.name === name)).find((a) => R(a) >= top - 5);
   const lo = areas.reduce((a, b) => (R(b) < R(a) ? b : a));
-  const ratio = tv ? v / tv : 1;
-  const hiPhrase = (a) => (a.name === 'Reach' && ratio >= 2 ? 'reached far more viewers' : E_HI[a.name]);
-  // 2026-11-28 (Yanice: no bullet points anywhere): paragraph only. Sentence 1 = finding against similar videos;
-  // sentence 2 = what to fix when an area trails, otherwise why it worked (the opening) and what to repeat.
   const at = Math.max(1, biggestDrop(p.retention)), moment = dropMoment(p);
   const lost = Math.round(((p.retention[at - 1] ?? 1) - (p.retention[at] ?? 1)) * 100);
   const usual = Math.round(median(comp.map((q) => q.firstSecondLeft)) * 100);
-  const opening = at !== 1 ? `Most viewers leave at ${moment}, so show the best part sooner.`
-    : lost < usual - 1 ? 'Its opening held viewers, so reuse it.'
-      : lost > usual + 1 ? 'More viewers left at the start, so lead with your best shot.' : null;
+  // The card sits on this post's own page, so the text says "this video" rather than repeating its title
+  const dur = p.duration;
+  const ask = ASK_WORD[(p.topWords || [])[0]];
+  const search = p.traffic?.Search ?? 0;
+  const untitled = !(p.title || '').trim();
   let key, lesson;
-  if (R(hi) >= RADAR_STRONG && R(lo) < RADAR_BEHIND) { key = `This post ${hiPhrase(hi)} than similar videos, but ${E_LO[lo.name]}.`; lesson = E_LO_LESSON[lo.name]; }
-  else if (R(hi) >= RADAR_STRONG) {
-    // An all-round winner says so: every area Strong on the radar, or every area but one
-    const strong = areas.filter((a) => R(a) >= RADAR_STRONG).length;
-    key = `This post ${hiPhrase(hi)} than similar videos${strong === areas.length ? ' and beat them in every area' : strong === areas.length - 1 ? ' and beat them in almost every area' : ''}.`;
-    lesson = opening || E_HI_LESSON[hi.name];
+  if (R(lo) < RADAR_BEHIND) {
+    // Explain the area with the most room to grow (the radar shows which); the step works on it
+    const keepsWatching = R(areas.find((a) => a.name === 'Retention')) >= RADAR_BEHIND;
+    ({ key, lesson } = {
+      Likes: { key: dur <= 20 ? `At ${dur} seconds, this video moves on before viewers have a reason to react.` : `This video ${keepsWatching ? 'holds viewers but ' : ''}gives them no clear moment to react to.`,
+        lesson: ask ? `Reply to the ${ask.replace(/^the /, '')} asks with a video.` : 'End on a payoff, like a price or the view.' },
+      Shares: ask ? { key: `Comments ask for ${ask}, which the video may not show yet.`, lesson: 'Putting it on screen may help people send it on.' }
+        : { key: 'This video may not give viewers a route, price or tip worth sending.', lesson: 'Adding one on screen may help people pass it on.' },
+      Follows: { key: 'This video gave viewers little reason to come back for the next one.', lesson: 'End by saying what the next part covers.' },
+      Retention: { key: at !== 1 ? `The best part comes after most viewers leave at ${moment}.` : 'The best part of this video comes after many viewers have left.',
+        lesson: 'Open on the finished shot and cut the setup.' },
+      Reach: { key: search < 0.05 ? 'Search brought few viewers, so this video leaned on For You.' : 'This video hasn’t found many viewers beyond For You yet.',
+        lesson: untitled ? 'Give it a title with the place name, and say it aloud.' : 'Say the place in the caption, on screen and aloud.' },
+    }[lo.name]);
+  } else if (R(hi) >= RADAR_STRONG) {
+    // Nothing has much room to grow: say what worked, then how to build on it (Creator Rewards needs posts over a minute)
+    key = lost < usual - 1 ? 'Reuse this opening, since it keeps more viewers than similar videos.'
+      : ask ? `Its comments ask for ${ask}, so a follow-up has a ready audience.` : 'This video worked for viewers new to you, so its format is worth repeating.';
+    lesson = untitled ? 'Add a title with the place name next time.'
+      : dur < 60 ? 'Make the follow-up over a minute for Creator Rewards.' : 'Reuse its opening and length next time.';
+  } else {
+    key = 'Nothing set this video apart from similar videos yet.';
+    lesson = at !== 1 ? `Most viewers leave at ${moment}, so show the best part sooner.` : 'Try opening on the finished shot next time.';
   }
-  else if (R(lo) < RADAR_BEHIND) { key = E_LO_ONLY[lo.name]; lesson = E_LO_LESSON[lo.name]; }
-  else { key = 'This post performed like similar videos.'; lesson = opening || 'Change one thing next time to stand out.'; }
   const n = comp.length;
   return {
     ...E0, cardTitle: 'Post summary', total, prevTotal: 50, prev2Total: 50, areas, key, rest: ` ${lesson}`, bullets: [], next: null,
@@ -520,27 +509,38 @@ export function buildModuleD(item, { topics = null, words = [] } = {}) {
   // 播放量取决于账号大小，最大差距只在三个「每千次播放」里选
   const rated = rows0.slice(1).map((r) => ({ ...r, gap: Math.max(r.a / r.b, r.b / r.a) }));
   const g = rated.reduce((a, b) => (b.gap > a.gap ? b : a));
-  // 2026-11-28 copy pass: no "1.3×" (the rows show the numbers), no bullets. Paragraph = how their viewers react against
-  // yours + what the comments ask for (the reason), ending with the next step from the top ask.
-  const who = `@${item.creator}${item.creator.endsWith('s') ? '’' : '’s'} viewers`;
-  const VERB = { likes: 'like this post', comments: 'comment', favorites: 'save it' };
-  let key;
-  if (g.gap < 1.15) key = `${who} react about as often as yours.`;
-  else if (g.a > g.b) key = `${who} ${VERB[g.noun]} ${g.gap >= 1.5 ? 'far more' : 'more'} often than yours.`;
-  else key = `${who} ${VERB[g.noun]} less often than yours.`;
-  const top = topics && topics.length >= 2 ? topics[0][1] : words.length ? words[0][0] : null;
-  // The two biggest comment topics are 58% of comments (commentTopics: 32% + 26%), so "most comments" holds
-  const idea = top ? `, so ${TOPIC_IDEA[top] || 'try its format in your next post'}` : '';
-  const t0 = topics && topics.length >= 2 ? TOPIC_SHORT[topics[0][1]] || topics[0][0].toLowerCase() : '';
-  const t1 = topics && topics.length >= 2 ? (TOPIC_SHORT[topics[1][1]] || topics[1][0].toLowerCase()).replace(t0.startsWith('the ') ? /^the / : /^$/, '') : '';
-  const rest = topics && topics.length >= 2 ? ` Most comments ask about ${t0} and ${t1}${idea}.`
-    : words.length ? ` Their top comment word is “${words[0][0]}”${idea}.` : '';
+  // 2026-11-28 copy pass 2 (Yanice: card renamed "Inspire me"; its rows show Engagement and Reach against her typical
+  // post, so the summary never repeats them): what the comments reveal viewers wanted (top two comment topics, or the
+  // top comment word when topics are off) and how Mira can use that in her own next travel video. Every sentence is an
+  // interpretation or a recommendation; facts only appear as the reason inside one.
+  const t0 = topics && topics.length >= 2 ? topics[0][1] : null, t1 = topics && topics.length >= 2 ? topics[1][1] : null;
+  const w0 = !t0 && words.length ? String(words[0][0]).toLowerCase() : null;
+  const has = (k) => t0 === k || t1 === k;
+  const WANT = {
+    itinerary: 'People here want to copy the trip, not just watch it.',
+    budget: 'People here are pricing the trip for themselves.',
+    'part 2': 'People here want more, so the post works as the start of a series.',
+    edit: 'People here enjoy how it’s made as much as where it goes.',
+    crowds: 'People here want the place without the crowds.',
+    trip: 'People here picture going with a friend.',
+  };
+  let key, step;
+  if (t0) {
+    key = WANT[t0] || 'The comments show what people want to see next.';
+    step = has('itinerary') && has('budget') ? `Show the route and costs on screen in your ${t0 === 'budget' ? 'Amalfi budget draft' : 'Kyoto Part 2'}.`
+      : has('budget') && has('part 2') ? 'List each price in your Amalfi draft and say what’s next.'
+        : has('itinerary') && has('part 2') ? 'Show each stop in your Kyoto Part 2, and end by saying what’s next.'
+          : `${cap(TOPIC_IDEA[t0] || 'try its format')} in your next post.`;
+  } else if (w0) {
+    key = w0 === 'itinerary' ? '“Itinerary” keeps coming up, so people want a plan they can follow.' : `“${cap(w0)}” keeps coming up, so it’s what people care about most here.`;
+    step = w0 === 'itinerary' ? 'Make your Kyoto Part 2 that plan, with each stop on screen.' : w0 === 'budget' ? 'List each price on screen in your Amalfi budget draft.' : 'Answer it in your next post.';
+  } else { key = 'The comments will show what people want once more come in.'; step = 'Try its format in your next post.'; }
+  const rest = ` ${step}`;
   const bullets = [];
   return {
     id: item.id, creator: item.creator, cardTitle: 'Compared with your posts', key, rest, bullets, next: null, rows, ratio: { noun: g.noun, gap: g.gap, ahead: g.a > g.b }, ask: askD(item, topics),
     info: [
       { t: 'Compared with', lines: [`Your typical post: the middle of your ${comp.length} public posts, each over its first ${age} day${age > 1 ? 's' : ''}.`], i_people: true },
-      { t: 'How to read this chart', lines: ['Each metric has two bars: this post on top, your typical post below. The longer bar is the higher value.'], i_info: true },
     ],
   };
 }
@@ -606,14 +606,21 @@ export function buildModuleC(q, ins) {
   let key, rest, bullets;
   if (isDoc) { key = C0.key; rest = C0.rest; bullets = []; }
   else {
-    const hot = pop >= 60, fit = rel >= 70 ? 'fits your travel posts' : rel >= 50 ? 'is close to what you post' : null;
-    if (fit) key = `This topic ${fit}${hot ? ' and is in demand right now' : pop < 40 ? ', but it’s a niche topic' : ''}.`;
-    else key = hot ? 'This topic is in demand right now, but far from your travel posts.' : pop >= 40 ? 'This topic gets steady interest, but it’s far from your travel posts.' : 'This is a niche topic, and it’s far from your travel posts.';
-    const crowd = comp <= 25 ? 'Few creators cover it yet' : comp <= 45 ? 'There’s room for new creators' : comp < 70 ? 'Some creators already cover it' : 'Many creators already cover it';
-    // Off-topic: the crowd level decides whether it is worth the detour (Relevance = your posts and what your viewers watch)
-    // No bullets (2026-11-28): the next step ends the second sentence
-    rest = fit ? ` ${crowd}, so try it as ${travel ? 'an itinerary' : 'a review'} post.`
-      : comp >= 70 ? ' It’s crowded too, so only try it with a travel angle.' : ` ${comp <= 45 ? crowd : 'Some creators cover it'}, but only try it with a travel angle.`;
+    // 2026-11-28 copy pass 2 (Yanice: the bars already show the scores, so never restate them): sentence 1 = why it
+    // does or doesn't suit her, from her own posts (the best-viewed public post that shares a word with the search);
+    // sentence 2 = the angle to take, using the least-posted of the top sub-topics ("Creators are posting" rows).
+    const words = String(q || '').toLowerCase().split(/[^a-z0-9-]+/).filter((w) => w.length >= 4);
+    const hits = (w) => POSTS.filter((p) => p.privacy === 'everyone' && (p.title || '').toLowerCase().includes(w)).length;
+    const word = words.map((w) => [w, hits(w)]).filter(([, n]) => n > 0).sort((x, y) => y[1] - x[1])[0];
+    // Keep the word's case from her own titles ("Kyoto", "carry-on")
+    const asTitled = word ? (POSTS.map((p) => (p.title || '').replace(/#\S+/g, '').match(new RegExp(word[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'))).find(Boolean) || [word[0]])[0] : '';
+    const yours = word ? `Your ${asTitled} post${word[1] > 1 ? 's' : ''}` : null;
+    const subs = (ins?.rows || []).map(([t]) => t);
+    const fit = rel >= 50;
+    if (fit) key = yours ? `Viewers already know you for ${yours.replace(/^Your /, '')}.` : 'It’s close to what your viewers already watch.';
+    else key = yours ? `Few of your posts cover ${word[0]}, so viewers may not expect it.` : 'Your viewers come for travel, so this may not reach them.';
+    rest = fit ? (subs.length >= 2 ? ` Start with ${subs[1]}, a less crowded spot than ${subs[0]}.` : ` Try it as ${travel ? 'an itinerary' : 'a review'}.`)
+      : pop >= 60 ? ' If you try it, give it a travel angle, like a packing tip.' : ' Your Kyoto Part 2 draft may be a better use of this week.';
     bullets = [];
   }
   const rows = C0.rows.map((r) => {
@@ -741,7 +748,7 @@ export function summaryAnswer() {
   return {
     from: 'From Performance summary',
     question: SUMMARY_Q[lo.name],
-    headline: `${lo.name} is your lowest area against similar creators, so start there.`,
+    headline: `${lo.name} has the most room to grow against similar creators, so start there.`,
     bullets,
     module: { type: 'performanceSummary', title: 'Performance summary' },
     chips: ['How can I get more likes and comments?', 'When should I post?'],
@@ -772,7 +779,8 @@ export function homePrompts() {
 export function askA() {
   return {
     // 未选中时轮播（Yanice 2026-11-26 确认保留），第一条是页面级问题
-    prompts: ['What should I work on first?', 'What got more people to like my posts?', 'How do I compare with similar creators?', 'Which post did best in the last 7 days?'],
+    // 2026-11-28 copy pass 2: the first question follows the summary (Kyoto at dusk is too short for Creator Rewards)
+    prompts: ['How can I earn Creator Rewards?', 'Which post did best in the last 7 days?', 'How do I compare with similar creators?', 'What should I work on first?'],
     byArea: {
       Views: 'Which posts drove views?',
       Engagement: 'How can I get more likes and comments?',
@@ -784,7 +792,8 @@ export function askA() {
 }
 export function askB() {
   return {
-    prompts: ['Which post brought the most views?', 'How can I get more people to react?', 'Where did my new followers come from?'],
+    // 2026-11-28 copy pass 2: follows the summary (Kyoto at dusk was the only new post and brought the most followers)
+    prompts: ['When should I post Kyoto Part 2?', 'Where did my new followers come from?', 'Which post brought the most views?'],
     byArea: {
       Views: 'Which posts drove views?',
       Engagement: 'How can I get more likes and comments?',
@@ -797,8 +806,13 @@ export function askE(p, E) {
   const sc = Object.fromEntries((E?.areas || []).map((a) => [a.name, a.you]));
   // 高于典型同类作品（≥ 50）问「是什么起了作用」，低于问「下次怎么做」
   const up = (n) => (sc[n] ?? 50) >= 50;
+  // 2026-11-28 copy pass 2: the first question follows the summary, which works on the area with the most room to grow
+  const ranks = Object.fromEntries((postRadar(p) || []).map((r) => [r.key, r.rank]));
+  const loKey = Object.keys(ranks).reduce((a, b) => (ranks[b] < ranks[a] ? b : a), Object.keys(ranks)[0]);
+  const LEAD = { Reach: 'How can more people find this post?', Retention: `Why do viewers leave at ${drop}?`, Likes: 'How can I get more likes next time?', Shares: 'How can I get more shares and saves?', Follows: 'How can I turn viewers into followers?' };
+  const lead = loKey && ranks[loKey] < RADAR_BEHIND ? LEAD[loKey] : `Why do viewers leave at ${drop}?`;
   return {
-    prompts: [`Why do viewers leave at ${drop}?`, 'How does it compare to similar videos?', 'Where did this post’s views come from?'],
+    prompts: [...new Set([lead, `Why do viewers leave at ${drop}?`, 'How does it compare to similar videos?', 'Where did this post’s views come from?'])].slice(0, 3),
     byArea: {
       Reach: 'Where did this post’s views come from?',
       Retention: `Why do viewers leave at ${drop}?`,
@@ -811,7 +825,8 @@ export function askE(p, E) {
 export function askD(item, topics) {
   const t = topics && topics[0];
   return {
-    prompts: ['What can I learn from this post?', t ? `Why do viewers ask about ${TOPIC_SHORT[t[1]] || t[0].toLowerCase()}?` : 'What do viewers say in the comments?', 'How could I try this in my next post?'],
+    // 2026-11-28 copy pass 2: the summary is what to borrow, so the first question asks how
+    prompts: ['How could I try this in my next post?', 'What can I learn from this post?', t ? `Why do viewers ask about ${TOPIC_SHORT[t[1]] || t[0].toLowerCase()}?` : 'What do viewers say in the comments?'],
   };
 }
 
@@ -827,7 +842,7 @@ export function rewardsSplit(days) {
 
 // ---------- S5 Viewers / Followers：一句话洞察（Final FIN-S5-Audience-Page · IMS5-Insight） ----------
 // 数字和同页 Key metrics、Viewer insights、Most active times 用同一份数据；日期跟着 Key metrics 的下拉
-import { VIEWERS_LAG, FOLLOWER_INSIGHTS, VIEWER_INSIGHTS, ACTIVE_DAYS, activeHours } from '../data/seed.js';
+import { VIEWERS_LAG, FOLLOWER_INSIGHTS, VIEWER_INSIGHTS, ACTIVE_DAYS, activeHours, SEED_DRAFTS } from '../data/seed.js';
 // 段落里的「是谁」：最大的年龄段 + 最多的国家（只说数据能撑住的：最大一组、几成）
 const TENTHS = ['', 'One in ten', 'Two in ten', 'Three in ten', 'Four in ten', 'Half', 'Six in ten', 'Seven in ten', 'Eight in ten', 'Nine in ten'];
 function audienceLine(ins, who, skipGender) {
@@ -895,20 +910,30 @@ export function buildAudience(tab, range = { key: '7' }) {
       const lead = topViewsIn(vs, ve), most = sum(lead.daily, vs, ve) >= 0.5 * sum(DAILY.views, vs, ve);
       key = `You reached ${amount} people, ${most ? 'mostly thanks to' : 'led by'} ${shortName(lead)}.`;
     } else key = `You reached about as many people as ${before}.`;
-    const newWho = share >= 0.85 ? 'Almost all were new to you' : share >= 0.6 ? 'Most were new to you' : share >= 0.4 ? 'About half were new to you' : 'Most had watched you before';
     const ma = mostActive();
-    const searchShare = (trafficSources(range).find(([k]) => k === 'Search') || [, 0])[1];
+    const src = trafficSources(range);
+    const searchShare = (src.find(([k]) => k === 'Search') || [, 0])[1];
+    const fyp = (src.find(([k]) => k === 'For You') || [, 0])[1];
     const qPost = [topViewsIn(vs, ve), ...POSTS].find((p) => p.searchQueries?.length);
     const query = qPost ? qPost.searchQueries[0][0] : null;
+    // 2026-11-28 copy pass 2 (Yanice: text-only card = more detail, customised): sentence 2 says who they were and how
+    // they found you (For You vs Search, Traffic sources), and what that means; bullets = who they are and what they
+    // search + the next step (search words in caption, on screen and aloud, posted at their peak; 08_tiktok_ranking_signals.md).
+    const newWho = share >= 0.85 ? 'Almost all were new to you' : share >= 0.6 ? 'Most were new to you' : share >= 0.4 ? 'About half were new to you' : 'Most had watched you before';
+    const how = fyp >= 0.7 && searchShare < 0.05 ? ' and found you on For You, not search, so one post still decides most of your reach.'
+      : searchShare >= 0.15 ? ', and many found you through search, so clear place names are working.'
+        : ' and few came from search, so people looking for trips may not find you yet.';
+    const age = VIEWER_INSIGHTS.Age.reduce((a, b) => (b[1] > a[1] ? b : a))[0].replace('-', ' to ');
+    const loc = VIEWER_INSIGHTS.Locations.filter((x) => x[0] !== 'Other').reduce((a, b) => (b[1] > a[1] ? b : a))[0];
+    const where = loc === 'United States' ? 'in the US' : loc === 'United Kingdom' ? 'in the UK' : `in ${loc}`;
+    const part2 = SEED_DRAFTS.find((d) => /part 2/i.test(d.desc));
     return setProvenance({
       cardTitle: 'Viewer summary',
       key,
-      // 2026-11-28 ranking signal = search (08_tiktok_ranking_signals.md): how much Search brings (Traffic source) and
-      // the top search term behind the post that brought the most views; the next step is to say that term naturally.
-      rest: ` ${newWho}, and search brought ${searchShare < 0.05 ? 'only a few of them' : searchShare < 0.15 ? 'some of them' : 'many of them'}.`,
-      // Viewers has no chart under the summary, so it keeps 1–2 bullets (Yanice 2026-11-28); the last is the next step.
-      bullets: query ? [`Top search: “${query}”.`, 'Say it in your caption, on screen and aloud.']
-        : [`They’re most active ${ma.day} around ${hourLabel(ma.peak)}.`, 'Schedule your next post for then.'],
+      rest: ` ${newWho}${how}`,
+      // Viewers has no chart under the summary, so it keeps 2 bullets (Yanice 2026-11-28); the last is the next step.
+      bullets: query ? [`Viewers ${age} ${where} search “${query}”, so a full plan fits them.`, `Put it in ${part2 ? 'Part 2’s' : 'your next'} caption, on screen and aloud, and post ${ma.day} near ${hourLabel(ma.peak)}.`]
+        : [`Viewers ${age} ${where} are most active ${ma.day} ${ma.part}, so that’s your best slot.`, `Name the place in your caption, on screen and aloud, and post ${ma.day} near ${hourLabel(ma.peak)}.`],
       next: null,
       info: [
         { ic: 'people', t: 'Compared with', lines: [`Your viewers in the ${vlen} days before this period.`] },
@@ -924,21 +949,37 @@ export function buildAudience(tab, range = { key: '7' }) {
   // 2026-11-28 copy pass (Yanice: "most of your followers are women, you should …", no "2 in 3"; say why and what to
   // do). Sentence 1 = did growth speed up or slow down (the Net followers tile has the numbers); sentence 2 = why: a
   // stretch with no post and no growth, or the post that brought the most followers. Bullets = who they are + next step.
+  // 2026-11-28 copy pass 2 (Yanice: no status word as the headline; text-only card = more detail, customised): the
+  // paragraph leads with why (a stretch with no post and no growth, or the post that brought the most followers) and
+  // what may help; bullets = who they are and when they're on + the next step (series, posting rhythm; 08_tiktok_ranking_signals.md).
   const n = net.value, diff = n - prev, when = days === 7 ? 'this week' : `in the last ${span}`;
-  const key = n < 0 ? `You lost more followers than you gained ${when}.`
-    : Math.abs(diff) <= Math.max(1, Math.round(Math.abs(prev) * 0.05)) ? `Your follower growth held steady ${when}.`
-    : `Your follower growth ${diff < 0 ? 'slowed' : 'picked up'} ${when}.`;
   const stall = diff <= 0 ? followerStall(range) : null;
-  // Followers has no chart under the summary, so it keeps 1–2 bullets (Yanice 2026-11-28): who they are + next step
   const top = topFollowPost(range);
-  const rest = stall ? `It stalled for ${numWord(stall.len)} days without a post and only picked up with ${shortName(stall.post)}.`
-    : top ? `${cap(shortName(top))} brought the most new followers, so make more like it.` : '';
+  let key, rest;
+  if (stall) {
+    key = `Your followers grow when you post, since they stalled for ${numWord(stall.len)} days without one and picked up with ${shortName(stall.post)}.`;
+    rest = 'A steadier posting rhythm may help them keep growing.';
+  } else if (n < 0) {
+    key = `You lost more followers than you gained ${when}${top ? `, even with ${shortName(top)} bringing new ones` : ''}.`;
+    rest = 'Posting again soon on the topic they followed you for may help win them back.';
+  } else if (top) {
+    key = `${cap(shortName(top))} won you the most followers ${when}, so that place is worth revisiting.`;
+    rest = 'A follow-up there may help keep them watching.';
+  } else {
+    key = `Few new posts reached new people ${when}, so follower growth was quiet.`;
+    rest = 'Posting a few times a week may help.';
+  }
+  const ma = mostActive();
+  const fGender = FOLLOWER_INSIGHTS.Gender[0], fLoc = FOLLOWER_INSIGHTS.Locations[0];
+  const whoF = [fGender[1] > 0.5 ? `mostly ${fGender[0] === 'Female' ? 'women' : 'men'}` : null, fLoc[1] > 0.5 && fLoc[0] === 'United States' ? (fGender[1] > 0.5 ? 'in the US' : 'mostly in the US') : null].filter(Boolean);
+  const part2 = SEED_DRAFTS.find((d) => /part 2/i.test(d.desc));
   return setProvenance({
     cardTitle: 'Follower summary',
     key,
     rest: rest ? ` ${rest}` : '',
-    // 2026-11-28 ranking signal = posting rhythm and series: post again before the viewers' peak, number the series
-    bullets: [`Post again before ${mostActive().day} ${hourLabel(mostActive().peak)}, their peak.`, 'A numbered series may help them come back.'],
+    // Followers has no chart under the summary, so it keeps 2 bullets (Yanice 2026-11-28): who they are + next step
+    bullets: [`${whoF.length ? cap(whoF.join(' ')) + ', they’re' : 'They’re'} most active ${ma.day} ${ma.part}, your best slot.`,
+      `Post ${part2 ? 'your Part 2 draft' : 'again'} before then, and end by saying what comes next.`],
     next: null,
     info: [
       { ic: 'follow', t: 'Compared with', lines: [`The ${len} days before, ${prevLabel}: ${prev} net followers.`] },

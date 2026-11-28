@@ -28,6 +28,7 @@ const ICONS = {
 // 草稿里正好有「Kyoto at dusk, part 2」和「Amalfi on a budget」两条（Kyoto 播放多，Amalfi 带来的关注约是 Kyoto 的 6 倍）、
 // Creators your viewers also watched。每条控制在一行内（393pt 下文字区 289px，最长一条 286px）。
 const ASK_VIEWERS = [
+  'How can more people find me in search?', // 2026-11-28 copy pass 2: follows the summary (few found you through search)
   'How do I get new viewers to follow me?',
   'Who are my new viewers?', // 2026-11-28 QA: the old Kyoto question contradicted the summary (Kyoto isn't in these numbers yet)
   'When should I post Kyoto Part 2?',
