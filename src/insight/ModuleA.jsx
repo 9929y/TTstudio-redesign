@@ -207,10 +207,9 @@ export function RoseCard({ geo, act, ca = 'row', title, insight: D, onAsk, onSel
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {bars ? (
-          // Tapping a metric still sorts Top posts by it (optional link, AREA_TOP in Analytics.jsx); the card itself
-          // keeps no selection and hides nothing.
+          // View-only (2026-11-28 Yanice 「这个不能点击」): no tap, no selected state; every value visible.
           <CompareRows className="content-compare" rows={compareRows} labels={[CONTENT_SELF, CONTENT_PEER]} entering={entering}
-            act={`${act}-area`} onPick={onSelect ? (r) => onSelect(r.label) : undefined} />
+            act={`${act}-area`} />
         ) : <div ref={chartRef} className="rose-chart" style={{ position: 'relative', height: G.H, width: 345, maxWidth: '100%', alignSelf: 'center' }}>
           <svg width={holdOverview ? 345 : "100%"} height={G.H} viewBox={`0 0 ${holdOverview ? 345 : chartWidth} ${G.H}`} aria-hidden="true" style={{ position: 'absolute', left: 0, top: 0 }}>
             {areas.map((x, i) => {

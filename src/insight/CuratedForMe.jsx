@@ -161,7 +161,7 @@ function HomeCard({ card: r, onCreate, clone }) {
       <button type="button" className="cfm-card-hit" data-act="curated-card" aria-label={`Create: ${r.topic}`} tabIndex={clone ? -1 : undefined} onClick={() => onCreate(r)} />
       <span className="cfm-card-text"><span className="cfm-tip">{r.tip}</span><span className="cfm-topic cfm-clamp2">{r.topic}</span></span>
       <span className="cfm-card-cta-wrap">
-        <span className="cfm-card-cta" data-act="curated-create" aria-hidden="true">Create</span>
+        <span className="cfm-card-cta" data-act="curated-create" aria-hidden="true">Start creating</span>
       </span>
       <span className="cfm-illo"><Illo card={r} /></span>
     </div>
@@ -214,7 +214,7 @@ export function CuratedForMe({ place = 'home', insight = CURATED, onCreate, onMo
                         exit={{ height: 0, opacity: 0, transition: { height: { duration: reduce ? 0 : 0.2, ease: EASE_OUT }, opacity: { duration: 0.12 } } }}>
                         <div className="cfm-exp-in">
                           <Why rows={r.rows} />
-                          <button type="button" className="cfm-cta-full cfm-press" data-act="curated-create" onClick={() => create(r)}>Create</button>
+                          <button type="button" className="cfm-cta-full cfm-press" data-act="curated-create" onClick={() => create(r)}>Start creating</button>
                         </div>
                       </motion.div>
                     )}
