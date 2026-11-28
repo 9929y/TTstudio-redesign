@@ -10,7 +10,8 @@ export default defineConfig({
     baseURL: 'http://localhost:5183',
     viewport: { width: 1300, height: 940 },
     deviceScaleFactor: 1.5,
-    channel: 'chrome',
+    channel: process.env.TT_STUDIO_CHROME ? undefined : 'chrome',
+    launchOptions: process.env.TT_STUDIO_CHROME ? { executablePath: process.env.TT_STUDIO_CHROME } : undefined,
     screenshot: 'only-on-failure',
   },
 });

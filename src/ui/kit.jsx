@@ -102,7 +102,7 @@ export function TopTabs({ tabs, value, onChange, equal = true, id, className = '
 }
 
 // ---------- 胶囊（日期 / 指标；选中黑底 o1g_0036；蓝色弱选中 o1g_0622） ----------
-export function Pills({ items, value, onChange, variant = 'black', className = '' }) {
+export function Pills({ items, value, onChange, variant = 'black', className = '', touchRail = false }) {
   const ref = useRef(null);
   useEffect(() => {
     const el = ref.current?.querySelector('.on');
@@ -112,10 +112,10 @@ export function Pills({ items, value, onChange, variant = 'black', className = '
     }
   }, [value]);
   return (
-    <div className={`pills ${variant} ${className}`} ref={ref}>
+    <div className={`pills ${variant} ${className}${touchRail ? ' touch-rail' : ''}`} ref={ref}>
       {items.map((it) => (
-        <button key={it.key} data-act={`pill-${it.key}`} className={`pill ${it.key === value ? 'on' : ''}`} onClick={() => onChange(it.key)}>
-          {it.label}{it.caret && <I.down size={14} />}
+        <button key={it.key} data-act={`pill-${it.key}`} aria-pressed={it.key === value} className={`pill ${it.key === value ? 'on' : ''}`} onClick={() => onChange(it.key)}>
+          {touchRail ? <span className="pill-visual">{it.label}{it.caret && <I.down size={14} />}</span> : <>{it.label}{it.caret && <I.down size={14} />}</>}
         </button>
       ))}
     </div>

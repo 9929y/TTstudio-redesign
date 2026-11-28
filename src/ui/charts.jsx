@@ -2,6 +2,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { fmt, fmtStat, monDay, monDayYear, secToClock } from '../data/agg.js';
+import { useChartWidth } from '../insight/chartLayout.js';
 
 function niceMax(v) {
   if (v <= 0) return 3;
@@ -12,7 +13,8 @@ function niceMax(v) {
 
 // 趋势图：o1g_0036（7 天带点 + 末日斜线阴影）、o1g_0045（28 天）、o1g_0104（拖动 tooltip）
 export function TrendChart({ data, height = 150, hatchLast = true, fmtValue = fmtStat, xLabel = (d) => monDay(d.date), tooltipLabel, minZero = true, animKey }) {
-  const W = 330, PR = 44, PT = 10, PB = 22;
+  const [chartRef, W] = useChartWidth(330);
+  const PR = 44, PT = 10, PB = 22;
   const iw = W - PR, ih = height - PT - PB;
   const svgRef = useRef(null);
   const [hover, setHover] = useState(null);
@@ -28,7 +30,7 @@ export function TrendChart({ data, height = 150, hatchLast = true, fmtValue = fm
     const path = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join('');
     const area = `${path}L${iw},${PT + ih}L0,${PT + ih}Z`;
     return { max, min, pts, path, area };
-  }, [data, height]);
+  }, [data, height, W, minZero]);
 
   const pick = (e) => {
     const r = svgRef.current.getBoundingClientRect();
@@ -39,7 +41,7 @@ export function TrendChart({ data, height = 150, hatchLast = true, fmtValue = fm
   const ticks = [1, 2 / 3, 1 / 3].map((f) => min + (max - min) * f);
   const hx = hover != null ? pts[hover][0] : 0;
   return (
-    <div className="trend" data-act="chart-drag">
+    <div ref={chartRef} className="trend" data-act="chart-drag">
       <svg ref={svgRef} viewBox={`0 0 ${W} ${height}`} width="100%" height={height} style={{ touchAction: 'none' }}
         onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); pick(e); }}
         onPointerMove={(e) => { if (e.buttons || e.pointerType === 'touch') pick(e); }}>
@@ -88,12 +90,13 @@ const fmtValueFull = (v, f) => (f === fmt ? Math.round(v).toLocaleString('en-US'
 
 // 柱状图（Most active times，o1g_0117：选中柱 + tooltip「12am / 914」）
 export function BarChart({ values, labels, tickEvery = 4, selected, onSelect, height = 130 }) {
-  const W = 330, PR = 40, ih = height - 22, iw = W - PR;
+  const [chartRef, W] = useChartWidth(330);
+  const PR = 40, ih = height - 22, iw = W - PR;
   const max = niceMax(Math.max(...values));
   const bw = iw / values.length;
   const sel = selected ?? values.indexOf(Math.max(...values));
   return (
-    <div className="trend">
+    <div ref={chartRef} className="trend">
       <svg viewBox={`0 0 ${W} ${height}`} width="100%" height={height}>
         {[1, 0.75, 0.5, 0.25, 0].map((f) => (
           <g key={f}>
@@ -117,7 +120,8 @@ export function BarChart({ values, labels, tickEvery = 4, selected, onSelect, he
 
 // 留存曲线 + 滑杆（v1pC_0034 / 0037：tooltip「0:02 · 26%」、左下标签「00:02 (26%)」、预览帧同步）
 export function RetentionChart({ curve, value, onChange }) {
-  const W = 330, H = 70, PR = 30;
+  const [chartRef, W] = useChartWidth(330);
+  const H = 70, PR = 30;
   const iw = W - PR; const n = curve.length - 1;
   const x = (s) => (s / n) * iw, y = (v) => 6 + (1 - v) * (H - 12);
   const path = curve.map((v, s) => `${s ? 'L' : 'M'}${x(s).toFixed(1)},${y(v).toFixed(1)}`).join('');
@@ -130,7 +134,7 @@ export function RetentionChart({ curve, value, onChange }) {
   const cur = curve[value];
   const vx = x(value);
   return (
-    <div className="retention">
+    <div ref={chartRef} className="retention">
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H}>
         <defs><linearGradient id="rfill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="var(--c-chart)" stopOpacity="0.22" /><stop offset="1" stopColor="var(--c-chart)" stopOpacity="0.02" /></linearGradient></defs>
         <line x1="0" x2={iw} y1={y(1)} y2={y(1)} stroke="#eee" strokeDasharray="3 3" />

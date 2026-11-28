@@ -6,8 +6,9 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { buildModuleA, askA, askB } from './build.js';
 import { AskRow } from './AskAssistant.jsx';
-import { placeLabel, LAB_GAP } from './labelFit.js';
-import { CardHead, KeyBlock, CARD_STYLE, AiStar } from './CardParts.jsx';
+import { placeLegacyLabel, LAB_GAP } from './labelFit.js';
+import { useChartWidth, fitRingGeometry } from './chartLayout.js';
+import { CardHead, KeyBlock, CARD_STYLE, AiStar, HistoryDash } from './CardParts.jsx';
 import { useEntering, segIn, labDelay, isMouse } from './entrance.js';
 // 刻度线样式（2026-11-27 方案比较）：'gap' = 白色切缝；'tone' = 同色系加深（色块里用加深一档的蓝，灰底轨上用浅灰）
 // 2026-11-27 夜 Yanice：「那三条白线不要了」——刻度线整体关掉（保留代码，改回 true 即恢复）
@@ -42,7 +43,7 @@ export const GEO_FULL = {
   span: (i, n, gap) => { const step = 360 / n; return [-90 + step * i + gap, -90 + step * (i + 1) - gap]; },
   // 2026-11-27 Yanice：标签离圆环一样远、选中时同步外移；规则见 labelFit.js
   labelAt: (i, n, G, P, on, name) => {
-    const step = 360 / n, l = placeLabel(-90 + step * i + step / 2, (on ? G.RO * 1.1 : G.RO) + LAB_GAP, G.CX, G.CY, 2 * G.CX, name);
+    const step = 360 / n, l = placeLegacyLabel(-90 + step * i + step / 2, (on ? G.RO * 1.1 : G.RO) + LAB_GAP, G.CX, G.CY, 2 * G.CX, name);
     return { left: l.left + 'px', width: l.width + 'px', top: l.top + 'px', tf: 'translateY(-50%)', items: l.align };
   },
   firstSep: true,
@@ -134,7 +135,10 @@ const UI_DEFAULT = { hint: 'Tap an area to see how it moved', legend: 'Previous 
 
 // ---------- 卡片本体：A、B 共用 ----------
 // geo = 几何参数；act = data-act 前缀（insight-a / insight-b）
-export function RoseCard({ geo: G, act, ca = 'row', title, insight: D, onAsk, onSelect, clearToken = 0, askAct = 'assistant-pop-analytics' }) {
+export function RoseCard({ geo, act, ca = 'row', title, insight: D, onAsk, onSelect, clearToken = 0, askAct = 'assistant-pop-analytics' }) {
+  const [chartRef, chartWidth] = useChartWidth();
+  const holdOverview = act === "insight-a";
+  const G = holdOverview ? geo : fitRingGeometry(geo, chartWidth);
   const [tip, setTip] = useState(-1);          // 选中的区，-1 = 总分
   // 评分图联动（2026-11-26）：点扇区或标签选中；再点同一项取消；点卡片里的空白处恢复默认。
   // 选中结果通知页面（onSelect），Overview 用它让下方 Key metrics 选中对应的卡和趋势图。
@@ -205,8 +209,8 @@ export function RoseCard({ geo: G, act, ca = 'row', title, insight: D, onAsk, on
       <KeyBlock k={D.key} rest={D.rest} bullets={D.bullets} next={D.next} />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ position: 'relative', height: G.H, width: 345, maxWidth: '100%', alignSelf: 'center' }}>
-          <svg width="345" height={G.H} viewBox={`0 0 345 ${G.H}`} style={{ position: 'absolute', left: 0, top: 0 }}>
+        <div ref={chartRef} className="rose-chart" style={{ position: 'relative', height: G.H, width: 345, maxWidth: '100%', alignSelf: 'center' }}>
+          <svg width={holdOverview ? 345 : "100%"} height={G.H} viewBox={`0 0 ${holdOverview ? 345 : chartWidth} ${G.H}`} aria-hidden="true" style={{ position: 'absolute', left: 0, top: 0 }}>
             {areas.map((x, i) => {
               // Final：选中的扇区只向外长（外径 ×1.1，灰轨一起），带一层阴影；其他扇区 25%；不再整体放大
               const s = G.span(i, n, 0), on = tip === i, mx = x.max || 100;
@@ -242,7 +246,7 @@ export function RoseCard({ geo: G, act, ca = 'row', title, insight: D, onAsk, on
             {sx && (() => {
               const i = tip, s = G.span(i, n, 0), mx = sx.max || 100, radX = (v) => G.RI + (G.RO * 1.1 - G.RI) * v / mx;
               const ry = radX(sx.you), rp = radX(sx.prev), r = Math.abs(rp - ry) < 3 ? ry + (sx.prev >= sx.you ? 3 : -3) : rp;
-              return <motion.path key={`prev${i}`} initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18, delay: 0.1, ease: 'easeOut' }} d={arc(r, s[0] + 2, s[1] - 2)} fill="none" stroke="#161823" strokeWidth="1.5" strokeDasharray="3 2.5" strokeLinecap="round" aria-hidden="true" />;
+              return <motion.path key={`prev${i}`} initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18, delay: 0.1, ease: 'easeOut' }} d={arc(r, s[0] + 2, s[1] - 2)} fill="none" stroke="#161823" strokeWidth="1.5" strokeDasharray={holdOverview ? "3 2.5" : "3 2"} strokeLinecap="round" aria-hidden="true" />;
             })()}
           </svg>
           <div style={{ position: 'absolute', left: 0, right: 0, top: G.centerTop, transform: G.centerTf, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
@@ -265,13 +269,13 @@ export function RoseCard({ geo: G, act, ca = 'row', title, insight: D, onAsk, on
             const on = i === tip;
             const l = G.labelAt(i, n, G, P, on, x.name);
             return (
-              <button key={i} type="button" className={`rose-press rose-lab${entering ? ' enter-fade' : ''}`} aria-pressed={on} data-act={`${act}-area-${i}`}
+              <button key={i} type="button" className={`rose-press rose-lab${entering ? ' enter-fade' : ''}`} aria-pressed={on} aria-label={`${x.name}, ${x.you} out of ${x.max || 100}`} data-act={`${act}-area-${i}`}
                 onClick={(e) => { e.stopPropagation(); pick(i); }}
                 onPointerEnter={(e) => isMouse(e) && setHov(i)} onPointerLeave={() => setHov(-1)}
                 style={{ ...BTN, animationDelay: entering ? labDelay(i) : undefined, position: 'absolute', left: l.left, width: l.width, top: l.top, transform: l.tf, boxSizing: 'border-box', minHeight: 44, padding: '2px 0px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: l.items, textAlign: 'center' }}>
-                <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <span className="rose-fade" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, lineHeight: '18px', fontWeight: 400, whiteSpace: 'nowrap', color: tip < 0 ? '#57585e' : (on ? '#161823' : '#6d6e73') }}>
-                    <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: D.colors[i], opacity: tip < 0 ? (hov >= 0 && hov !== i ? 0.55 : 1) : on ? 1 : hov === i ? 0.45 : 0.25, transition: 'opacity 200ms ease' }} />{x.name}
+                <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: holdOverview ? undefined : '100%' }}>
+                  <span className="rose-fade" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, lineHeight: '18px', fontWeight: holdOverview ? 400 : on ? 600 : 400, maxWidth: holdOverview ? undefined : '100%', whiteSpace: holdOverview ? 'nowrap' : undefined, overflowWrap: holdOverview ? undefined : 'anywhere', color: tip < 0 ? '#57585e' : (on ? '#161823' : '#6d6e73') }}>
+                    <span style={{ display: 'inline-block', width: 8, height: 8, flexShrink: holdOverview ? undefined : 0, borderRadius: '50%', background: D.colors[i], opacity: tip < 0 ? (hov >= 0 && hov !== i ? 0.55 : 1) : on ? 1 : hov === i ? 0.45 : 0.25, transition: 'opacity 200ms ease' }} />{x.name}
                   </span>
                 </span>
               </button>
@@ -288,7 +292,7 @@ export function RoseCard({ geo: G, act, ca = 'row', title, insight: D, onAsk, on
                 transition={{ duration: reduce ? 0 : 0.22, ease: EASE_OUT }}>
                 <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 8 }}>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, lineHeight: '16px', color: '#6d6e73' }}>
-                    <span style={{ display: 'inline-block', width: 14, height: 0, borderTop: '1.5px dashed #161823' }} />{ui.legend}
+                    {holdOverview ? <span style={{ display: 'inline-block', width: 14, height: 0, borderTop: '1.5px dashed #161823' }} /> : <HistoryDash />}{ui.legend}
                   </span>
                 </div>
               </motion.div>
@@ -301,7 +305,7 @@ export function RoseCard({ geo: G, act, ca = 'row', title, insight: D, onAsk, on
             initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0, transition: { duration: reduce ? 0 : 0.16, ease: EASE_OUT } }}
             transition={{ duration: reduce ? 0 : 0.22, ease: EASE_OUT }}>
-          <div aria-live="polite" style={{ position: 'relative', minHeight: 36, display: 'grid', alignItems: 'start', justifyItems: 'center', textAlign: 'center', padding: '0 8px' }}>
+          <div aria-live="polite" style={{ position: 'relative', minHeight: 36, display: 'grid', alignItems: 'start', justifyItems: holdOverview ? 'center' : 'start', textAlign: holdOverview ? 'center' : 'left', padding: holdOverview ? '0 8px' : 0 }}>
             {/* 文字换文字不做交叉淡入（两句叠在一起会重影）：旧句 90ms 先淡出，新句再上浮进来 */}
             <AnimatePresence mode="wait" initial={false}>
               <motion.span key={tip} style={{ gridArea: '1 / 1' }}
@@ -313,7 +317,7 @@ export function RoseCard({ geo: G, act, ca = 'row', title, insight: D, onAsk, on
                   <span style={{ fontSize: 13, lineHeight: '18px', color: '#161823' }}>
                     <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', marginRight: 6, verticalAlign: '1px', background: D.colors[tip] }} />
                     {/* Final 单句（2026-11-26 确认）：{维度} + 一句话；没有 sentence 的旧数据仍按原来的行显示 */}
-                    <span style={{ fontWeight: 400, color: '#161823' }}>{sx.name}</span> {sx.sentence || (sx.lines ? sx.lines[0] : sx.note)}
+                    <span style={{ fontWeight: holdOverview ? 400 : 600, color: '#161823' }}>{sx.name}</span> {sx.sentence || (sx.lines ? sx.lines[0] : sx.note)}
                     {!sx.sentence && sx.lines && sx.lines.slice(1).map((ln) => <span key={ln} style={{ display: 'block', color: '#57585e' }}>{ln}</span>)}
                   </span>
                 ) : null}

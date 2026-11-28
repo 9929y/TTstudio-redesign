@@ -16,7 +16,7 @@
 .cfm-create { padding: 16px 16px 0; }
 .cfm-panel { box-sizing: border-box; border-radius: 12px; background: #ffffff; padding: 16px 12px 12px; }
 .cfm-create .cfm-panel { box-shadow: inset 0 0 0 0.5px #dcdce0; }
-.cfm-head { box-sizing: border-box; width: 100%; height: 22px; padding: 0 4px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+.cfm-head { box-sizing: border-box; width: 100%; min-height: 22px; padding: 0; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
 .cfm-head > span { font-size: 17px; line-height: 22px; font-weight: 700; color: #161823; }
 .cfm-head > svg { flex: none; }
 
@@ -99,6 +99,9 @@
 
 /* 只有一张卡（新账号）：卡片撑满面板宽度，不显示圆点 */
 .cfm-home.is-single .cfm-card { width: 100%; flex-basis: 100%; }
+.cfm-home .cfm-panel { padding-inline: 16px; }
+.cfm-home .cfm-track { margin-right: -16px; padding-right: 16px; }
+.cfm-home.is-single .cfm-track { margin-right: 0; padding-right: 0; }
 
 /* Create 行（手风琴）：一个容器包住标题区和展开内容（2026-11-26 动效精修） */
 .cfm-item { position: relative; border-radius: 8px; overflow: hidden; }

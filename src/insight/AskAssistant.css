@@ -3,7 +3,7 @@
 
 /* 轮播文字：固定一行高，旧文案上移淡出、新文案从下方淡入 */
 .ask-roll { position: relative; display: block; flex: 1; min-width: 0; overflow: hidden; text-align: left; }
-.ask-roll-t { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; will-change: transform, opacity; }
+.ask-roll-t { display: block; white-space: normal; overflow-wrap: anywhere; will-change: transform, opacity; }
 
 /* ---------- 首页主入口 ---------- */
 .ask-pill {
@@ -19,7 +19,7 @@
 }
 .ask-pill::after { content: none; }
 .ask-pill-in {
-  position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; height: 41px; padding: 0 12px 0 12px; border-radius: 8.5px; background: #ffffff;
+  position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; min-height: 41px; padding: 10px 12px; border-radius: 8.5px; background: #ffffff;
   color: #161823; font-family: var(--font); font-size: 15px; line-height: 20px; font-weight: 400;
 }
 .ask-pill-in .ca-ic { flex: none; }

@@ -52,7 +52,7 @@ function useFirstAppearance(act) {
 function Rolling({ text, className }) {
   const reduce = useReducedMotion();
   return (
-    <span className={`ask-roll ${className || ''}`}>
+    <span className={`ask-roll ${className || ''}`} aria-hidden="true">
       <AnimatePresence mode="popLayout" initial={false}>
         {/* 换字（2026-11-26 按 Yanice 反馈放慢）：参照搜索框占位词轮播的常见节奏，进场 500ms、出场 420ms，
             ease-in-out（在屏幕上移动的元素），位移 8px，不加模糊；旧句先往上走，新句从下方接上，读起来是平稳地滚过去 */}
@@ -126,7 +126,7 @@ export function AskPill({ prompts, onAsk, act = 'assistant-pop-home', icon, tone
   // 描画途中被点按：直接跳到结束状态，再照常打开 Creator Assistant
   const press = () => { anims.current.forEach((a) => { try { a.finish(); } catch { /* 已结束 */ } }); onAsk(text); };
   return (
-    <button ref={ref} type="button" className={`ask-pill${tone === 'light' ? ' is-light' : ''}`} data-act={act} onClick={press}>
+    <button ref={ref} type="button" className={`ask-pill${tone === 'light' ? ' is-light' : ''}`} aria-label={`Ask Creator Assistant: ${text}`} data-act={act} onClick={press}>
       {intro && (
         <svg ref={svgRef} className="ask-pill-draw" aria-hidden="true" preserveAspectRatio="none">
           <path pathLength="100" fill="none" stroke={tone === 'light' ? '#d6d6da' : '#4a4a4f'} strokeWidth="2.5" strokeDasharray="100 100" strokeDashoffset="0" />
@@ -148,7 +148,7 @@ export function AskRow({ prompts, fixed, onAsk, act, icon, seenKey }) {
   const ref = useRef(null);
   const text = useRotatingPrompt(prompts, { interval: 2500, fixed, ref }); // 2026-11-27 夜 Yanice：5s → 2.5s，和胶囊一致
   return (
-    <button ref={ref} type="button" className={`ask-row rose-press ${fixed ? 'is-fixed' : ''}`} data-act={act} onClick={() => onAsk(text)}>
+    <button ref={ref} type="button" className={`ask-row rose-press ${fixed ? 'is-fixed' : ''}`} aria-label={`Ask Creator Assistant: ${text}`} data-act={act} onClick={() => onAsk(text)}>
       {icon}
       <span className="sr-only">Ask Creator Assistant: </span>
       <Rolling text={text} className="ask-row-roll" />

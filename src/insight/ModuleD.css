@@ -25,9 +25,10 @@
 .imd-label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; line-height: 18px; font-weight: 600; color: #161823; }
 .imd-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
 .imd-pair { display: flex; flex-direction: column; gap: 4px; }
-.imd-line { display: flex; justify-content: space-between; align-items: baseline; }
+.imd-line { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.imd-line > :first-child { min-width: 0; overflow-wrap: anywhere; }
 .imd-line span { font-size: 13px; line-height: 18px; color: #161823; font-weight: 400; }
-.imd-line .imd-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+.imd-line .imd-val { min-width: 48px; flex: none; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
 .imd-track { position: relative; display: block; height: 8px; border-radius: 4px; background: #f1f1f2; overflow: hidden; }
 .imd-bar { position: absolute; left: 0; top: 0; bottom: 0; min-width: 3px; border-radius: 4px; }
 

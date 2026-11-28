@@ -8,7 +8,8 @@ import demo from './demo/moduleE.js';
 import './ModuleE.css';
 import { AskRow } from './AskAssistant.jsx';
 import { placeLabel, LAB_GAP } from './labelFit.js';
-import { CardHead, KeyBlock, CARD_STYLE, AiStar } from './CardParts.jsx';
+import { useChartWidth, fitRingGeometry } from './chartLayout.js';
+import { CardHead, KeyBlock, CARD_STYLE, AiStar, HistoryDash } from './CardParts.jsx';
 import { useEntering, segIn, labDelay, isMouse } from './entrance.js';
 // 刻度线样式（2026-11-27 方案比较）：'gap' = 白色切缝；'tone' = 同色系加深（色块里用加深一档的蓝，灰底轨上用浅灰）
 // 2026-11-27 夜 Yanice：「那三条白线不要了」——刻度线整体关掉（保留代码，改回 true 即恢复）
@@ -84,19 +85,21 @@ export function InsightDrawer({ title, items, onClose }) {
 }
 
 // ---- rose geometry (345 × 258 canvas, centre 172.5 / 126, inner radius 54, outer 86) ----
-const CX = 172.5, CY = 126, RI = 54, RO = 86;
+const GEO = { CX: 172.5, CY: 126, RI: 54, RO: 86 };
 const r2 = (n) => Math.round(n * 100) / 100;
-const P = (r, a) => [r2(CX + r * Math.cos(a * Math.PI / 180)), r2(CY + r * Math.sin(a * Math.PI / 180))];
-const arc = (r, a0, a1) => { const s = P(r, a0), e = P(r, a1); return `M ${s[0]} ${s[1]} A ${r} ${r} 0 0 1 ${e[0]} ${e[1]}`; };
-const sector = (ri, ro, a0, a1) => {
-  const a = P(ri, a0), b = P(ro, a0), c = P(ro, a1), d = P(ri, a1);
-  return `M ${a[0]} ${a[1]} L ${b[0]} ${b[1]} A ${ro} ${ro} 0 0 1 ${c[0]} ${c[1]} L ${d[0]} ${d[1]} A ${ri} ${ri} 0 0 0 ${a[0]} ${a[1]} Z`;
-};
-const rad = (v, max) => RI + (RO - RI) * v / max;
+function geometry(CX, CY) {
+  const P = (r, a) => [r2(CX + r * Math.cos(a * Math.PI / 180)), r2(CY + r * Math.sin(a * Math.PI / 180))];
+  const arc = (r, a0, a1) => { const s = P(r, a0), e = P(r, a1); return `M ${s[0]} ${s[1]} A ${r} ${r} 0 0 1 ${e[0]} ${e[1]}`; };
+  const sector = (ri, ro, a0, a1) => {
+    const a = P(ri, a0), b = P(ro, a0), c = P(ro, a1), d = P(ri, a1);
+    return `M ${a[0]} ${a[1]} L ${b[0]} ${b[1]} A ${ro} ${ro} 0 0 1 ${c[0]} ${c[1]} L ${d[0]} ${d[1]} A ${ri} ${ri} 0 0 0 ${a[0]} ${a[1]} Z`;
+  };
+  return { P, arc, sector };
+}
 // Final：块按中心对锚点；名称行在上、分数在名称文字正下方居中；选中的扇区外扩 1.1 倍，标签跟着外移
 // 与模块 A 同一套标签规则（labelFit.js）：离圆环外沿固定 12pt，选中外扩时同步外移，放不下就沿圆弧滑
-function labelAt(i, r, step, name) {
-  const l = placeLabel(-90 + step * i + step / 2, r, CX, CY, 2 * CX, name);
+function labelAt(i, r, step, name, CX, CY, on) {
+  const l = placeLabel(-90 + step * i + step / 2, r, CX, CY, 2 * CX, name, on ? 600 : 400);
   return { left: l.left, width: l.width, top: l.top, transform: 'translateY(-50%)', alignItems: l.align };
 }
 
@@ -111,6 +114,9 @@ function CaLogo({ size, id }) {
 }
 
 export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant-pop-post' }) {
+  const [chartRef, chartWidth] = useChartWidth();
+  const { CX, CY, RI, RO } = fitRingGeometry(GEO, chartWidth);
+  const { P, arc, sector } = geometry(CX, CY);
   const D = insight || demo;
   const ui = D.ui || {};
   const areas = D.areas || [];
@@ -160,8 +166,8 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
       <KeyBlock k={D.key} rest={D.rest} bullets={D.bullets} next={D.next} />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ position: 'relative', height: 258 }}>
-          <svg width="345" height="258" viewBox="0 0 345 258" aria-hidden="true" style={{ position: 'absolute', left: 0, top: 0 }}>
+        <div ref={chartRef} className="rose-chart" style={{ position: 'relative', height: 258, width: 345, maxWidth: '100%', alignSelf: 'center' }}>
+          <svg width="100%" height="258" viewBox={`0 0 ${chartWidth} 258`} aria-hidden="true" style={{ position: 'absolute', left: 0, top: 0 }}>
             {areas.map((x, i) => {
               const a0 = -90 + step * i, a1 = -90 + step * (i + 1), max = x.max || 100, on = tip === i;
               const RX = on ? RO * 1.1 : RO, radX = (v) => RI + (RX - RI) * v / max;
@@ -185,7 +191,7 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
             {sx && (() => {
               const a0 = -90 + step * tip, a1 = a0 + step, max = sx.max || 100, radX = (v) => RI + (RO * 1.1 - RI) * v / max;
               const ry = radX(sx.you), rp = radX(sx.prev), r = Math.abs(rp - ry) < 3 ? ry + (sx.prev >= sx.you ? 3 : -3) : rp;
-              return <motion.path key={`prev${tip}`} initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18, delay: 0.1, ease: 'easeOut' }} d={arc(r, a0 + 2, a1 - 2)} fill="none" stroke="#161823" strokeWidth="1.5" strokeDasharray="3 2.5" strokeLinecap="round" />;
+              return <motion.path key={`prev${tip}`} initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18, delay: 0.1, ease: 'easeOut' }} d={arc(r, a0 + 2, a1 - 2)} fill="none" stroke="#161823" strokeWidth="1.5" strokeDasharray="3 2" strokeLinecap="round" />;
             })()}
           </svg>
           <div style={{ position: 'absolute', left: 0, right: 0, top: 126, transform: 'translateY(-50%)', display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
@@ -204,15 +210,15 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
             </button>
           </div>
           {areas.map((x, i) => {
-            const on = i === tip, pos = labelAt(i, (on ? RO * 1.1 : RO) + LAB_GAP, step, x.name);
+            const on = i === tip, pos = labelAt(i, (on ? RO * 1.1 : RO) + LAB_GAP, step, x.name, CX, CY, on);
             return (
-              <button key={i} type="button" className={`ime-press ime-lab${entering ? ' enter-fade' : ''}`} aria-pressed={on} data-act={`insight-e-area-${i}`}
+              <button key={i} type="button" className={`ime-press ime-lab${entering ? ' enter-fade' : ''}`} aria-pressed={on} aria-label={`${x.name}, ${x.you} out of ${x.max || 100}`} data-act={`insight-e-area-${i}`}
                 onClick={(e) => { e.stopPropagation(); pick(i); }}
                 onPointerEnter={(e) => isMouse(e) && setHov(i)} onPointerLeave={() => setHov(-1)}
                 style={{ ...IM_BTN, animationDelay: entering ? labDelay(i) : undefined, position: 'absolute', left: pos.left, width: pos.width, top: pos.top, transform: pos.transform, boxSizing: 'border-box', minHeight: 44, padding: '2px 0px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: pos.alignItems, textAlign: 'center' }}>
-                <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <span className="ime-fade" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, lineHeight: '18px', fontWeight: 400, whiteSpace: 'nowrap', color: !hasTip ? '#57585e' : (on ? '#161823' : '#6d6e73') }}>
-                    <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: colors[i], opacity: !hasTip ? (hov >= 0 && hov !== i ? 0.55 : 1) : on ? 1 : hov === i ? 0.45 : 0.25, transition: 'opacity 200ms ease' }} />{x.name}
+                <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: '100%' }}>
+                  <span className="ime-fade" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, lineHeight: '18px', fontWeight: on ? 600 : 400, maxWidth: '100%', overflowWrap: 'anywhere', color: !hasTip ? '#57585e' : (on ? '#161823' : '#6d6e73') }}>
+                    <span style={{ display: 'inline-block', width: 8, height: 8, flexShrink: 0, borderRadius: '50%', background: colors[i], opacity: !hasTip ? (hov >= 0 && hov !== i ? 0.55 : 1) : on ? 1 : hov === i ? 0.45 : 0.25, transition: 'opacity 200ms ease' }} />{x.name}
                   </span>
                 </span>
               </button>
@@ -228,7 +234,7 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
                 transition={{ duration: reduce ? 0 : 0.22, ease: EASE_OUT }}>
                 <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 8 }}>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, lineHeight: '16px', color: '#6d6e73' }}>
-                    <span style={{ display: 'inline-block', width: 14, height: 0, borderTop: '1.5px dashed #161823' }} />{ui.baseline || 'Your typical post'}
+                    <HistoryDash />{ui.baseline || 'Your typical post'}
                   </span>
                 </div>
               </motion.div>
@@ -241,7 +247,7 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
             initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0, transition: { duration: reduce ? 0 : 0.16, ease: EASE_OUT } }}
             transition={{ duration: reduce ? 0 : 0.22, ease: EASE_OUT }}>
-          <div aria-live="polite" style={{ position: 'relative', minHeight: 36, display: 'grid', alignItems: 'start', justifyItems: 'center', textAlign: 'center', padding: '0 8px' }}>
+          <div aria-live="polite" style={{ position: 'relative', minHeight: 36, display: 'grid', alignItems: 'start', justifyItems: 'start', textAlign: 'left', padding: 0 }}>
             {/* 文字换文字不做交叉淡入（两句叠在一起会重影）：旧句 90ms 先淡出，新句再上浮进来 */}
             <AnimatePresence mode="wait" initial={false}>
               <motion.span key={tip} style={{ gridArea: '1 / 1' }}
@@ -253,7 +259,7 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
                   <span style={{ fontSize: 13, lineHeight: '18px', color: '#161823' }}>
                     <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', marginRight: 6, verticalAlign: 1, background: colors[tip] }} />
                     {/* Final 单句（2026-11-26 确认）：{维度} + 一句话；没有 sentence 的旧数据仍按原来的行显示 */}
-                    <span style={{ fontWeight: 400, color: '#161823' }}>{sx.name}</span> {sx.sentence || (sx.lines ? sx.lines[0] : sx.note)}
+                    <span style={{ fontWeight: 600, color: '#161823' }}>{sx.name}</span> {sx.sentence || (sx.lines ? sx.lines[0] : sx.note)}
                     {!sx.sentence && sx.lines && sx.lines.slice(1).map((ln) => <span key={ln} style={{ display: 'block', color: '#57585e' }}>{ln}</span>)}
                   </span>
                 ) : null}

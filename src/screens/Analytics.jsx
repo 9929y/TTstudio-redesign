@@ -312,8 +312,8 @@ function Content({ loading, empty }) {
     <>
     {/* 终稿：模块 B 在 Content 顶部；日期胶囊离开顶部，「Last 7 days」下拉放在 Top posts 标题右侧 */}
     {!empty && <InsightSlot Module={ModuleB} loading={loading} />}
-    <Section title="Top posts" right={!empty && <RangeDropdown />} info="Shows posts that performed well during the selected period, ranked by views, likes, new viewers and new followers.">
-      <Pills variant="blue" value={metric} onChange={(k) => { if (k === metric) return; setMetric(k); useApp.getState().clearRose('B'); }} items={TOP_METRICS.map((m) => ({ key: m.key, label: m.label }))} />
+    <Section title="Top posts" className="top-posts-section" right={!empty && <RangeDropdown />} info="Shows posts that performed well during the selected period, ranked by views, likes, new viewers and new followers.">
+      <Pills variant="blue" value={metric} className="top-posts-rank" touchRail onChange={(k) => { if (k === metric) return; setMetric(k); useApp.getState().clearRose('B'); }} items={TOP_METRICS.map((m) => ({ key: m.key, label: m.label }))} />
       <div style={{ marginTop: 8 }}>
         {empty ? <div className="muted-note center" style={{ padding: '60px 0' }}>Data is processing. Check back in 1–2 days.</div> : listLoading ? (
           Array.from({ length: 5 }).map((_, i) => (
@@ -364,7 +364,7 @@ export function AnalyticsScreen() {
   const market = useApp((s) => s.market);
   const Body = { overview: Overview, content: Content, viewers: Viewers, followers: Followers, live: Live }[aTab] || Overview;
   return (
-    <div className="screen gray">
+    <div className="screen gray analytics-screen">
       <div className="fixed-head">
         <LargeHeader title="Analytics" search="spark" />
         {!spin && <TopTabs id="atabs" tabs={market === 'store' ? A_TABS_US : A_TABS} value={aTab} onChange={setATab} equal={false} className="a-tabs" />}

@@ -8,8 +8,53 @@ const HALF = 9;          // 文字行高 18 的一半
 const DOT = 13;          // 色点 8 + 间距 5
 const PAD = 10;          // 允许伸进卡片内边距 10pt（卡片边距 16，离卡片边缘至少留 6pt）
 
+const measured = new Map();
+export function labelWidth(text, weight = 400) {
+  if (typeof document === 'undefined') return DOT + String(text).length * 7.5 + 4;
+  const key = `${weight}:${text}`;
+  const ready = document.fonts?.status === 'loaded';
+  if (ready && measured.has(key)) return measured.get(key);
+  // DOM glyph widths use the exact same variable font and optical sizing
+  // as the rendered label; canvas's default optical size can differ.
+  const probe = document.createElement('span');
+  probe.textContent = String(text);
+  probe.setAttribute('aria-hidden', 'true');
+  Object.assign(probe.style, {
+    position: 'fixed', left: '-9999px', top: 0, visibility: 'hidden',
+    whiteSpace: 'nowrap', fontFamily: 'var(--font)', fontSize: '13px',
+    lineHeight: '18px', fontWeight: String(weight), letterSpacing: 'normal',
+  });
+  document.body.appendChild(probe);
+  const width = DOT + Math.ceil(probe.getBoundingClientRect().width) + 4;
+  probe.remove();
+  if (ready) measured.set(key, width);
+  return width;
+}
+
+// m0：扇区中线角度（度，0 = 3 点钟，顺时针为正）；r：外沿 + GAP；CX/CY：圆心；W：图宽（345）
+export function placeLabel(m0, r, CX, CY, W, text, weight = 400) {
+  const w = Math.max(44, labelWidth(text, weight)), right = W + PAD, left = -PAD;
+  let m = m0;
+  for (let k = 0; k < 60; k++) {
+    const c = Math.cos(m * Math.PI / 180), s = Math.sin(m * Math.PI / 180), x = CX + r * c;
+    if (Math.abs(c) < 0.2 || (c > 0 && x + w <= right) || (c < 0 && x - w >= left)) break;
+    m += (s >= 0 ? 1 : -1) * (c > 0 ? 1 : -1);
+  }
+  const a = m * Math.PI / 180, c = Math.cos(a), s = Math.sin(a);
+  const qx = CX + r * c, qy = CY + r * s, top = qy + s * HALF;
+  if (Math.abs(c) < 0.2) {
+    // At narrow widths a 120px invisible centre target can overlap a
+    // neighbouring side label even though the visible words are separated.
+    const width = Math.min(W, W < 300 ? Math.max(44, w + 12) : Math.max(120, w));
+    return { left: Math.max(0, Math.min(W - width, qx - width / 2)), width, top, align: 'center' };
+  }
+  if (c > 0) return { left: qx, width: right - qx, top, align: 'flex-start' };
+  return { left: left, width: qx - left, top, align: 'flex-end' };
+}
+
+// Overview design is intentionally held at the original baseline.
 let ctx = null;
-export function labelWidth(text) {
+function legacyLabelWidth(text) {
   if (typeof document === 'undefined') return DOT + String(text).length * 7.5;
   if (!ctx) ctx = document.createElement('canvas').getContext('2d');
   const fam = getComputedStyle(document.body).fontFamily || 'system-ui, sans-serif';
@@ -18,8 +63,8 @@ export function labelWidth(text) {
 }
 
 // m0：扇区中线角度（度，0 = 3 点钟，顺时针为正）；r：外沿 + GAP；CX/CY：圆心；W：图宽（345）
-export function placeLabel(m0, r, CX, CY, W, text) {
-  const w = labelWidth(text), right = W + PAD, left = -PAD;
+export function placeLegacyLabel(m0, r, CX, CY, W, text) {
+  const w = legacyLabelWidth(text), right = W + PAD, left = -PAD;
   let m = m0;
   for (let k = 0; k < 60; k++) {
     const c = Math.cos(m * Math.PI / 180), s = Math.sin(m * Math.PI / 180), x = CX + r * c;

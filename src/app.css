@@ -1589,3 +1589,35 @@ html:has(.stage-root.embed), html:has(.stage-root.embed) body { background: tran
   .bar-row.tap { transition: opacity 150ms ease-out; }
   .bar-row.tap:hover { opacity: 0.75; }
 }
+
+/* Approved UI polish: scoped to Analytics and the existing Home/Create modules. */
+.screen.gray.analytics-screen .section:not(.top-posts-section) {
+  margin-inline: var(--card-gutter);
+  padding: var(--card-padding);
+  border-radius: var(--r-block);
+}
+.pills.touch-rail {
+  position: relative; align-items: center; gap: 8px; min-height: var(--touch-target);
+  overflow-x: auto; overflow-y: hidden; overscroll-behavior-inline: contain;
+}
+.pills.touch-rail .pill,
+.pills.touch-rail.black .pill.on,
+.pills.touch-rail.blue .pill.on {
+  height: var(--touch-target); padding: 0; background: transparent; flex: none; border-radius: 0;
+  color: inherit; justify-content: center;
+}
+.pills.touch-rail .pill-visual {
+  display: inline-flex; flex: none; height: 32px; min-width: 48px; padding: 0 12px;
+  align-items: center; justify-content: center; gap: 4px; border-radius: 16px;
+  background: var(--c-pill); color: var(--c-text); font-size: 14px; font-weight: 400; white-space: nowrap;
+}
+.pills.touch-rail.black .pill.on .pill-visual { background: var(--c-text); color: #fff; }
+.pills.touch-rail.blue .pill-visual { height: 31px; border-radius: 6px; color: var(--c-text-2); font-size: 14px; font-weight: 500; }
+.pills.touch-rail.blue .pill.on .pill-visual { background: var(--c-blue-weak); color: var(--c-blue); }
+.pills.touch-rail .pill:focus-visible .pill-visual { outline: 2px solid var(--c-blue); outline-offset: -2px; }
+/* Keep the prior Top posts dropdown and chip appearance; the 48px hit row uses only the existing vertical gaps. */
+.pills.top-posts-rank { margin-block: -8.5px; }
+.hd-tiles { margin-inline: 0; gap: 8px; }
+.hd-card { padding-inline: 16px; }
+.hd-card-head { padding-inline: 0; }
+.create-page .create-tiles { padding-inline: var(--gutter); }
