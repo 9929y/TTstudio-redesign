@@ -18,7 +18,7 @@ const ICON_D = {
   i_shield: 'M12 3.5 5 6.2v5.3c0 4.2 2.9 7.6 7 9 4.1-1.4 7-4.8 7-9V6.2z',
   i_clock: 'M12 3.5a8.5 8.5 0 1 0 0 17a8.5 8.5 0 1 0 0-17M12 7.5V12l3 2',
 };
-const topicsInfo = (period) => aiInfo({ basis: period, safety: 'Topics follow our Community Guidelines. They group public comments, never anyone’s private data.' });
+const topicsInfo = (period) => aiInfo({ basis: period, aiFrom: 'this post’s public comments', safety: 'Topics follow our Community Guidelines. They group public comments, never anyone’s private data.' });
 
 function InfoSheet({ host, period, onClose }) {
   // Header divider only after the body scrolls (same rule as SheetFrame's is-scrolled)

@@ -1001,7 +1001,7 @@ input, textarea { font: inherit; color: inherit; }
 /* ===== V4 High-fi：按美国 2026-11-22 录屏全分辨率取色（usrec 0:00/0:34/0:08/2:57/3:01/1:36） ===== */
 /* Home 顶部：#0e0e0e → #2a2a2a（约 400pt）→ 渐隐到页面灰 #f2f2f2（约 520pt） */
 .home-dash-wrap { background: #0e0e0e; }
-.scroll.home-dash { background: #f2f2f2; }
+.scroll.home-dash { background: #f6f6f6; }
 .hd-dark { background-color: #0e0e0e; }
 .hd-dark { background: linear-gradient(180deg, #0e0e0e 0%, #161616 45%, #2a2a2a 100%); }
 .hd-dark::after { bottom: -120px; height: 120px; background: linear-gradient(180deg, #2a2a2a 0%, #8a8a8a 45%, #f2f2f2 100%); }
@@ -1574,4 +1574,4 @@ html:has(.stage-root.embed), html:has(.stage-root.embed) body { background: tran
 #phone-screen :focus, #phone-screen :focus-visible { outline: none; }
 #phone-screen button, #phone-screen [role="button"], #phone-screen a { -webkit-tap-highlight-color: transparent; }
 /* Home (2026-11-28 Yanice): shorter dark→light fade behind the Curated card, so the dark barely shows beside it. */
-.hd-dark::after { bottom: -40px; height: 40px; background: linear-gradient(180deg, #2a2a2a 0%, #f2f2f2 100%); }
+.hd-dark::after { bottom: -40px; height: 40px; background: linear-gradient(180deg, #2a2a2a 0%, #f6f6f6 100%); }
