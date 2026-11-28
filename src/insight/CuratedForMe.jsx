@@ -2,7 +2,7 @@
 // Ported from design_final/home_s7/project/IMU-S1-Final.dc.html (states per FIN-S1-Page).
 // All content comes from the `insight` prop: { title, cards: [{ k, tip, topic, rows, k_past|k_trend|k_similar }] }.
 // Card colours and illustrations come from cardArt.js (the data's old gradient `bg` is no longer used).
-import { useState } from 'react';
+import { useState, useRef, useLayoutEffect } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useApp } from '../store.js';
 import { CURATED as CURATED_DEMO } from './demo/curated.js';
@@ -58,6 +58,116 @@ const HeadChev = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#161823" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6" /></svg>
 );
 
+// ---- Home 轮播：吸附 + 无限循环（2026-11-28 Yanice「把第一页换到后面去 让他不要这么尴尬」「同时考虑滑动定点这件事」） ----
+// 原生横向滚动 + scroll-snap：每张卡停在左侧 16 的页边距（scroll-padding），一次只走一张（snap-stop: always），
+// 惯性和缓动交给系统，不会停在半张卡的位置。
+// 循环：真卡前面各放 2 张复制卡（最后两张）、后面放 2 张复制卡（前两张）。从第 3 张往前滑落在复制的第 1 张上，
+// 停稳后（scrollend）把 scrollLeft 换到真的第 1 张——两处画面逐像素相同，看不出跳动；往回滑同理。
+// 复制卡在 DOM 里排在真卡后面（前置的用 CSS order 排到最前），所以 DOM 里第一张 data-act="curated-card" 仍是真的第 1 张。
+const LOOP_PAD = 2;
+function useLoopTrack(ref, n, enabled, onIndex, reduce) {
+  const idx = useRef(0);
+  const cb = useRef(onIndex);
+  cb.current = onIndex;
+  useLayoutEffect(() => {
+    const t = ref.current;
+    if (!t || !enabled) return undefined;
+    const stride = () => { const c = t.querySelector('.cfm-card'); return c ? c.offsetWidth + (parseFloat(getComputedStyle(t).columnGap) || 0) : 0; };
+    const slot = () => { const s = stride(); return s ? Math.round(t.scrollLeft / s) : LOOP_PAD; };
+    const realOf = (k) => (((k - LOOP_PAD) % n) + n) % n;
+    let timer = 0;     // 没有 scrollend 的浏览器：滚动停 160ms 视为停稳
+    let release = 0;   // 鼠标拖动松手后恢复吸附的兜底
+    let drag = null;   // 鼠标拖动中的起点
+    const place = () => { const s = stride(); if (s) t.scrollLeft = (LOOP_PAD + idx.current) * s; };
+    // 停稳后如果落在复制卡上，换到同一张真卡（同一画面，无跳动）
+    const settle = () => {
+      const s = stride();
+      if (!s || drag) return;
+      const k = slot();
+      const real = realOf(k);
+      idx.current = real;
+      cb.current(real);
+      if (k !== LOOP_PAD + real) t.scrollLeft = (LOOP_PAD + real) * s;
+    };
+    const hasScrollEnd = 'onscrollend' in window;
+    const onScroll = () => {
+      cb.current(realOf(slot()));
+      if (!hasScrollEnd) { clearTimeout(timer); timer = setTimeout(onEnd, 160); }
+    };
+    const onEnd = () => {
+      if (t.classList.contains('is-drag') && !drag) { clearTimeout(release); t.classList.remove('is-drag'); }
+      settle();
+    };
+    // 桌面原型用鼠标拖：跟手移动，松手按方向走一张（和触屏一次一张一致），点击不会误触 Create
+    const onDown = (e) => {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      e.preventDefault();
+      drag = { x: e.clientX, left: t.scrollLeft, k: slot(), moved: false };
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+      window.addEventListener('pointercancel', onUp);
+    };
+    const onMove = (e) => {
+      if (!drag) return;
+      const dx = e.clientX - drag.x;
+      if (!drag.moved && Math.abs(dx) < 4) return;
+      if (!drag.moved) { drag.moved = true; t.classList.add('is-drag'); }
+      t.scrollLeft = drag.left - dx;
+    };
+    const swallow = (e) => { e.stopPropagation(); e.preventDefault(); };
+    const onUp = (e) => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      const d = drag;
+      drag = null;
+      if (!d || !d.moved) return;
+      t.addEventListener('click', swallow, true);
+      setTimeout(() => t.removeEventListener('click', swallow, true), 0);
+      const dx = e.clientX - d.x;
+      const dir = dx < -30 ? 1 : dx > 30 ? -1 : 0;
+      const last = t.querySelectorAll('.cfm-card').length - 1;
+      const k = Math.max(0, Math.min(last, d.k + dir));
+      t.scrollTo({ left: k * stride(), behavior: reduce ? 'auto' : 'smooth' });
+      clearTimeout(release);
+      release = setTimeout(onEnd, reduce ? 0 : 700); // 兜底：没有 scrollend（或位置没变）也要恢复吸附
+    };
+    place();
+    // Home 切走时整块 display:none，滚动位置会丢；重新可见（宽度从 0 变回来）时放回当前这张
+    let lastW = t.clientWidth;
+    const ro = new ResizeObserver(() => { const w = t.clientWidth; if (w && w !== lastW) place(); lastW = w; });
+    ro.observe(t);
+    t.addEventListener('scroll', onScroll, { passive: true });
+    if (hasScrollEnd) t.addEventListener('scrollend', onEnd);
+    t.addEventListener('pointerdown', onDown);
+    return () => {
+      ro.disconnect();
+      clearTimeout(timer); clearTimeout(release);
+      t.removeEventListener('scroll', onScroll);
+      t.removeEventListener('scrollend', onEnd);
+      t.removeEventListener('pointerdown', onDown);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+    };
+  }, [enabled, n, reduce]);
+}
+
+// 2026-11-27 Yanice 定 E1：整张卡 = Create（底部 Create 按钮只是提示）。
+// 2026-11-28：右上角 Learn more 和它打开的 Details 抽屉去掉；Create 回到 11-26 的白底 + 0.5px 描边，不带 + 号 logo。
+function HomeCard({ card: r, onCreate, clone }) {
+  return (
+    <div className="cfm-card" style={{ background: bgOf(r) }} data-clone={clone} aria-hidden={clone ? 'true' : undefined}>
+      <button type="button" className="cfm-card-hit" data-act="curated-card" aria-label={`Create: ${r.topic}`} tabIndex={clone ? -1 : undefined} onClick={() => onCreate(r)} />
+      <span className="cfm-card-text"><span className="cfm-tip">{r.tip}</span><span className="cfm-topic cfm-clamp2">{r.topic}</span></span>
+      <span className="cfm-card-cta-wrap">
+        <span className="cfm-card-cta" data-act="curated-create" aria-hidden="true">Create</span>
+      </span>
+      <span className="cfm-illo"><Illo card={r} /></span>
+    </div>
+  );
+}
+
 // only：只显示某一类卡（新账号只有 Trending now 的依据，见 Final「Home · new US account」）
 export function CuratedForMe({ place = 'home', insight = CURATED, onCreate, onMore, only = '' }) {
   const data = insight || CURATED;
@@ -66,7 +176,10 @@ export function CuratedForMe({ place = 'home', insight = CURATED, onCreate, onMo
   const title = data.title || 'Curated for me';
   const [exp, setExp] = useState(-1);   // Create: row opened in place
   const reduce = useReducedMotion();
-  const [page, setPage] = useState(0);  // Home: carousel position
+  const [page, setPage] = useState(0);  // Home: carousel position (real card index)
+  const trackRef = useRef(null);
+  const loop = place === 'home' && cards.length > 1;
+  useLoopTrack(trackRef, cards.length, loop, setPage, !!reduce);
 
   // Create 直接进入选照片页（媒体选择器），首页卡片和 Create 页的行都一样（2026-11-26 按反馈）
   const create = (card) => {
@@ -119,19 +232,11 @@ export function CuratedForMe({ place = 'home', insight = CURATED, onCreate, onMo
     <div className={`cfm cfm-home ${single ? 'is-single' : ''}`}>
       <div className="cfm-panel">
         <button type="button" className="cfm-head cfm-press" data-act="curated-more" onClick={() => (onMore ? onMore() : useApp.getState().switchTab('create'))}><span>{title}</span><HeadChev /></button>
-        <div className="cfm-track" onScroll={(e) => { const n = Math.max(0, Math.min(cards.length - 1, Math.round(e.currentTarget.scrollLeft / 308))); if (n !== page) setPage(n); }}>
-          {cards.map((r, i) => (
-            // 2026-11-27 Yanice 定 E1：整张卡 = Create（底部 Create 按钮只是提示）。
-            // 2026-11-28：右上角 Learn more 和它打开的 Details 抽屉去掉；Create 回到 11-26 的白底 + 0.5px 描边，不带 + 号 logo。
-            <div key={r.k || i} className="cfm-card" style={{ background: bgOf(r) }}>
-              <button type="button" className="cfm-card-hit" data-act="curated-card" aria-label={`Create: ${r.topic}`} onClick={() => create(r)} />
-              <span className="cfm-card-text"><span className="cfm-tip">{r.tip}</span><span className="cfm-topic cfm-clamp2">{r.topic}</span></span>
-              <span className="cfm-card-cta-wrap">
-                <span className="cfm-card-cta" data-act="curated-create" aria-hidden="true">Create</span>
-              </span>
-              <span className="cfm-illo"><Illo card={r} /></span>
-            </div>
-          ))}
+        <div className={`cfm-track ${loop ? 'is-loop' : ''}`} ref={trackRef}>
+          {cards.map((r, i) => <HomeCard key={r.k || i} card={r} onCreate={create} />)}
+          {/* 循环用的复制卡：读屏和 Tab 键跳过；点它和点真卡一样进 Create */}
+          {loop && cards.slice(0, LOOP_PAD).map((r, i) => <HomeCard key={`post-${r.k || i}`} card={r} onCreate={create} clone="post" />)}
+          {loop && cards.slice(-LOOP_PAD).map((r, i) => <HomeCard key={`pre-${r.k || i}`} card={r} onCreate={create} clone="pre" />)}
         </div>
         {!single && <div className="cfm-dots">{cards.map((r, i) => <span key={r.k || i} className={i === page ? 'on' : ''} />)}</div>}
       </div>
