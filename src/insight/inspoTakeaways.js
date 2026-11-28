@@ -9,7 +9,7 @@ export function inspoTakeaways(D) {
   const item = INSPIRATION.find((x) => x.id === D?.id);
   if (!item || !D.rows || D.rows.length < 3) return null;
   const [views, likes, comments] = D.rows; // build.js buildModuleD: Views, Likes per 1K, Comments per 1K, Favorites per 1K
-  const n = (x) => String(x).replace(/\.0(?=[KM]?$)/, ''); // 860.0K → 860K
+  const n = (x) => String(x).replace(/(\d{3})\.0(?=[KM]$)/, '$1'); // 860.0K → 860K; 3.0K stays as elsewhere in the app
   const eng = (a, b) => (parseFloat(a) + parseFloat(b)).toFixed(1);
   return [
     { k: 'engagement', label: 'Engagement', t: `${eng(likes.val, comments.val)} likes and comments per 1K views. Yours: ${eng(likes.yv, comments.yv)}` },
