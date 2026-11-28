@@ -43,14 +43,14 @@
    Selected = deep blue line (a 0.5px inset shadow thickens it to 1px without moving or resizing the block). */
 .peer-radar-label {
   display:flex; flex-direction:column; align-items:center; text-align:center; white-space:nowrap;
-  min-width:44px; padding:6px 8px; border:0.5px solid var(--radar-box-line); border-radius:8px; background:var(--radar-box); box-sizing:border-box;
+  min-width:44px; padding:4px 7px; border:0.5px solid var(--radar-box-line); border-radius:8px; background:var(--radar-box); box-sizing:border-box;
   transition:opacity 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
 }
-.peer-radar-label.is-on { border-color:var(--radar-sel); box-shadow:inset 0 0 0 0.5px var(--radar-sel); background:var(--c-white, #fff); }
+.peer-radar-label.is-on { border-color:#9cc8f6; background:var(--c-white, #fff); } /* light 0.5px line when selected (Yanice: no heavy stroke) */
 .peer-radar-label.is-dim { opacity:var(--radar-dim); }
 /* Line 1 = name + value in the Key metrics label style; line 2 = percentile, smaller and lighter grey. */
-.peer-radar-label .kpi-label { overflow:visible; transition:color 200ms ease; }
-.peer-radar-label .prl-rank { margin-top:2px; font-size:11.5px; line-height:14px; color:var(--c-text-3); transition:color 200ms ease; }
+.peer-radar-label .kpi-label { overflow:visible; font-size:12px; line-height:15px; transition:color 200ms ease; } /* one step smaller than Key metrics: an agreed exception for the chart labels */
+.peer-radar-label .prl-rank { margin-top:1px; font-size:10.5px; line-height:13px; color:var(--c-text-3); transition:color 200ms ease; }
 .peer-radar-label.is-on .kpi-label { color:var(--radar-sel); }
 .peer-radar-label.is-on .prl-rank { color:var(--radar-sel-2); }
 /* Points follow the same highlight: the selected axis keeps full strength. */

@@ -737,7 +737,7 @@ test('14 评分图联动：选中维度 → 雷达框选 / Key metrics / Ask 行
   await tap(page, 'insight-a-point-3');
   await isDefault();
   // 路径二：默认 → Engagement（聚焦 Likes）→ 点空白 → 默认
-  await area('Engagement');
+  await area('Reactions');
   await expect(sel).toHaveText('Likes');
   await expect(ask).toHaveText(/likes and comments/);
   await shot(page, 'l1_engagement');
@@ -784,7 +784,7 @@ test('14 评分图联动：选中维度 → 雷达框选 / Key metrics / Ask 行
   await expect(act(page, 'pill-views')).toHaveClass(/on/);
   await barea('Followers');
   await expect(act(page, 'pill-newFollowers')).toHaveClass(/on/);
-  await barea('Engagement');
+  await barea('Reactions');
   await expect(act(page, 'pill-likes')).toHaveClass(/on/);
   await shot(page, 'l3_content_engagement');
   // 反向：换排序 → 胶囊照常切换

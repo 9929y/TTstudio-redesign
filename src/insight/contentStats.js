@@ -25,7 +25,7 @@ export function contentCompareRows() {
   const net = { own: weekSum(DAILY.followersNet), peer: median(PEER_WEEKS.map((w) => w.net)) };
   const rows = [
     { label: 'Views', own: radar.Views.own, peer: radar.Views.peer, val: radar.Views.ownText, yv: radar.Views.peerText },
-    { label: 'Engagement', own: radar.Engagement.own, peer: radar.Engagement.peer, val: radar.Engagement.ownText, yv: radar.Engagement.peerText },
+    { label: 'Reactions', own: radar.Engagement.own, peer: radar.Engagement.peer, val: radar.Engagement.ownText, yv: radar.Engagement.peerText },
     { label: 'Followers', own: net.own, peer: net.peer, val: fmtStat(net.own), yv: fmtStat(net.peer) },
   ];
   return rows.map((r, i) => {

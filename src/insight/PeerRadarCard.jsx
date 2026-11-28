@@ -53,8 +53,9 @@ const ptIn = (i) => ({ duration: 0.26, ease: ENTER_EASE, delay: PT_DELAY + i * 0
 //  - If a pair does not fit inside the 345pt chart it slides along the arc away from the horizontal (the gap never
 //    shrinks). The radius is the largest that keeps all five blocks inside, preferring no slide.
 // 2026-11-28 (reference breathing room): the gap is 14pt; the radius shrinks before a label would leave the chart.
-const GAP = 14;
-const R_MAX = 92, R_MIN = 40, SLIDE_MAX = 40, SLIDE_COST = 0.5; // slide capped so a label stays next to its own axis
+const GAP = 8; // labels sit close to their corner, as in the reference
+const R_MAX = 92, R_MIN = 40, SLIDE_MAX = 0, SLIDE_COST = 0.5; // no slide: every label sits on its own corner of the pentagon, like the rose chart (Yanice); the radius shrinks instead
+const EDGE = 8; // labels may use 8pt of the card's 16pt padding
 const AXIS_DEG = [-90, -18, 54, 126, 198];
 const PAIRS = [[1, 4, -1], [2, 3, 1]]; // [right axis, left axis, slide step for the right one (towards the vertical)]
 const EST = { w: 96, h: 48 }; // before the first measurement (layout effect replaces it before paint)
@@ -69,7 +70,7 @@ function placeLabels(sizes, W, R) {
   const d = R + GAP, cx = W / 2, cy = d + sizes[0].h; // top block touches the top of the chart
   const boxes = [];
   boxes[0] = { x: cx - sizes[0].w / 2, y: 0, ...sizes[0] };
-  if (boxes[0].x < 0) return null;
+  if (boxes[0].x < -EDGE) return null;
   let slide = 0;
   for (const [ri, li, step] of PAIRS) {
     const a = sizes[ri], b = sizes[li], w = (a.w + b.w) / 2, h = Math.max(a.h, b.h);
@@ -81,7 +82,7 @@ function placeLabels(sizes, W, R) {
       if (dy >= d) break;
       const dx = Math.sqrt(d * d - dy * dy);
       const R1 = { x: cx + dx, y, ...a }, L1 = { x: cx - dx - b.w, y, ...b };
-      if (R1.x + R1.w <= W && L1.x >= 0) { boxes[ri] = R1; boxes[li] = L1; slide = Math.max(slide, k); done = true; }
+      if (R1.x + R1.w <= W + EDGE && L1.x >= -EDGE) { boxes[ri] = R1; boxes[li] = L1; slide = Math.max(slide, k); done = true; }
     }
     if (!done) return null;
   }

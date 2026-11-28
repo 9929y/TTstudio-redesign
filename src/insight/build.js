@@ -458,7 +458,7 @@ export function accountRadar() {
   const col = (f) => PEER_WEEKS.map(f);
   return [
     radarArea('Views', 'Views', '7-day post views', cur.views, col((w) => w.views), fmtStat),
-    radarArea('Engagement', 'Engagement', '7-day engagement', engagementOf(cur), col(engagementOf), (x) => pctText(x)),
+    radarArea('Engagement', 'Engagement', '7-day reactions', engagementOf(cur), col(engagementOf), (x) => pctText(x)),
     radarArea('Shares', 'Shares', '7-day shares', cur.shares, col((w) => w.shares), fmtStat),
     radarArea('Visits', 'Visits', '7-day profile views', cur.profile, col((w) => w.profile), fmtStat),
     radarArea('Rewards', 'Rewards', '7-day est. rewards', cur.rewards, col((w) => w.rewards), money),
