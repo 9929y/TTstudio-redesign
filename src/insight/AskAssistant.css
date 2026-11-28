@@ -19,9 +19,10 @@
 }
 .ask-pill::after { content: none; }
 .ask-pill-in {
-  position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; min-height: 41px; padding: 10px 12px; border-radius: 8.5px; background: #ffffff;
+  position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; min-height: 41px; padding: 9.5px 12px; border-radius: 8.5px; background: #ffffff;
   color: #161823; font-family: var(--font); font-size: 15px; line-height: 20px; font-weight: 400;
 }
+/* 一行时外框 44（1.5 + 41 + 1.5，和 main 的固定高 41 一致）：22 的图标 + 上下 9.5；原来 10 会撑到 45。文案折行时照常长高 */
 .ask-pill-in .ca-ic { flex: none; }
 .ask-pill-in > :not(.sr-only) { position: relative; z-index: 1; } /* sr-only 保持绝对定位，不占 flex 的位置 */
 /* 浅色页面（Inbox 顶部）：外边距交给页面 */
