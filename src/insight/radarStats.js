@@ -1,28 +1,16 @@
-// Numbers the radar card shows beyond build.js accountRadar / postRadar (2026-11-28, Yanice approved
-// optimisation 1 + 2): a status word per axis, the "vs typical" comparison in the first tile, and the size
-// of the comparison group. Everything is derived from the radar areas, which build.js computes from data/peers.js.
+// Numbers the radar card shows beyond build.js accountRadar / postRadar: the label lines, the "vs typical"
+// comparison in the metric tile, the Rewards split and the size of the comparison group. Everything is derived
+// from the radar areas, which build.js computes from data/peers.js.
+// 2026-11-28 (Yanice, Xiaohongshu data-center reference): each axis label is two balanced lines,
+// "Views 14.7K" over "Ahead of 60%". The Strong / Typical / Room to grow chips are retired; the ⓘ line
+// (peerComparison.js) now explains "Ahead of X%".
 import { COHORT } from '../data/peers.js';
-import { postRadarGroupSize } from './build.js';
+import { postRadarGroupSize, rewardsSplit } from './build.js';
 
-// Status = where the percentile (share of the group you are ahead of) falls.
-// Typical is the band around the middle of the group: ahead of 40–59%. The card's own insight says
-// "beat most similar creators" from 60% up, so Strong starts there and the two never disagree.
-export const STATUS_STRONG = 60; // ahead of 60% or more
-export const STATUS_BEHIND = 40; // ahead of fewer than 40%
-// Chip words (2026-11-28 Yanice): "Behind" read as judgmental, so the tiers are Strong / Typical / Room to grow.
-// Keys and chip colours (tone) are unchanged.
-export const STATUS = {
-  strong: { word: 'Strong', tone: 'up' },
-  average: { word: 'Typical', tone: 'flat' },
-  behind: { word: 'Room to grow', tone: 'down' },
-};
-export function statusOf(rank) {
-  if (!Number.isFinite(rank)) return { key: 'average', ...STATUS.average };
-  const key = rank >= STATUS_STRONG ? 'strong' : rank < STATUS_BEHIND ? 'behind' : 'average';
-  return { key, ...STATUS[key] };
-}
-export const statusRule = () =>
-  `${STATUS.strong.word} means you are ahead of ${STATUS_STRONG}% or more of them, ${STATUS.average.word} ${STATUS_BEHIND}–${STATUS_STRONG - 1}%, ${STATUS.behind.word} fewer than ${STATUS_BEHIND}%.`;
+// Shorter display names where the full one makes line 1 much wider than "Ahead of X%" (measured, see the
+// r3 width matrix). Keyed by area key, so selection, Ask questions and Key metrics sync are unchanged.
+// Reactions = likes + comments per view (reviewers found "Engagement" unclear); Follows = share of viewers who followed.
+const SHORT_NAME = { Engagement: 'Reactions', Follows: 'Follows' };
 
 // Same change-colour rule as Key metrics (DESIGN_SPEC "Colours", kit.jsx Delta): above +1% up (blue),
 // below −1% down (orange), otherwise flat grey with no arrow. From 2× up the gap reads as a multiple
@@ -41,7 +29,21 @@ export function groupSize(scope, post) {
   return scope === 'post' ? postRadarGroupSize(post) : COHORT.n;
 }
 
-// Areas from build.js + status + comparison, ready for the card.
+// Rewards = gifts + Creator Rewards (only posts of 60 s or longer earn Creator Rewards; build.js rewardsSplit).
+// The account radar is always the last 7 days, the same window rewardsSplit(7) sums. The split is only shown when
+// its total is the radar's own Rewards number, so the tile can never show parts that do not add up.
+const money = (n) => `$${n.toFixed(2)}`;
+export function rewardsBreakdown(area) {
+  if (!area || area.key !== 'Rewards' || !Number.isFinite(area.own)) return null;
+  const s = rewardsSplit(7);
+  if (Math.abs(s.total - area.own) >= 0.005 || Math.abs(s.gifts + s.crp - s.total) >= 0.005) return null;
+  return { gifts: s.gifts, crp: s.crp, text: `Gifts ${money(s.gifts)} · Creator Rewards ${money(s.crp)}` };
+}
+
+// Areas from build.js + label lines + comparison, ready for the card.
 export function withRadarStats(areas) {
-  return (areas || []).map((a) => ({ ...a, status: statusOf(a.rank), vs: vsTypical(a.own, a.peer) }));
+  return (areas || []).map((a) => {
+    const name = SHORT_NAME[a.key] || a.name;
+    return { ...a, name, line1: `${name} ${a.ownText}`, line2: `Ahead of ${a.rankText}`, vs: vsTypical(a.own, a.peer) };
+  });
 }
