@@ -5,9 +5,9 @@
      reference. Own = deep theme blue line, light blue fill, solid points with a white ring. Peer = a lighter tint of
      the same blue (light stroke, very light fill, white points ringed in it). Rings = thin grey dashes. */
   --radar-own: var(--c-blue);
-  --radar-own-fill: rgba(30, 124, 232, 0.16);
+  --radar-own-fill: rgba(30, 124, 232, 0.14); /* your area: deep line, hollow deep points */
   --radar-peer: var(--c-blue-line);
-  --radar-peer-fill: rgba(30, 124, 232, 0.05);
+  --radar-peer-fill: rgba(30, 124, 232, 0.12); /* similar: light line, hollow light points; overlap reads darker */
   --radar-ring: var(--c-radar-axis);
   /* Selected label (selected-pill rule): deep selected blue border and line 1, lighter blue line 2. */
   --radar-sel: var(--c-blue-selected);
@@ -49,8 +49,8 @@
 .peer-radar-label.is-on { border-color:#9cc8f6; background:var(--c-white, #fff); } /* light 0.5px line when selected (Yanice: no heavy stroke) */
 .peer-radar-label.is-dim { opacity:var(--radar-dim); }
 /* Line 1 = name + value in the Key metrics label style; line 2 = percentile, smaller and lighter grey. */
-.peer-radar-label .kpi-label { overflow:visible; font-size:12px; line-height:15px; transition:color 200ms ease; } /* one step smaller than Key metrics: an agreed exception for the chart labels */
-.peer-radar-label .prl-rank { margin-top:1px; font-size:10.5px; line-height:13px; color:var(--c-text-3); transition:color 200ms ease; }
+.peer-radar-label .kpi-label { overflow:visible; font-size:11px; line-height:14px; transition:color 200ms ease; } /* one step smaller than Key metrics: an agreed exception for the chart labels */
+.peer-radar-label .prl-rank { margin-top:1px; font-size:10px; line-height:12px; color:var(--c-text-3); transition:color 200ms ease; }
 .peer-radar-label.is-on .kpi-label { color:var(--radar-sel); }
 .peer-radar-label.is-on .prl-rank { color:var(--radar-sel-2); }
 /* Points follow the same highlight: the selected axis keeps full strength. */
@@ -69,10 +69,10 @@
 .peer-radar-tabs button:active { opacity:0.6; transition:none; }
 
 /* ---- Tile = original Key metrics tile across the whole row of the 2-column .kpi-grid ---- */
-.peer-radar-kpis .peer-radar-tile { grid-column:1 / -1; }
+
 /* Value row: the Rewards split sits right of the value, so the tile is the same height on every tab. */
 .peer-radar-tile .prt-row { display:flex; align-items:baseline; justify-content:space-between; gap:8px; min-width:0; }
-.peer-radar-tile .prt-split { font-size:12px; line-height:16px; color:var(--c-text-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.peer-radar-kpis .prt-split { grid-column:1 / -1; font-size:12px; line-height:16px; color:var(--c-text-2); } /* Rewards: gifts vs Creator Rewards, under both tiles */
 .peer-radar-kpis .kpi { cursor:default; }
 .peer-radar-kpis { container-type:inline-size; }
 /* Compact widths keep the 13px label but let it wrap instead of truncating its meaning. */

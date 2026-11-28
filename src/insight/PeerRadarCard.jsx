@@ -130,14 +130,14 @@ function Radar({ areas, scope, selected, act, onPick, entering }) {
       {/* Rings: thin grey dashed circles. */}
       {[.25,.5,.75,1].map(f => <circle key={f} className="peer-radar-ring" cx={cx} cy={cy} r={radius*f} fill="none" strokeWidth=".75" strokeDasharray="2 3"/>)}
       {areas.map((a,i) => { const [x,y] = xy(radius, i); return <line key={a.name} className={`peer-radar-spoke${selected === i ? ' is-on' : ''}`} x1={cx} y1={cy} x2={x} y2={y} strokeDasharray="2 3" strokeWidth=".75"/>; })}
-      <motion.polygon className="peer-radar-peer" points={points(() => peerR)} style={{ fill: C.peerFill, stroke: C.peer, ...grow }} strokeWidth="1.4" strokeDasharray="3 2" strokeLinejoin="round" vectorEffect="non-scaling-stroke"
+      <motion.polygon className="peer-radar-peer" points={points(() => peerR)} style={{ fill: C.peerFill, stroke: C.peer, ...grow }} strokeWidth="1.4" strokeLinejoin="round" vectorEffect="non-scaling-stroke"
         initial={entering ? { scale: 0, opacity: 0 } : false} animate={{ scale: 1, opacity: 1 }} transition={segIn(0, 0.08)}/>
       <motion.polygon className="peer-radar-own" points={points(ownR)} style={{ fill: C.ownFill, stroke: C.own, ...grow }} strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke"
         initial={entering ? { scale: 0 } : false} animate={{ scale: 1 }} transition={segIn(0)}/>
-      {areas.map((a,i) => { const [x,y] = xy(peerR,i); return <circle key={a.name} className={`peer-radar-peer-pt${dim(i)}${entering ? ' enter-fade' : ''}`} cx={x} cy={y} r="2.6" style={{ fill: 'var(--c-white, #fff)', stroke: C.peer, animationDelay: entering ? `${PT_DELAY + 0.08 + i * 0.05}s` : undefined }} strokeWidth="1.4"/>; })}
+      {areas.map((a,i) => { const [x,y] = xy(peerR,i); return <circle key={a.name} className={`peer-radar-peer-pt${dim(i)}${entering ? ' enter-fade' : ''}`} cx={x} cy={y} r="3" style={{ fill: 'var(--c-white, #fff)', stroke: C.peer, animationDelay: entering ? `${PT_DELAY + 0.08 + i * 0.05}s` : undefined }} strokeWidth="1.4"/>; })}
       {/* Own points: solid blue with a white ring. Default: every point at full strength. User selection: that axis's
           point grows, the others dim. */}
-      {areas.map((a,i) => { const [x,y] = xy(ownR(a),i), on = selected === i; return <motion.circle key={a.name} className={`peer-radar-own-pt${dim(i)}`} cx={x} cy={y} r={on ? 5 : 3.6} style={{ fill: C.own, stroke: 'var(--c-white, #fff)', transformOrigin: `${x}px ${y}px`, transformBox: 'view-box' }} strokeWidth="1.5"
+      {areas.map((a,i) => { const [x,y] = xy(ownR(a),i), on = selected === i; return <motion.circle key={a.name} className={`peer-radar-own-pt${dim(i)}`} cx={x} cy={y} r={on ? 4.6 : 3.4} style={{ fill: 'var(--c-white, #fff)', stroke: C.own, transformOrigin: `${x}px ${y}px`, transformBox: 'view-box' }} strokeWidth="2"
         initial={entering ? { scale: 0 } : false} animate={{ scale: 1 }} transition={ptIn(i)}/>; })}
       {/* Points select too (14pt hit circle); the label button below is the accessible control. */}
       {areas.map((a,i) => { const [x,y] = xy(ownR(a),i); return <circle key={a.name} className="peer-radar-pt-hit" cx={x} cy={y} r="14" fill="transparent" data-act={`${act}-point-${i}`} aria-hidden="true" onClick={e => { e.stopPropagation(); onPick(a.key); }}/>; })}
@@ -218,7 +218,7 @@ export function PeerRadarCard({ scope, insight, areas: rawAreas, ca='row', act, 
       <Radar areas={areas} scope={scope} selected={sel} act={act} onPick={pick} entering={entering}/>
       <div className={`peer-radar-legend${entering ? ' enter-fade' : ''}`} style={entering ? { animationDelay: labDelay(5) } : undefined}>
         {/* Legend dots drawn like the chart points: solid blue with a white ring | white ringed in light blue. */}
-        <span><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4" style={{ fill: C.own, stroke: C.ownFill }} strokeWidth="1.5"/></svg>{L.selfLabel}</span>
+        <span><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="3.5" style={{ fill: 'var(--c-white, #fff)', stroke: C.own }} strokeWidth="2"/></svg>{L.selfLabel}</span>
         <span><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="3.6" style={{ fill: 'var(--c-white, #fff)', stroke: C.peer }} strokeWidth="1.6"/></svg>{L.peerLabel}</span>
       </div>
       <TopTabs id={`${act}-metrics`} tabs={tabs} value={area.key} onChange={pick} equal={false} className="a-tabs peer-radar-tabs" actPrefix={`${act}-area`}/>
@@ -227,12 +227,16 @@ export function PeerRadarCard({ scope, insight, areas: rawAreas, ca='row', act, 
       <div className={`kpi-grid peer-radar-kpis${entering ? ' enter-card' : ''}`} style={entering ? { animationDelay: '0.3s' } : undefined} aria-live="polite">
         <div className="kpi sel peer-radar-tile" data-tile="self">
           <div className="kpi-label">{area.label}</div>
-          <div className="prt-row">
-            <div className="kpi-val">{area.ownText}</div>
-            {split && <div className="prt-split" data-split>{split.text}</div>}
-          </div>
+          <div className="kpi-val">{area.ownText}</div>
           <div className="kpi-delta"><span className={`kd-pill ${vs.tone}`}>{vs.tone !== 'flat' && <Arrow up={vs.tone === 'up'}/>}{vs.text}</span><span className="kd-abs">vs typical</span></div>
         </div>
+        {/* Market position stays as its own tile (Yanice: 「你不和其他人比 看你在市场的定位么」) */}
+        <div className="kpi peer-radar-rank" data-tile="rank">
+          <div className="kpi-label">Ahead of</div>
+          <div className="kpi-val">{area.rankText}</div>
+          <div className="kpi-sub">{L.group}</div>
+        </div>
+        {split && <div className="prt-split" data-split>{split.text}</div>}
       </div>
     </div>
     {ca==='row'&&<AskRow act={askAct} seenKey={`peer-${scope}`} prompts={ask?.prompts||['Ask Creator Assistant']} fixed={askText} onAsk={q=>onAsk?.(q)} icon={<CaIcon size={22}/>}/>}
