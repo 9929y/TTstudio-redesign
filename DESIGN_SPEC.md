@@ -67,3 +67,12 @@ Use the existing `Pills variant="blue"` for metric, ranking and filter chips. Do
 | Keyboard focus | `--c-blue-selected` | Visible 2px inset focus ring, including the expanded touch rail |
 
 选中态的文字统一为深蓝，底色统一为浅蓝；焦点描边也使用同一深蓝色。所有 `Pills variant="blue"` 实例共享此规则，包括 Inbox。日期黑色胶囊、黑色导航文字 Tab 和数据图表的蓝色不受此规则影响。颜色只在 `src/tokens.css` 定义，由 `src/app.css` 的共享组件样式消费。
+
+
+### Typography roles · 字重统一规则
+
+- All ordinary body, button, tab, chip, axis/metric label, legend, explanatory and comparative text uses TikTok Sans Regular (400), including selected states. Do not introduce Medium/SemiBold to convey selection; use the existing colour, background, underline or stroke.
+- Existing page/section/card **titles** and **primary KPI numerals** retain their existing explicit title/number roles; do not flatten the hierarchy or make a new weight for a page.
+- Apply the same rule in Figma and React. Keep the original font sizes and line heights unless a separately approved change requires it.
+
+正文、按钮、Tab、胶囊、图表标签与图例、说明和对比数据统一 400；选中用颜色/底色/下划线表现。标题及主 KPI 数值沿用原明确的字重，不新增页面专属字重。

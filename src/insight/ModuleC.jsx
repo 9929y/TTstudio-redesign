@@ -27,7 +27,7 @@ export function ModuleC({ insight = demo, children, className }) {
               <span style={{ flex: '1 1 auto', minWidth: 0, fontSize: 13, lineHeight: '18px', fontWeight: 400, color: '#57585e', overflowWrap: 'anywhere' }}>
                 {r.name}
               </span>
-              <span style={{ flex: 'none', minWidth: 32, textAlign: 'right', fontSize: 15, lineHeight: '20px', fontWeight: 600, color: '#161823', fontVariantNumeric: 'tabular-nums' }}>{r.score}</span>
+              <span style={{ flex: 'none', minWidth: 32, textAlign: 'right', fontSize: 15, lineHeight: '20px', fontWeight: 400, color: '#161823', fontVariantNumeric: 'tabular-nums' }}>{r.score}</span>
             </span>
             <span style={{ position: 'relative', display: 'block', height: 8, borderRadius: 4, background: '#f1f1f2', overflow: 'hidden' }}>
               <span className={entering ? 'enter-grow-x' : undefined} style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${r.score}%`, borderRadius: 4, background: r.color, animationDelay: entering ? `${0.12 + ri * 0.06}s` : undefined }} />

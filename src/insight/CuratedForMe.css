@@ -21,7 +21,7 @@
 .cfm-head > svg { flex: none; }
 
 .cfm-tip { display: block; font-size: 12px; line-height: 16px; font-weight: 400; color: #57585e; }
-.cfm-topic { font-size: 15px; line-height: 20px; font-weight: 600; color: #161823; }
+.cfm-topic { font-size: 15px; line-height: 20px; font-weight: 400; color: #161823; }
 .cfm-clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .cfm-nowrap { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cfm-illo { position: absolute; }
@@ -34,7 +34,7 @@
 .cfm-card { position: relative; flex: none; box-sizing: border-box; width: 300px; height: 128px; border-radius: 8px; overflow: hidden; box-shadow: inset 0 0 0 0.5px #dcdce0; padding: 12px 104px 12px 12px; display: flex; flex-direction: column; align-items: flex-start; scroll-snap-align: start; text-align: left; transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1); }
 .cfm-card-text { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 4px; font-size: 15px; }
 .cfm-card-cta-wrap { margin-top: auto; }
-.cfm-card-cta { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 8px; background: #161823; color: #ffffff; font-size: 13px; line-height: 16px; font-weight: 600; }
+.cfm-card-cta { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 8px; background: #161823; color: #ffffff; font-size: 13px; line-height: 16px; font-weight: 400; }
 /* 2026-11-27 E1：整张卡 = Create。卡片底层是整卡按钮，文字、插画和 Create 提示都不接点击（穿透到整卡按钮）；
    Learn more 在右上角单独接点击，点击区 44 高。按整卡时卡片缩到 0.98；按 Learn more 只有文字变淡，卡片不动。 */
 .cfm-card-hit { position: absolute; inset: 0; z-index: 0; appearance: none; border: 0; margin: 0; padding: 0; background: transparent; cursor: pointer; border-radius: inherit; -webkit-tap-highlight-color: transparent; }
@@ -76,12 +76,12 @@
 .cfm-why-ic { flex: none; display: grid; place-items: center; width: 16px; height: 20px; }
 .cfm-why-ic svg { flex: none; }
 .cfm-why-t { font-size: 13px; line-height: 20px; color: #57585e; }
-.cfm-why-t b { font-weight: 600; color: #161823; }
+.cfm-why-t b { font-weight: 400; color: #161823; }
 .cfm-why.lg .cfm-why-row { padding: 12px 16px; }
 .cfm-why.lg .cfm-why-ic { width: 18px; }
 .cfm-why.lg .cfm-why-t { font-size: 14px; }
 
-.cfm-cta-full { position: relative; z-index: 1; box-sizing: border-box; width: 100%; height: 46px; border-radius: 8px; background: #ffffff; box-shadow: inset 0 0 0 0.5px #dcdce0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; line-height: 20px; font-weight: 600; color: #161823; }
+.cfm-cta-full { position: relative; z-index: 1; box-sizing: border-box; width: 100%; height: 46px; border-radius: 8px; background: #ffffff; box-shadow: inset 0 0 0 0.5px #dcdce0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; line-height: 20px; font-weight: 400; color: #161823; }
 /* Details 面板的 Create 与首页卡片一致：深色实底；按下缩到 0.97（画板 im-press），不变淡 */
 .cfm-cta-full.is-dark { background: #161823; color: #ffffff; box-shadow: none; transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1); }
 .cfm-cta-full.is-dark:active { transform: scale(0.97); }

@@ -51,8 +51,8 @@ function Radar({ areas, scope, selected }) {
       {areas.map((a,i) => { const [x,y] = xy(base,i); return <circle key={a.name} cx={x} cy={y} r="2.4" fill="white" stroke={c.peer} strokeWidth="1.4"/>; })}
       {areas.map((a,i) => { const [x,y] = xy(ownR(a),i); return <circle key={a.name} cx={x} cy={y} r="2.8" fill="white" stroke={c.own} strokeWidth="1.6"/>; })}
       {areas.map((a,i) => { const l = labels[i]; return <g key={a.name} className="peer-radar-label">
-        <text x={l.x} y={l.y} textAnchor={l.align} fontSize="13" fontWeight={selected === i ? 600 : 500} fill="var(--c-text)">{a.name}</text>
-        <text x={l.x} y={l.y+18} textAnchor={l.align} fontSize="12" fontWeight="500"><tspan fill="#1765c4">{a.ownText}</tspan><tspan fill="var(--c-text-3)"> / </tspan><tspan fill={c.peerText}>{a.peerText}</tspan></text>
+        <text x={l.x} y={l.y} textAnchor={l.align} fontSize="13" fontWeight="400" fill="var(--c-text)">{a.name}</text>
+        <text x={l.x} y={l.y+18} textAnchor={l.align} fontSize="12" fontWeight="400"><tspan fill="#1765c4">{a.ownText}</tspan><tspan fill="var(--c-text-3)"> / </tspan><tspan fill={c.peerText}>{a.peerText}</tspan></text>
       </g>; })}
     </svg>
     <div className="peer-radar-legend">

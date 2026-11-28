@@ -213,7 +213,7 @@ export function RoseCard({ geo, act, ca = 'row', title, insight: D, onAsk, onSel
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {presentation === 'bars' ? <div className="content-score-list">
-          <div className="score-total"><span>Overall score</span><span className="score-total-value">{D.total}<span>/{D.max || 90}</span></span><span style={{padding:'1px 6px',borderRadius:999,background:D.total>D.prevTotal?'#e5f0fc':D.total<D.prevTotal?'#fdece3':'rgba(22, 24, 35, 0.06)',fontSize:12,lineHeight:'16px',fontWeight:600,color:D.total>D.prevTotal?'#1765c4':D.total<D.prevTotal?'#b4400c':'#57585e'}}>{(D.total-D.prevTotal>0?'↑ ':D.total-D.prevTotal<0?'↓ ':'')+Math.abs(D.total-D.prevTotal)}</span></div>
+          <div className="score-total"><span>Overall score</span><span className="score-total-value">{D.total}<span>/{D.max || 90}</span></span><span style={{padding:'1px 6px',borderRadius:999,background:D.total>D.prevTotal?'#e5f0fc':D.total<D.prevTotal?'#fdece3':'rgba(22, 24, 35, 0.06)',fontSize:12,lineHeight:'16px',fontWeight:400,color:D.total>D.prevTotal?'#1765c4':D.total<D.prevTotal?'#b4400c':'#57585e'}}>{(D.total-D.prevTotal>0?'↑ ':D.total-D.prevTotal<0?'↓ ':'')+Math.abs(D.total-D.prevTotal)}</span></div>
           <BarRows rows={areas.map(a=>[a.name,a.you/(a.max||30)])} color={(_,i)=>D.colors[i]} formatValue={(_,v,i)=>`${areas[i].you}/${areas[i].max||30}`} onSelect={pick} selected={tip} actPrefix={`${act}-area`} markers={areas.map((a,i)=>tip===i?a.prev/(a.max||30):null)} className="score-bar-rows"/>
         </div> :         <div ref={chartRef} className="rose-chart" style={{ position: 'relative', height: G.H, width: 345, maxWidth: '100%', alignSelf: 'center' }}>
           <svg width={holdOverview ? 345 : "100%"} height={G.H} viewBox={`0 0 ${holdOverview ? 345 : chartWidth} ${G.H}`} aria-hidden="true" style={{ position: 'absolute', left: 0, top: 0 }}>
@@ -323,7 +323,7 @@ export function RoseCard({ geo, act, ca = 'row', title, insight: D, onAsk, onSel
                   <span style={{ fontSize: 13, lineHeight: '18px', color: '#161823' }}>
                     <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', marginRight: 6, verticalAlign: '1px', background: D.colors[tip] }} />
                     {/* Final 单句（2026-11-26 确认）：{维度} + 一句话；没有 sentence 的旧数据仍按原来的行显示 */}
-                    <span style={{ fontWeight: holdOverview ? 400 : 600, color: '#161823' }}>{sx.name}</span> {sx.sentence || (sx.lines ? sx.lines[0] : sx.note)}
+                    <span style={{ fontWeight: 400, color: '#161823' }}>{sx.name}</span> {sx.sentence || (sx.lines ? sx.lines[0] : sx.note)}
                     {!sx.sentence && sx.lines && sx.lines.slice(1).map((ln) => <span key={ln} style={{ display: 'block', color: '#57585e' }}>{ln}</span>)}
                   </span>
                 ) : null}

@@ -1619,3 +1619,14 @@ html:has(.stage-root.embed), html:has(.stage-root.embed) body { background: tran
 .hd-card { padding-inline: 16px; }
 .hd-card-head { padding-inline: 0; }
 .create-page .create-tiles { padding-inline: var(--gutter); }
+
+
+/* Typography contract: ordinary controls, labels and comparison values use
+   Regular 400 in every state. Titles and primary KPI numerals retain their
+   existing type roles; selected state is communicated by ink/fill/indicator. */
+#phone-screen button, #phone-screen [role="tab"], #phone-screen [role="button"] { font-weight:400; }
+#phone-screen .top-tabs button, #phone-screen .top-tabs button.on,
+#phone-screen .pills .pill, #phone-screen .pills .pill-visual,
+#phone-screen .chip, #phone-screen .tb-label,
+#phone-screen .bar-v, #phone-screen .kd-pill,
+#phone-screen .donut-legend b, #phone-screen .trend .ax.dark, #phone-screen .retention .ax.dark { font-weight:400; }

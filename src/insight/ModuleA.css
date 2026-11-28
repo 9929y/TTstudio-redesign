@@ -30,5 +30,5 @@
 .score-total-value { margin-left:auto; font-size:var(--fs-kpi); line-height:25px; font-weight:700; color:var(--c-text); }
 .score-total-value > span { font-size:var(--fs-sub); line-height:18px; color:var(--c-text-2); font-weight:400; }
 .score-bar-rows .bar-row { min-height:44px; display:flex; flex-direction:column; justify-content:center; }
-.score-bar-rows .bar-row[aria-pressed=true] .bar-top > span:first-child { font-weight:600; color:var(--c-text); }
+.score-bar-rows .bar-row[aria-pressed=true] .bar-top > span:first-child { font-weight:400; color:var(--c-text); }
 .score-bar-marker { position:absolute; top:0; bottom:0; width:0; border-left:1.5px dashed var(--c-text); }
