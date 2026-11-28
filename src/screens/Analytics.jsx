@@ -92,6 +92,8 @@ function InsightSlot({ Module, loading }) {
   }, [isA, loading, range]); // eslint-disable-line react-hooks/exhaustive-deps
   const follow = (name) => {
     const st = useApp.getState();
+    // 雷达回到默认态（再点已选维度 / 点空白，2026-11-28 Yanice）：Key metrics 也回到一张都不选
+    if (name == null) { if (isA && st.kpiSel.overview != null) st.setKpiSel('overview', null); return; }
     if (isA) {
       // Overview：选中维度 → 选中对应的卡（已经是这一维度的卡，比如 Engagement 下的 Comments，就不动）
       const key = AREA_KPI[name];
@@ -143,8 +145,8 @@ function KeyMetrics({ tabKey, kpis, chartMetric, loading, empty, right }) {
             <KpiCard key={k.key + token} k={k} selected={k.key === sel} delay={i * 0.06} empty={empty}
               onPress={() => {
                 if (tabKey !== 'overview') return setSel(tabKey, k.key);
-                // Overview：点另一张卡 → 选它，雷达跟到对应维度；再点已选中的卡 → 保持选中（和 Top posts 胶囊一样）
-                if (k.key === sel) return;
+                // Overview：点另一张卡 → 选它，雷达跟到对应维度；再点已选中的卡 → 两边都回到默认态（一张都不选、雷达五轴全亮，2026-11-28 Yanice）
+                if (k.key === sel) { setSel(tabKey, null); useApp.getState().syncRose('A', null); return; }
                 setSel(tabKey, k.key);
                 useApp.getState().syncRose('A', KPI_AREA[k.key]);
               }} />

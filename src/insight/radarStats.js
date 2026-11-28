@@ -5,14 +5,16 @@ import { COHORT } from '../data/peers.js';
 import { postRadarGroupSize } from './build.js';
 
 // Status = where the percentile (share of the group you are ahead of) falls.
-// Average is the band around the middle of the group: ahead of 40–59%. The card's own insight says
+// Typical is the band around the middle of the group: ahead of 40–59%. The card's own insight says
 // "beat most similar creators" from 60% up, so Strong starts there and the two never disagree.
 export const STATUS_STRONG = 60; // ahead of 60% or more
 export const STATUS_BEHIND = 40; // ahead of fewer than 40%
+// Chip words (2026-11-28 Yanice): "Behind" read as judgmental, so the tiers are Strong / Typical / Room to grow.
+// Keys and chip colours (tone) are unchanged.
 export const STATUS = {
   strong: { word: 'Strong', tone: 'up' },
-  average: { word: 'Average', tone: 'flat' },
-  behind: { word: 'Behind', tone: 'down' },
+  average: { word: 'Typical', tone: 'flat' },
+  behind: { word: 'Room to grow', tone: 'down' },
 };
 export function statusOf(rank) {
   if (!Number.isFinite(rank)) return { key: 'average', ...STATUS.average };
@@ -20,7 +22,7 @@ export function statusOf(rank) {
   return { key, ...STATUS[key] };
 }
 export const statusRule = () =>
-  `Strong means you are ahead of ${STATUS_STRONG}% or more of them, Average ${STATUS_BEHIND}–${STATUS_STRONG - 1}%, Behind fewer than ${STATUS_BEHIND}%.`;
+  `${STATUS.strong.word} means you are ahead of ${STATUS_STRONG}% or more of them, ${STATUS.average.word} ${STATUS_BEHIND}–${STATUS_STRONG - 1}%, ${STATUS.behind.word} fewer than ${STATUS_BEHIND}%.`;
 
 // Same change-colour rule as Key metrics (DESIGN_SPEC "Colours", kit.jsx Delta): above +1% up (blue),
 // below −1% down (orange), otherwise flat grey with no arrow. From 2× up the gap reads as a multiple

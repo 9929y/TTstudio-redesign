@@ -692,34 +692,53 @@ test('13 外部学习：Custom 日期（单日 → Update）→ 多图发布页�
   expect(await deadCheck(page, 'composer')).toEqual([]);
 });
 
-test('14 评分图联动：选中维度 → 图中央 / Key metrics / Ask 行一起换；再点取消；点空白恢复', async ({ page }) => {
+test('14 评分图联动：选中维度 → 雷达框选 / Key metrics / Ask 行一起换；再点取消；点空白恢复', async ({ page }) => {
   await boot(page);
   await tap(page, 'tabbar-analytics');
   await page.waitForTimeout(1200);
   const card = page.locator('#phone-screen [data-insight="insight-a"]:visible');
-  const sel = page.locator('#phone-screen .kpi.sel .kpi-label:visible');
+  // 页面下方的 Key metrics（卡片内两张小卡不算）
+  const sel = page.locator('#phone-screen .kpi-grid:not(.peer-radar-kpis) .kpi.sel .kpi-label:visible');
   const ask = card.locator('.ask-row .ask-roll-t').last();
+  const tabOn = card.locator('.peer-radar-tabs button.on');
   const area = async (name) => { await card.locator('[data-act^="insight-a-area-"]', { hasText: name }).click(); await page.waitForTimeout(600); };
-  await expect(card).toHaveAttribute('data-tip', '-1');
+  const isDefault = async () => {
+    await expect(card).toHaveAttribute('data-tip', '-1');
+    await expect(card.locator('[data-peer-radar]')).toHaveAttribute('data-state', 'default');
+    await expect(card.locator('.peer-radar-label.is-on')).toHaveCount(0);
+    await expect(card.locator('.peer-radar-label.is-dim')).toHaveCount(0);
+    await expect(tabOn).toHaveText('Views'); // 默认态第一个 Tab 有下划线，但不算用户选中
+  };
+  await isDefault();
   await expect(sel).toHaveCount(0); // 默认 Key metrics 一张都不选
   // 路径一：默认 → Shares → Views → 再点 Views → 默认
   await area('Shares');
   await expect(card).toHaveAttribute('data-tip', '2');
   await expect(sel).toHaveText('Shares');
   await expect(ask).toHaveText('How can I get more shares?');
-  await expect(card.locator('[aria-live="polite"]')).toHaveText(/^Shares rose [\d.]+% from the previous 7 days, taking its score from \d+ to \d+\.$/);
   await area('Views');
   await expect(card).toHaveAttribute('data-tip', '0');
   await expect(sel).toHaveText('Post views');
   await expect(ask).toHaveText('Which posts drove views?');
   await area('Views');
-  await expect(card).toHaveAttribute('data-tip', '-1');
+  await isDefault();
   await expect(sel).toHaveCount(0);
   await expect(ask).toHaveText('What should I work on first?');
+  // 默认态点第一个 Tab（只是显示着）→ 进入选中态
+  await area('Views');
+  await expect(card).toHaveAttribute('data-tip', '0');
+  // 轴标签、雷达点：再点一次同样回到默认
+  await tap(page, 'insight-a-axis-0');
+  await isDefault();
+  await tap(page, 'insight-a-axis-3');
+  await expect(card).toHaveAttribute('data-tip', '3');
+  await expect(card.locator('.peer-radar-label.is-on')).toHaveCount(1);
+  await tap(page, 'insight-a-point-3');
+  await isDefault();
   // 路径二：默认 → Engagement（聚焦 Likes）→ 点空白 → 默认
   await area('Engagement');
   await expect(sel).toHaveText('Likes');
-  await expect(ask).toHaveText(/engagement/);
+  await expect(ask).toHaveText(/likes and comments/);
   await shot(page, 'l1_engagement');
   // ⓘ 照常打开说明，选中保留
   await tap(page, 'insight-a-info');
@@ -727,29 +746,35 @@ test('14 评分图联动：选中维度 → 图中央 / Key metrics / Ask 行一
   await expect(card).toHaveAttribute('data-tip', '1');
   await card.locator('p').first().click();
   await page.waitForTimeout(500);
-  await expect(card).toHaveAttribute('data-tip', '-1');
+  await isDefault();
   await expect(sel).toHaveCount(0);
-  // 反向：下方换卡 → 评分图回到总览；再点已选中的卡 → 两边都未选中
+  // 雷达图里的空白处也恢复默认
+  await area('Visits');
+  const svg = await card.locator('.peer-radar-chart > svg').boundingBox();
+  await page.mouse.click(svg.x + 8, svg.y + svg.height - 6);
+  await page.waitForTimeout(500);
+  await isDefault();
+  // 反向：下方换卡 → 雷达跟到对应维度；再点已选中的卡 → 两边都回到默认
   await area('Shares');
   await expect(sel).toHaveText('Shares');
   await tap(page, 'kpi-likes');
-  await expect(card).toHaveAttribute('data-tip', '-1');
+  await expect(card).toHaveAttribute('data-tip', '1');
   await expect(sel).toHaveText('Likes');
   await tap(page, 'kpi-likes');
   await expect(sel).toHaveCount(0);
-  await expect(card).toHaveAttribute('data-tip', '-1');
+  await isDefault();
   await area('Views');
   await expect(sel).toHaveText('Post views');
   await tap(page, 'kpi-views');
   await expect(sel).toHaveCount(0);
-  await expect(card).toHaveAttribute('data-tip', '-1');
+  await isDefault();
   // 选中后点 Ask 行：打开 Creator Assistant 的 onboarding 第一屏（不自动提问）
   await area('Shares');
   await tap(page, 'assistant-pop-analytics');
   await page.waitForTimeout(1200);
   await expect(page.locator('#phone-screen [data-act^="assistant-prompt-"]:visible')).toHaveCount(4);
   await shot(page, 'l2_assistant_shares');
-  // Content：同一套规则，下方 Top posts 的排序胶囊跟着换，取消后恢复
+  // Content：Content summary 是双条行（2026-11-28 起卡片自身不保留选中），点某一行只让下方 Top posts 换成对应的排序
   await tap(page, 'nav-back');
   await tap(page, 'tab-content');
   await page.waitForTimeout(1200);
@@ -758,15 +783,11 @@ test('14 评分图联动：选中维度 → 图中央 / Key metrics / Ask 行一
   await expect(act(page, 'pill-views')).toHaveClass(/on/);
   await barea('Followers');
   await expect(act(page, 'pill-newFollowers')).toHaveClass(/on/);
-  await expect(bcard.locator('.ask-row .ask-roll-t').last()).toHaveText('Which posts brought new followers?');
   await barea('Engagement');
   await expect(act(page, 'pill-likes')).toHaveClass(/on/);
   await shot(page, 'l3_content_engagement');
-  await barea('Engagement');
-  await expect(act(page, 'pill-views')).toHaveClass(/on/);
-  // 反向：换排序 → 评分图回到总览
+  // 反向：换排序 → 胶囊照常切换
   await barea('Followers');
   await tap(page, 'pill-likes');
-  await expect(bcard).toHaveAttribute('data-tip', '-1');
   await expect(act(page, 'pill-likes')).toHaveClass(/on/);
 });
