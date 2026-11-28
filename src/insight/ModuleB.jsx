@@ -27,7 +27,7 @@ const B7 = buildModuleB({ key: '7' });
 export function ModuleB({ ca = 'row', title, insight = B7, onAsk, onSelect, syncTo, initialArea }) {
   if (!insight) return <ScoresNeedSevenDays />;
   // 2026-11-28: double-bar rows (no scores on the card), so the ⓘ drawer explains the bars instead of the scores
-  return <RoseCard presentation="bars" geo={GEO_HALF} act="insight-b" ca={ca} title={title} insight={{ ...insight, title: 'About this comparison', info: contentInfo(), ui: { ...insight.ui, infoLabel: 'About this comparison' } }} onAsk={onAsk} onSelect={onSelect} syncTo={syncTo} initialArea={initialArea} />;
+  return <RoseCard presentation="bars" geo={GEO_HALF} act="insight-b" ca={ca} title={title} insight={{ ...insight, title: 'About this comparison', info: contentInfo(insight.period), ui: { ...insight.ui, infoLabel: 'About this comparison' } }} onAsk={onAsk} onSelect={onSelect} syncTo={syncTo} initialArea={initialArea} />;
 }
 
 export default ModuleB;

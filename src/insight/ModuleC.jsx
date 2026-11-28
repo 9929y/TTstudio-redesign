@@ -13,7 +13,7 @@ export function ModuleC({ insight = demo, children, className }) {
   const rows = D.rows || [];
   const [drawer, setDrawer] = useState('');
   const entering = useEntering(1100);
-  const items = (ui.intro ? [ui.intro] : []).concat(rows.map((x) => ({ ic: x.ic, t: x.name, lines: [x.desc] })));
+  const items = D.info || (ui.intro ? [ui.intro] : []).concat(rows.map((x) => ({ ic: x.ic, t: x.name, lines: [x.desc] })));
   return (
     <div data-insight="C" className={[className, entering && 'enter-card'].filter(Boolean).join(' ') || undefined}
       style={{ ...CARD_STYLE, margin: 0, border: 0, boxShadow: '0 0 0 0.5px rgba(22, 24, 35, 0.12), 0 2px 12px rgba(22, 24, 35, 0.05)' }}>

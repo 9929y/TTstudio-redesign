@@ -46,6 +46,9 @@ const DRAWER_ICONS = {
   dollar: <path d="M15.5 8c-.5-1.2-1.8-2-3.5-2-2 0-3.5 1-3.5 2.6s1.4 2.2 3.5 2.7 3.7 1.1 3.7 2.8-1.6 2.7-3.7 2.7c-1.8 0-3.2-.8-3.8-2.1M12 4v16" />,
   plus: <><circle cx="12" cy="12" r="8.5" /><path d="M12 8.5v7M8.5 12h7" /></>,
   info: <><circle cx="12" cy="12" r="8.5" /><path d="M12 11v5.2M12 7.8v.2" /></>,
+  clock: <><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></>,
+  ai: <path d="m12 4 1.8 4.7 4.7 1.8-4.7 1.8L12 17l-1.8-4.7-4.7-1.8 4.7-1.8z" />,
+  shield: <path d="M12 3.5 5 6.2v5.3c0 4.2 2.9 7.6 7 9 4.1-1.4 7-4.8 7-9V6.2z" />,
   insights: <path d="m4.5 15.5 4.5-5 3.5 3 7-7.5M14.5 6h5v5" />,
   flame: <path d="M12 21c-3.6 0-6.5-2.6-6.5-6.2 0-3 2-4.9 3.4-6.4.3 1.4 1.1 2.4 2.1 2.9.2-2.8 1.6-5.3 3.9-7.3-.2 2.6.9 4.2 2.1 5.7 1 1.3 1.5 2.8 1.5 4.4 0 4-3 6.9-6.5 6.9z" />,
 };
@@ -272,7 +275,7 @@ export function ModuleE({ post, ca='row', insight=demo, onAsk, askAct='assistant
   const areas=videoPeerComparison(post);
   if(!areas)return null; // fewer than 5 comparable posts: no card (same rule as buildModuleE)
   return <PeerRadarCard scope="post" insight={insight} areas={areas} group={groupSize('post', post)} ca={ca} act="insight-e" cardAct="E" onAsk={onAsk} ask={insight.ask} askAct={askAct}>
-    {close=><InsightDrawer title="About this comparison" items={peerInfo('post')} onClose={close}/>}
+    {close=><InsightDrawer title="About this comparison" items={peerInfo('post', insight.period)} onClose={close}/>}
   </PeerRadarCard>;
 }
 export default ModuleE;

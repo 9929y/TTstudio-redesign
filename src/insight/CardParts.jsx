@@ -1,14 +1,12 @@
-import { useId, useState } from 'react';
+import { useId } from 'react';
 import { useApp } from '../store.js';
-import { provenanceOf } from './provenance.js';
-import './CardParts.css';
 // Final 画板（2026-11-26）所有 AI 卡片共用的头部与洞察块：
 // 标题 17/22 700 + 蓝色 AI 星形 16px + 右侧 ⓘ；下面一块浅蓝底 #ebf3fb 的洞察（结论 600 黑字 + 其余灰字），圆角 8、内边距 12。
 // 卡片本身圆角 12、内边距 16、元素间距 12（IMO-Rose-Blue / IMQ-B-Rose-Blue / IMS-C-Blue / IMS6-Key-Blue / IMS5-Insight / IMC-Comment-Topics）。
 export const CARD_STYLE = {
-  boxSizing: 'border-box', width: '100%', borderRadius: 12, background: '#ffffff', padding: 'var(--card-padding, 16px)',
-  display: 'flex', flexDirection: 'column', gap: 'var(--card-gap, 12px)', color: '#161823', textAlign: 'left',
-  fontFamily: 'inherit', // 2026-11-28：继承页面字体，和原产品元素（Key metrics 等）同一字体栈
+  boxSizing: 'border-box', width: '100%', borderRadius: 12, background: '#ffffff', padding: 16,
+  display: 'flex', flexDirection: 'column', gap: 12, color: '#161823', textAlign: 'left',
+  fontFamily: "var(--font, 'TikTok Sans', -apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif)",
 };
 
 const SPARK = 'M208,144a15.78,15.78,0,0,1-10.42,14.94L146,178l-19,51.62a15.92,15.92,0,0,1-29.88,0L78,178l-51.62-19a15.92,15.92,0,0,1,0-29.88L78,110l19-51.62a15.92,15.92,0,0,1,29.88,0L146,110l51.62,19A15.78,15.78,0,0,1,208,144ZM152,48h16V64a8,8,0,0,0,16,0V48h16a8,8,0,0,0,0-16H184V16a8,8,0,0,0-16,0V32H152a8,8,0,0,0,0,16Zm88,32h-8V72a8,8,0,0,0-16,0v8h-8a8,8,0,0,0,0,16h8v8a8,8,0,0,0,16,0V96h8a8,8,0,0,0,0-16Z';
@@ -67,39 +65,22 @@ export function CardHead({ title, infoLabel = 'About these scores', onInfo, act 
 // eslint-disable-next-line no-unused-vars
 // 2026-11-28 Yanice：洞察块下面有图（雷达、双横条、对比条、评分条）就只写段落，不写要点；下面没有图的纯文字卡
 // （Viewer / Follower summary）可以有 1–2 条要点。要点只在调用方显式传 allowBullets 时才渲染，默认不渲染。
-export function KeyBlock({ k, rest, bullets, next, basis, act, allowBullets = false, children }) {
+// 2026-11-28 Yanice: no provenance line / feedback buttons under the insight (removed).
+export function KeyBlock({ k, rest, bullets, next, allowBullets = false, children }) { // eslint-disable-line no-unused-vars
   const pts = allowBullets ? (bullets || []).filter(Boolean).slice(0, 2) : [];
-  const meta = provenanceOf(bullets);
-  const dates = basis ?? meta?.basis;
-  const prefix = act ?? meta?.act ?? 'insight';
-  // Feedback belongs to this insight text: a new text (another date range, another post) starts unselected
-  const [fb, setFb] = useState(null);
-  const vote = fb && fb.k === k ? fb.v : null;
-  const pick = (v) => setFb(vote === v ? null : { k, v });
   return (
     <div style={{ padding: 12, borderRadius: 8, background: '#ebf3fb', fontSize: 15, lineHeight: '22px', color: '#161823' }}>
-      <div data-insight-text>
-        <p style={{ margin: 0 }}><span style={{ fontWeight: 400 }}>{k}</span>{rest && !/^\s/.test(rest) ? ` ${rest}` : rest}{children}</p>
-        {pts.length > 0 && (
-          <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-            {pts.map((b) => (
-              <li key={b} style={{ display: 'flex', gap: 8 }}>
-                <span aria-hidden="true" style={{ flex: 'none', width: 4, height: 4, borderRadius: 2, background: '#8a8b91', marginTop: 9 }} />
-                <span>{b}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-      <div className="kb-meta" data-provenance>
-        {dates && <span className="sec-sub">Based on data from {dates}</span>}
-        <span className="kb-fb" role="group" aria-label="Was this insight helpful?">
-          {[['yes', 'Helpful'], ['no', 'Not helpful']].map(([v, label]) => (
-            <button key={v} type="button" className={`kb-fb-btn${vote === v ? ' on' : ''}`} aria-pressed={vote === v}
-              data-act={`${prefix}-feedback-${v}`} onClick={() => pick(v)}>{label}</button>
+      <p style={{ margin: 0 }}><span style={{ fontWeight: 400 }}>{k}</span>{rest && !/^\s/.test(rest) ? ` ${rest}` : rest}{children}</p>
+      {pts.length > 0 && (
+        <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+          {pts.map((b) => (
+            <li key={b} style={{ display: 'flex', gap: 8 }}>
+              <span aria-hidden="true" style={{ flex: 'none', width: 4, height: 4, borderRadius: 2, background: '#8a8b91', marginTop: 9 }} />
+              <span>{b}</span>
+            </li>
           ))}
-        </span>
-      </div>
+        </ul>
+      )}
     </div>
   );
 }
