@@ -15,7 +15,7 @@ export const GEO_HALF = {
   },
   firstSep: false, // 半圆的第一条边是基线，不画分隔线（同 Final）
   labelValue: (x) => x.you + '/' + x.max,
-  centerTop: 136, centerTf: 'translateY(-100%)', centerFont: 36, centerLine: 40, centerPad: '0px 8px',
+  centerTop: 136, centerTf: 'translateY(-100%)', centerFont: 30, centerLine: 34, centerPad: '0px 8px',
 };
 
 const B7 = buildModuleB({ key: '7' });

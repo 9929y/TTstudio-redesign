@@ -187,7 +187,7 @@ export function KpiCard({ k, selected, onPress, delay = 0, empty }) {
   const val = empty ? (k.money ? <><small>$</small>0.00</> : '–') : k.money ? <><small>$</small>{k.value.toFixed(2)}</> : k.text ?? fmtFull0(k.value);
   return (
     <motion.button className={`kpi ${selected ? 'sel' : ''}`} data-act={`kpi-${k.key}`} onClick={onPress}
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay, duration: 0.18 }}>
+      initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay, duration: 0.28, ease: [0.23, 1, 0.32, 1] }}>
       <div className="kpi-label">{k.label}</div>
       <div className="kpi-val">{val}</div>
       {empty ? <div className="kpi-delta flat">{k.money ? '+$0.00' : '–'}</div> : k.sub ? <div className="kpi-sub">{k.sub}</div> : k.delta !== undefined ? <Delta d={k.delta} pctv={k.deltaPct} money={k.money} /> : null}
@@ -282,10 +282,10 @@ export function useTabFirstLoad(tab, ms = 650) {
 export function BarRows({ rows, chevron, chevronFor, onRow, decimals = 1, color }) {
   return (
     <div className="bar-rows">
-      {rows.map(([label, v]) => { const ch = chevron || chevronFor?.(label); return (
+      {rows.map(([label, v], idx) => { const ch = chevron || chevronFor?.(label); return (
         <div key={label} className={`bar-row ${ch ? 'tap' : ''}`} data-act={ch ? `bar-${label}` : undefined} onClick={ch ? () => onRow?.(label) : undefined} {...(ch ? asButton(() => onRow?.(label)) : {})}>
           <div className="bar-top"><span>{label}</span><span className="bar-v">{(v * 100).toFixed(decimals)}%{ch && <I.right size={14} />}</span></div>
-          <div className="bar-track"><motion.div className="bar-fill" style={color ? { background: color } : undefined} initial={{ width: 0 }} animate={{ width: `${Math.max(0.4, v * 100)}%` }} transition={{ duration: 0.5, ease: 'easeOut' }} /></div>
+          <div className="bar-track"><motion.div className="bar-fill" style={{ originX: 0, ...(color ? { background: color } : {}) }} initial={{ scaleX: 0, width: `${Math.max(0.4, v * 100)}%` }} animate={{ scaleX: 1, width: `${Math.max(0.4, v * 100)}%` }} transition={{ duration: 0.55, ease: [0.23, 1, 0.32, 1], delay: idx * 0.04 }} /></div>
         </div>
       ); })}
     </div>

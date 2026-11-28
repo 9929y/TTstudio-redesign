@@ -8,6 +8,7 @@ import { Illo } from '../ui/illo.jsx';
 import { MEDIA, NOW, N_DAYS } from '../data/seed.js';
 import { secToClock, monDay } from '../data/agg.js';
 import { CuratedForMe } from '../insight/CuratedForMe.jsx';
+import { AiStar } from '../insight/CardParts.jsx';
 
 const pad2 = (n) => String(n).padStart(2, '0');
 const ymd = (d) => `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}`;
@@ -323,7 +324,7 @@ export function ComposerScreen({ params }) {
           <button data-act="composer-hashtag" aria-label="Hashtag" onClick={() => insert('#')}><I.hash size={16} /></button>
           <button data-act="composer-mention" aria-label="Mention" onClick={() => insert('@')}><I.at size={16} /></button>
           <button className="wide" data-act="composer-desc-ideas" onClick={() => openSheet('descIdeas', { onPick: (t) => setDesc(t) })}><I.bulb size={16} /> Description ideas</button>
-          <button className="ai" data-act="composer-ai" aria-label="AI" onClick={() => openSheet('descIdeas', { onPick: (t) => setDesc(t) })}><I.spark size={16} /></button>
+          <button className="ai" data-act="composer-ai" aria-label="AI" onClick={() => openSheet('descIdeas', { onPick: (t) => setDesc(t) })}><AiStar size={16} /></button>
         </div>
         <div className="cmp-rows">
           <button className="cmp-row" data-act="composer-disclosure" onClick={() => openSheet('disclosure')}><I.disclosure size={20} /><span>Content disclosure and ads</span><I.right size={18} /></button>

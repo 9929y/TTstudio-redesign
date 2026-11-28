@@ -41,10 +41,13 @@ function EdgeSwipe({ progress, onCommit }) {
       under?.closest('button, a, input, [role="button"], [role="tab"], [data-act]')?.click();
       return;
     }
-    if (p > 0.35 || v > 0.45) {
-      animate(progress, 1, { duration: 0.22 * (1 - p) + 0.05, ease: 'easeOut' }).then(onCommit);
+    // 2026-11-27：松手后用无回弹弹簧接住手指的速度（不再固定时长），过渡和手势之间没有接缝；
+    // 方向按速度的正负判断：往回甩就取消，哪怕已经拖过了 35%
+    const vel = (v * 1000) / W; // 每秒走多少个屏宽，弹簧的初速度
+    if ((p > 0.35 && v > -0.15) || v > 0.45) {
+      animate(progress, 1, { type: 'spring', bounce: 0, duration: 0.34, velocity: Math.max(0, vel) }).then(onCommit);
     } else {
-      animate(progress, 0, { duration: 0.25, ease: 'easeOut' });
+      animate(progress, 0, { type: 'spring', bounce: 0, duration: 0.32, velocity: Math.min(0, vel) });
     }
   };
   return <div className="edge-swipe" aria-hidden="true" data-act="edge-swipe-back" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} />;

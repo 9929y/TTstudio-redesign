@@ -6,6 +6,7 @@ import { useApp } from '../store.js';
 import { LargeHeader, NavBar, Pills, Scroll, Cover, Avatar, Section, Row, Empty, Spinner, useFirstLoad, useTabFirstLoad, asButton } from '../ui/kit.jsx';
 const useFirstLoadInbox = () => useFirstLoad(500);
 import { SettingPage, SETTING_PAGES, CaIcon } from './Subflows.jsx';
+import { AskPill } from '../insight/AskAssistant.jsx';
 import { I } from '../ui/Icons.jsx';
 import { POSTS, POST_BY_ID, REMOVED_POST, SETTINGS_GROUPS, INSPIRATION, ACCOUNT, PERIOD_END } from '../data/seed.js';
 import { fmt, fmtMoney, overviewKpis, listTime } from '../data/agg.js';
@@ -28,6 +29,19 @@ function ClampBody({ text, time, open, onToggle, id }) {
     </div>
   );
 }
+// Inbox 顶部的 Creator Assistant 入口（2026-11-27）：和 Home 同一个 AskPill（轮播、第一次出现的出场光、机器人图标），浅色版。
+// 4 条问题都对得上这个账号 Inbox 里现有的消息（seed.js INBOX_SEED）：
+// 1 要处理的事：3 条新设备登录、申诉未通过、一条隐私设置变更
+// 2 Posts 更新「You’re outperforming 90%…」说的是 Kyoto at dusk（今天播放最多）
+// 3 评论要先回哪些：Positano 那条评论最多（365 条），反复有人问「Itinerary in bio?」「Could I do this with kids?」（带上作品名会超出一行，所以不写名字）
+// 4 Appeal not approved：被下架的是机场贵宾室那条（Trying every lounge at the airport…）
+const INBOX_PROMPTS = [
+  'Anything here I need to act on?',
+  'Why is “Kyoto at dusk” doing so well?',
+  'Which comments should I answer first?',
+  'Why was my lounge video taken down?',
+];
+
 export function InboxScreen({ pushed }) {
   const pushedLoad = useFirstLoadInbox(); const tabLoad = useTabFirstLoad('inbox', 500);
   const firstLoad = pushed ? pushedLoad : tabLoad; // 美国 2026-11-22（usrec 1:18）：进入 Inbox 先出现两点 loading
@@ -39,6 +53,7 @@ export function InboxScreen({ pushed }) {
   const push = useApp((s) => s.push);
   const openSheet = useApp((s) => s.openSheet);
   const us = useApp((s) => s.market) !== 'store';
+  const noAssistant = useApp((s) => s.newAccount) || !us; // 同 Home：新账号和美国商店版不显示 Creator Assistant 入口
   const assistantOpened = useApp((s) => s.assistantOpened);
   const assistantLast = useApp((s) => { const t = s.assistantThread; const m = t[t.length - 1]; return m ? m.text.split('\n')[0].slice(0, 80) : ''; });
   const list = inbox.filter((n) => filter === 'all' || n.type === filter);
@@ -52,6 +67,11 @@ export function InboxScreen({ pushed }) {
     <div className="screen gray">
       {pushed ? <NavBar title="Inbox" /> : <div className="fixed-head"><LargeHeader title="Inbox" search={null} gear /></div>}
       {firstLoad ? <div className="spin-center"><Spinner /></div> : <Scroll id={pushed ? 'inbox-pushed' : 'inbox'} className={pushed ? '' : 'with-tabbar'}>
+        {!noAssistant && (
+          <div style={{ padding: '8px 16px 2px' }}>
+            <AskPill act="inbox-ask" tone="light" prompts={INBOX_PROMPTS} icon={<CaIcon size={22} />} onAsk={(q) => push('creatorAssistant', { from: 'inbox', prompt: q })} />
+          </div>
+        )}
         <Pills variant="blue" className="inbox-pills" value={filter} onChange={setFilter}
           items={[{ key: 'all', label: 'All' }, { key: 'posts', label: 'Posts' }, { key: 'account', label: 'Account updates' }]} />
         {assistantOpened && filter !== 'account' && (

@@ -59,11 +59,12 @@ export function TrendChart({ data, height = 150, hatchLast = true, fmtValue = fm
           </g>
         ))}
         <line x1="0" x2={iw} y1={PT + ih} y2={PT + ih} stroke="#e6e6e8" />
-        {n > 1 && <motion.path key={`a${animKey}`} d={area} fill="url(#tfill)" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.15 }} />}
+        {n > 1 && <motion.path key={`a${animKey}`} d={area} fill="url(#tfill)" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.45, delay: 0.3, ease: 'easeOut' }} />}
         {hatchLast && n > 2 && <rect x={pts[n - 2][0]} y={PT} width={iw - pts[n - 2][0]} height={ih} fill="url(#hatch)" opacity="0.9" />}
         {n > 1 && <motion.path key={`l${animKey}`} d={path} fill="none" stroke="var(--c-chart)" strokeWidth="1.6" strokeLinejoin="round"
-          initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.6, ease: 'easeOut' }} />}
-        {n <= 10 && pts.map((p, i) => <circle key={i} cx={p[0]} cy={p[1]} r="2.6" fill="#fff" stroke="var(--c-chart)" strokeWidth="1.4" />)}
+          initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1], delay: 0.08 }} />}
+        {/* 数据点跟着线画到哪里出现到哪里（2026-11-27），不再在线画出来之前先跳出来 */}
+        {n <= 10 && pts.map((p, i) => <motion.circle key={`${animKey}-${i}`} cx={p[0]} cy={p[1]} r="2.6" fill="#fff" stroke="var(--c-chart)" strokeWidth="1.4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18, delay: 0.08 + 0.7 * (1 - Math.pow(1 - i / Math.max(1, n - 1), 0.2)) }} />)}
         {hover != null && (
           <g>
             <line x1={hx} x2={hx} y1={PT} y2={PT + ih} stroke="#8a8b91" strokeWidth="1" />
@@ -102,7 +103,7 @@ export function BarChart({ values, labels, tickEvery = 4, selected, onSelect, he
         ))}
         {values.map((v, i) => (
           <motion.rect key={i} data-act={`bar-${i}`} x={i * bw + bw * 0.18} width={bw * 0.64} rx="1.5"
-            initial={{ height: 0, y: ih + 2 }} animate={{ height: (v / max) * ih, y: ih + 2 - (v / max) * ih }} transition={{ duration: 0.45, delay: i * 0.01 }}
+            initial={{ height: 0, y: ih + 2 }} animate={{ height: (v / max) * ih, y: ih + 2 - (v / max) * ih }} transition={{ duration: 0.5, delay: i * 0.012, ease: [0.23, 1, 0.32, 1] }}
             fill={i === sel ? 'var(--c-blue)' : '#c7dcf6'} onClick={() => onSelect?.(i)} style={{ cursor: 'pointer' }} />
         ))}
         {labels.map((l, i) => (i % tickEvery === 0 ? <text key={i} x={i * bw + bw / 2} y={height - 4} textAnchor="middle" className="ax">{l}</text> : null))}

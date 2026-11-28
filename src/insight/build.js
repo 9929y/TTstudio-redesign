@@ -3,7 +3,7 @@
 // - 《AI Insights 信息架构与数据证据设计》§2.2 账号卡只和自己的前 7 天比；§2.4 Details；§5 和别人比（你的同类作品中位数）
 // - 《AI insight 与 AI 内容的 Prompt 设计指南》〇.3.6 评分公式（百分位、同类作品 = 同时长档 + 同发布后窗口、至少 5 条、典型作品 = 50）
 // - 《布局与 UI 细节优化方案》第 4 节：评分变化写 pts，指标变化写 % 并带前后值，分两行；Engagement 统一按 Likes −38.2%
-// 2026-11-26 已确认：A、B 的分数也按〇.3.6 公式现算（本周在自己过去 12 周里的百分位），不再用画板演示分。
+// 2026-11-26 Yanice 确认：A、B 的分数也按〇.3.6 公式现算（本周在自己过去 12 周里的百分位），不再用画板演示分。
 import { DAILY, POSTS, PERIOD_END, INSPIRATION, dayDate } from '../data/seed.js';
 import { fmt, fmtStat, monDay, secToClock } from '../data/agg.js';
 import { moduleA as A0 } from './demo/moduleA.js';
@@ -89,12 +89,12 @@ export const A_DEFS = [
   { name: 'Views', metrics: [{ key: 'views' }] },
   { name: 'Engagement', metrics: [{ rate: 'likes' }, { rate: 'comments' }] },
   { name: 'Shares', metrics: [{ rate: 'shares' }] },
-  { name: 'Visits', metrics: [{ rate: 'profile' }] },
+  { name: 'Visits', metrics: [{ key: 'profile' }] }, // 2026-11-27 Yanice：按主页访问次数打分，和下方 Profile views 卡同一个数（原来按每次播放打分，分数涨、卡片跌，对不上）
   { name: 'Rewards', metrics: [{ key: 'rewards' }] },
 ];
 export const B_DEFS = [
   { name: 'Views', metrics: [{ key: 'views' }, { key: 'newViewers' }] },
-  { name: 'Engagement', metrics: [{ rate: 'likes' }] },
+  { name: 'Engagement', metrics: [{ rate: 'likes' }, { rate: 'comments' }] }, // 2026-11-27 夜：和 Overview 的 Engagement 同一口径（点赞 + 评论）；只算点赞时本周是 12 周最低，显示 0 分
   { name: 'Followers', metrics: [{ key: 'net' }] },
 ];
 function scoreWeek(k, defs) {
@@ -119,12 +119,15 @@ const A_REST = {
   Shares: ' Test a format viewers would want to pass on.',
   Visits: ' End with a reason to check your other posts.',
 };
+// 2026-11-27 晚：洞察块 = 结论句 + 2 个要点（最弱一项的指标变化 + 下一步建议），rest 留空，不放链接
+const metricFact = (a) => { const m = a.metrics?.[0]; if (!m || !m.chg) return ''; const pct = m.chg.replace(/^[↑↓]\s*/, ''); return pct === '0.0%' ? `${m.label} held steady this week.` : `${m.label} ${m.up ? 'rose' : 'fell'} ${pct} this week.`; };
 function accountKeyA(areas) {
   const content = areas.filter((a) => a.name !== 'Rewards');
   const hi = content.reduce((a, b) => (b.you > a.you ? b : a)), lo = content.reduce((a, b) => (b.you < a.you ? b : a));
-  if (areas.every((a) => Math.abs(a.you - a.prev) < 5)) return { key: 'Your areas held steady against the previous 7 days.', rest: A_REST[lo.name], lo };
+  const bullets = [metricFact(lo), A_REST[lo.name].trim()].filter(Boolean);
+  if (areas.every((a) => Math.abs(a.you - a.prev) < 5)) return { key: 'Your week looked much like the one before.', rest: '', bullets, lo };
   const verb = A_NOUN[hi.name].endsWith('s') ? 'are' : 'is';
-  return { key: `${A_NOUN[hi.name]} ${verb} your strongest area, while ${A_NOUN[lo.name].toLowerCase()} trails.`, rest: A_REST[lo.name], lo };
+  return { key: `${A_NOUN[hi.name]} ${verb} your strongest area, while ${A_NOUN[lo.name].toLowerCase()} trails.`, rest: '', bullets, lo };
 }
 const B_HI = { Views: 'Reach', Engagement: 'Engagement', Followers: 'Follower growth' };
 const B_LO = { Views: 'reach', Engagement: 'engagement', Followers: 'new followers' };
@@ -135,14 +138,15 @@ const B_REST = {
 };
 function accountKeyB(areas) {
   const hi = areas.reduce((a, b) => (b.you > a.you ? b : a)), lo = areas.reduce((a, b) => (b.you < a.you ? b : a));
-  if (areas.every((a) => Math.abs(a.you - a.prev) < 2)) return { key: 'Your three steps held steady against the previous 7 days.', rest: B_REST[lo.name] };
-  if (hi.you <= 15) return { key: `All three steps are below a usual week, ${B_LO[lo.name]} most of all.`, rest: B_REST[lo.name] };
-  return { key: `${B_HI[hi.name]} holds up best this week, while ${B_LO[lo.name]} trails.`, rest: B_REST[lo.name] };
+  const bullets = [metricFact(lo), B_REST[lo.name].trim()].filter(Boolean);
+  if (areas.every((a) => Math.abs(a.you - a.prev) < 2)) return { key: 'Your week looked much like the one before.', rest: '', bullets };
+  if (hi.you <= 15) return { key: `All three steps are below a usual week, ${B_LO[lo.name]} most of all.`, rest: '', bullets };
+  return { key: `${B_HI[hi.name]} holds up best this week, while ${B_LO[lo.name]} trails.`, rest: '', bullets };
 }
 
-// 选中某一维度后图下的一句话（Final 句式，2026-11-26 确认改回单句）：
+// 选中某一维度后图下的一句话（Final 句式，Yanice 2026-11-26 确认改回单句）：
 // 「{维度} rose/fell x% from the previous 7 days, taking its score from p to n.」x 用该维度第一项指标的数量变化，和下方 Key metrics 的胶囊一致。
-// 按每次播放打分的维度（Engagement / Shares / Visits），数量和分数方向相反时，句式不变，百分比换成每次播放的变化（2026-11-26 确认）：
+// 按每次播放打分的维度（Engagement / Shares / Visits），数量和分数方向相反时，句式不变，百分比换成每次播放的变化（Yanice 2026-11-26 确认）：
 // 「Visits rose 9.8% per view from the previous 7 days, taking its score from 67 to 100.」
 const RATE_AREAS = new Set(['Engagement', 'Shares', 'Visits']);
 function weekSentence(a, cur, prev, k) {
@@ -185,13 +189,13 @@ export function buildModuleA(range = { key: '7' }) {
     area('Rewards', [['Est. rewards', 'rewards', money]], { dd: details({ head: money(cur.rewards), unit: 'estimated rewards', key: 'rewards', color: '#1765c4', f: money }) }),
   ];
   const total = Math.round(mean(areas.map((a) => a.you))), prevTotal = Math.round(mean(areas.map((a) => a.prev))), prev2Total = Math.round(mean(areas.map((a) => a.prev2)));
-  const { key, rest } = accountKeyA(areas);
+  const { key, rest, bullets } = accountKeyA(areas);
   return {
-    ...A0, total, prevTotal, prev2Total, areas, key, rest, askFor: 'A',
+    ...A0, total, prevTotal, prev2Total, areas, key, rest, bullets, next: null, askFor: 'A',
     info: [
       { icon: 'star', t: 'Overall score', lines: [`${total} out of 100, the average of the five areas`, `Previous 7 days: ${prevTotal} · 14 days ago: ${prev2Total}`] },
       { icon: 'insights', t: 'Compared with', lines: ['Your own last 12 weeks. Each week is ranked against the 12 weeks before it, so you can compare it with the previous 7 days.'] },
-      { icon: 'info', t: 'Area scores', lines: ['100 means this was your best week of the 12, 0 your lowest. Likes, comments, shares and profile views count per view.'] },
+      { icon: 'info', t: 'Area scores', lines: ['100 means this was your best week of the 12, 0 your lowest. Likes, comments and shares count per view; profile views count in total.'] },
     ],
     ui: { ...A0.ui, hint: 'Tap an area to compare it with the previous 7 days' }, cardTitle: 'Performance summary',
   };
@@ -223,9 +227,9 @@ export function buildModuleB(range = { key: '7' }) {
     area('Followers', [['Net followers', 'net']], { dd: { ...details({ head: fmtStat(cur.net), unit: 'net followers', sub: `${newFollowers} new followers, ${newFollowers - cur.net} unfollowed`, key: 'net', color: '#5a9ff0' }), ...(() => { const c = contributors('newFollowers', newFollowers); return { hasRows: true, rowsTitle: 'Where new followers came from', caption: captionFor('new followers', c), rows: c.rows }; })() } }),
   ];
   const sumOf = (k) => areas.reduce((t, a) => t + a[k], 0);
-  const { key, rest } = accountKeyB(areas);
+  const { key, rest, bullets } = accountKeyB(areas);
   return {
-    ...B0, total: sumOf('you'), prevTotal: sumOf('prev'), prev2Total: sumOf('prev2'), areas, key, rest, askFor: 'B',
+    ...B0, total: sumOf('you'), prevTotal: sumOf('prev'), prev2Total: sumOf('prev2'), areas, key, rest, bullets, next: null, askFor: 'B',
     info: [
       { icon: 'star', t: 'Overall score', lines: [`${sumOf('you')} out of 90, the three areas added up`, `Previous 7 days: ${sumOf('prev')} · 14 days ago: ${sumOf('prev2')}`] },
       { icon: 'insights', t: 'Compared with', lines: ['Your own last 12 weeks. Each week is ranked against the 12 weeks before it, so you can compare it with the previous 7 days.'] },
@@ -249,9 +253,10 @@ function biggestDrop(ret) {
 }
 export const dropMoment = (p) => secToClock(Math.max(1, biggestDrop(p.retention))).replace(/^0/, '');
 
-const E_HI = { Reach: null, Retention: 'held viewers longer', Likes: 'got more likes per view', Shares: 'got more shares and saves', Follows: 'won more followers per view' };
-const E_LO = { Reach: 'reached fewer viewers', Retention: 'fewer watched to the end', Likes: 'drew fewer likes per view', Shares: 'got fewer shares and saves', Follows: 'won fewer followers per view' };
-const E_LO_ONLY = { Reach: 'This post reached fewer viewers than usual.', Retention: 'Fewer viewers watched this post to the end.', Likes: 'This post drew fewer likes per view than usual.', Shares: 'This post got fewer shares and saves than usual.', Follows: 'This post won fewer followers per view than usual.' };
+// 2026-11-27 晚：不说 per view / rate，改成创作者听得懂的说法（「viewers liked it less often」）
+const E_HI = { Reach: null, Retention: 'held viewers longer', Likes: 'got liked more often', Shares: 'got more shares and saves', Follows: 'turned more viewers into followers' };
+const E_LO = { Reach: 'reached fewer viewers', Retention: 'fewer watched to the end', Likes: 'viewers liked it less often', Shares: 'got fewer shares and saves', Follows: 'fewer viewers followed you' };
+const E_LO_ONLY = { Reach: 'This post reached fewer viewers than usual.', Retention: 'Fewer viewers watched this post to the end.', Likes: 'Viewers liked this post less often than usual.', Shares: 'This post got fewer shares and saves than usual.', Follows: 'Fewer viewers followed you from this post than usual.' };
 
 export function buildModuleE(p) {
   if (!p || !p.daily || !p.retention) return null;
@@ -304,15 +309,25 @@ export function buildModuleE(p) {
   // 结论句：和典型作品差得最多的两头（〇.8）；分数按 〇.3.6 分档，≥ 60 算高、≤ 40 算低
   const hi = areas.reduce((a, b) => (b.you > a.you ? b : a)), lo = areas.reduce((a, b) => (b.you < a.you ? b : a));
   const ratio = tv ? v / tv : 1;
-  const hiPhrase = (a) => (a.name === 'Reach' ? (ratio >= 2.5 ? `reached ${Math.round(ratio)}× your usual viewers` : ratio >= 1.8 ? 'reached twice your usual viewers' : 'reached more viewers than usual') : E_HI[a.name]);
+  const hiPhrase = (a) => (a.name === 'Reach' ? (ratio >= 3.5 ? `reached ${Math.round(ratio)} times your usual viewers` : ratio >= 2.5 ? 'reached about 3 times your usual viewers' : ratio >= 1.8 ? 'reached twice your usual viewers' : 'reached more viewers than usual') : E_HI[a.name]);
   let key;
   if (hi.you >= 60 && lo.you <= 40) key = `This post ${hiPhrase(hi)}, but ${E_LO[lo.name]}.`;
   else if (hi.you >= 60) key = `This post ${hiPhrase(hi)}${hi.name === 'Reach' ? '' : ' than usual'}.`;
   else if (lo.you <= 40) key = E_LO_ONLY[lo.name];
   else key = 'This post performed like your typical post.';
   const n = comp.length;
+  // 两个要点：最大流失点（第一秒时和同类作品比）+ 下一步建议（把精彩的部分放在流失点之前）
+  const at = Math.max(1, biggestDrop(p.retention)), moment = dropMoment(p);
+  const lost = Math.round(((p.retention[at - 1] ?? 1) - (p.retention[at] ?? 1)) * 100);
+  const usual = Math.round(median(comp.map((q) => 1 - (q.retention?.[1] ?? 1))) * 100);
+  // 比平时少走人时是好消息：要点写成肯定，建议是「照这样开头」；比平时多走人才建议换开头（reviewer 2026-11-27）
+  const bullets = at !== 1
+    ? [`${lost}% left at ${moment}, more than at any other second.`, `Show the best part before ${moment} next time.`]
+    : lost < usual
+      ? [`Only ${lost}% left in the first second, not ${usual}%.`, 'Open your next post the same way.']
+      : [`${lost}% left in the first second; usually ${usual}% do.`, 'Lead with your best shot next time.'];
   return {
-    ...E0, cardTitle: 'Post summary', total, prevTotal: 50, prev2Total: 50, areas, key, rest: ` Most viewers left at ${dropMoment(p)}.`,
+    ...E0, cardTitle: 'Post summary', total, prevTotal: 50, prev2Total: 50, areas, key, rest: '', bullets, next: null,
     ui: {
       ...E0.ui,
       info: [
@@ -341,6 +356,8 @@ export const otherPostTopics = (item) => commentTopics(item.id.length + item.com
 const D_COLORS = [['#0d4a96', '#aac0da'], ['#1e7ce8', '#b0d1f7'], ['#12a4d9', '#acdff2'], ['#5a9ff0', '#c5ddfa']];
 // Comment topics 弹层里的话题名 → 结论句里的短说法
 const TOPIC_SHORT = { itinerary: 'the itinerary', budget: 'the budget', 'part 2': 'a part 2', edit: 'the editing', crowds: 'crowds', trip: 'trips with friends' };
+// 评论里问得最多的 → 给这位旅行创作者的下一步建议（一行以内）
+const TOPIC_IDEA = { itinerary: 'Share a full itinerary in your next post.', budget: 'Show what your next trip cost.', 'part 2': 'Turn your best post into a part 2.', edit: 'Show how you edit in a short post.', crowds: 'Show when to go to skip the crowds.', trip: 'Ask viewers who they would bring.' };
 export function buildModuleD(item, { topics = null, words = [] } = {}) {
   if (!item) return null;
   const age = Math.max(1, item.postedDaysAgo);
@@ -361,15 +378,20 @@ export function buildModuleD(item, { topics = null, words = [] } = {}) {
   // 播放量取决于账号大小，最大差距只在三个「每千次播放」里选
   const rated = rows0.slice(1).map((r) => ({ ...r, gap: Math.max(r.a / r.b, r.b / r.a) }));
   const g = rated.reduce((a, b) => (b.gap > a.gap ? b : a));
+  // 2026-11-27 晚：不说 rate / per view；结论句 + 2 个要点（评论里问什么 + 下一步建议），不放链接
+  const VERB = { likes: 'like', comments: 'comment on', favorites: 'save' };
+  const times = (x) => (x >= 1.85 && x < 2.15 ? 'about twice' : `${x.toFixed(1)} times`);
   let key;
-  if (g.gap < 1.1) key = 'This post’s rates are close to your typical post.';
-  else if (g.a > g.b) key = `This post gets ${g.gap.toFixed(1)}× your ${g.noun} per view.`;
-  else key = `This post gets fewer ${g.noun} per view than your typical post.`;
-  let rest = '';
-  if (topics && topics.length >= 2) rest = ` Top comment topics: ${TOPIC_SHORT[topics[0][1]] || topics[0][0]} and ${TOPIC_SHORT[topics[1][1]] || topics[1][0]}.`;
-  else if (words.length) rest = ` Top word in comments: “${words[0][0]}”.`;
+  if (g.gap < 1.1) key = 'People react to this post about as often as to yours.';
+  else if (g.a > g.b) key = `People ${VERB[g.noun]} this post ${times(g.gap)} as often as yours.`;
+  else key = `People ${VERB[g.noun]} this post less often than yours.`;
+  const top = topics && topics.length >= 2 ? topics[0][1] : words.length ? words[0][0] : null;
+  const bullets = [];
+  if (topics && topics.length >= 2) bullets.push(`Its top asks: ${TOPIC_SHORT[topics[0][1]] || topics[0][0]} and ${TOPIC_SHORT[topics[1][1]] || topics[1][0]}.`);
+  else if (words.length) bullets.push(`Top word in its comments: “${words[0][0]}”.`);
+  if (top) bullets.push(TOPIC_IDEA[top] || 'Try its format in your next post.');
   return {
-    id: item.id, creator: item.creator, cardTitle: 'Compared with your posts', key, rest, rows, ratio: { noun: g.noun, gap: g.gap, ahead: g.a > g.b }, ask: askD(item, topics),
+    id: item.id, creator: item.creator, cardTitle: 'Compared with your posts', key, rest: '', bullets, next: null, rows, ratio: { noun: g.noun, gap: g.gap, ahead: g.a > g.b }, ask: askD(item, topics),
     info: [
       { t: 'This post', lines: [`Public data since it was posted, ${age} day${age > 1 ? 's' : ''} ago.`], i_play: true },
       { t: 'Your typical post', lines: [`The middle of your ${comp.length} public posts, each over its first ${age} day${age > 1 ? 's' : ''}.`], i_people: true },
@@ -402,7 +424,11 @@ export function buildModuleC(q, ins) {
     const phrase = r.name === 'Popularity' ? POP_PHRASE(score) : r.name === 'Competition' ? COMP_PHRASE(score) : REL_PHRASE(score);
     return { ...r, score, note: `is ${score}: ${phrase}.` };
   });
-  return { ...C0, key, rest, rows };
+  // 2026-11-27 晚：结论句 + 2 个要点（热度和竞争的白话 + 下一步建议），不放链接
+  const P = pop >= 60 ? 'It’s in demand right now' : pop >= 40 ? 'It has steady interest' : 'It’s a niche topic';
+  // 结论句已经说了竞争，要点只补热度
+  const bullets = [`${P}.`, String(rest || '').trim()].filter(Boolean);
+  return { ...C0, key, rest: '', bullets, next: null, rows };
 }
 
 // ---------- S1 Curated for me ----------
@@ -550,7 +576,7 @@ export function homePrompts() {
 export function askA() {
   const cur = weekTotals(0), prev = weekTotals(1);
   return {
-    // 未选中时仍轮播（2026-11-26 确认保留），第一条是页面级问题
+    // 未选中时仍轮播（Yanice 2026-11-26 确认保留），第一条是页面级问题
     prompts: ['What should I work on first?', cur.likes < prev.likes ? 'Why did my likes drop this week?' : 'What got more people to like my posts?', 'Compare this week with last week', 'Which post did best this week?'],
     // 选中某一维度后停在这一条（评分图联动 2026-11-26）；Engagement 以第一项 Likes 为焦点
     byArea: {
@@ -565,7 +591,7 @@ export function askA() {
 export function askB() {
   const cur = weekTotals(0), prev = weekTotals(1);
   return {
-    prompts: ['Which post brought the most views?', 'How can I get more people to react?', 'Which post brought the most new followers?'],
+    prompts: ['Which post brought the most views?', 'How can I get more people to react?', 'Where did my new followers come from?'],
     byArea: {
       Views: 'Which posts drove views?',
       Engagement: cur.likes < prev.likes ? 'Why did my engagement drop?' : 'What lifted my engagement?',
@@ -578,7 +604,7 @@ export function askE(p, E) {
   const sc = Object.fromEntries((E?.areas || []).map((a) => [a.name, a.you]));
   const mf = (n) => ((sc[n] ?? 50) >= 50 ? 'more' : 'fewer');
   return {
-    prompts: [`Why do viewers leave at ${drop}?`, 'How does this compare with my typical post?', 'Where did this post’s views come from?'],
+    prompts: [`Why do viewers leave at ${drop}?`, 'Is this better than my usual post?', 'Where did this post’s views come from?'],
     byArea: {
       Reach: 'Where did this post’s views come from?',
       Retention: `Why do viewers leave at ${drop}?`,
@@ -607,12 +633,36 @@ export function rewardsSplit(days) {
 
 // ---------- S5 Viewers / Followers：一句话洞察（Final FIN-S5-Audience-Page · IMS5-Insight） ----------
 // 数字和同页 Key metrics、Viewer insights、Most active times 用同一份数据；日期跟着 Key metrics 的下拉
-import { VIEWERS_LAG, FOLLOWER_INSIGHTS, ACTIVE_DAYS, activeHours } from '../data/seed.js';
+import { VIEWERS_LAG, FOLLOWER_INSIGHTS, VIEWER_INSIGHTS, ACTIVE_DAYS, activeHours } from '../data/seed.js';
+// 段落里的「是谁」：最大的年龄段 + 最多的国家（只说数据能撑住的：最大一组、几成）
+const TENTHS = ['', 'One in ten', 'Two in ten', 'Three in ten', 'Four in ten', 'Half', 'Six in ten', 'Seven in ten', 'Eight in ten', 'Nine in ten'];
+function audienceLine(ins, who, skipGender) {
+  const age = ins.Age.reduce((a, b) => (b[1] > a[1] ? b : a)), loc = ins.Locations.filter((x) => x[0] !== 'Other').reduce((a, b) => (b[1] > a[1] ? b : a));
+  const t = Math.round(loc[1] * 10), ages = age[0].replace('-', ' to ');
+  const place = loc[0] === 'United States' ? 'the US' : loc[0] === 'United Kingdom' ? 'the UK' : loc[0];
+  const g = skipGender ? '' : ` About ${Math.round(ins.Gender[0][1] * 3) === 2 ? 'two in three' : `${Math.round(ins.Gender[0][1] * 100)}%`} are women.`;
+  return `${who} biggest age group is ${ages}, and ${t >= 1 && t <= 9 ? TENTHS[t].toLowerCase() : `${Math.round(loc[1] * 100)}%`} live in ${place}.${g}`;
+}
+// 观众数据晚 3 天：最新作品如果在这段之后发布，说一句它还没算进来（解释「为什么少了」）
+function lagLine(range) {
+  const { e } = rangeIdx(range, VIEWERS_LAG), lp = latestPost();
+  return lp.pubIdx > e ? `${nameOf(lp)} came out after ${monDay(dayDate(e))}, so it isn't counted here yet.` : '';
+}
+// 这段时间带来新粉丝最多的作品
+function topFollowLine(range) {
+  const { s, e } = rangeIdx(range);
+  const rows = POSTS.map((p) => [p, POST_METRIC.newFollowers(p, sum(p.daily, s, e))]).filter((r) => r[1] >= 1);
+  if (!rows.length) return '';
+  const top = rows.reduce((a, b) => (b[1] > a[1] ? b : a));
+  return `${nameOf(top[0])} brought ${Math.round(top[1])} new followers, more than any other post.`;
+}
 import { viewerKpis, followerKpis, rangeLabel, rangeDays, rangeIdx } from '../data/agg.js';
 const WEEK_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const IN_N = ['', 'One in ten', 'Two in ten', 'Three in ten', 'Four in ten', 'Half', 'Six in ten', 'Seven in ten', 'Eight in ten', '9 in 10', 'Nearly all'];
+const IN_N = ['Few', 'One in ten', 'Two in ten', 'Three in ten', 'Four in ten', 'Half', 'Six in ten', 'Seven in ten', 'Eight in ten', 'Nine in ten', 'Nearly all'];
 const partOfDay = (h) => (h < 5 ? 'nights' : h < 12 ? 'mornings' : h < 17 ? 'afternoons' : h < 22 ? 'evenings' : 'nights');
 // Most active times 的 Days 图从 7 天前排起（seed.js ACTIVE_DAYS 第 0 项 = 7 天前那天）
+// 20 → 「8 PM」
+export const hourLabel = (h) => `${h % 12 || 12} ${h < 12 ? 'AM' : 'PM'}`;
 export function mostActive() {
   const di = ACTIVE_DAYS.indexOf(Math.max(...ACTIVE_DAYS));
   const day = WEEK_FULL[dayDate(PERIOD_END - 6 + di).getDay()];
@@ -625,12 +675,21 @@ export function buildAudience(tab, range = { key: '7' }) {
   if (tab === 'viewers') {
     const [tv, nv] = viewerKpis(range);
     const share = nv.value / tv.value, tenths = Math.round(share * 10);
-    const lead = tenths >= 10 ? 'Nearly all' : tenths === 9 ? '9 in 10' : IN_N[tenths];
+    const lead = IN_N[Math.max(0, Math.min(10, tenths))];
+    // 结论句先说这一页最大的数（Total viewers 的涨跌，和卡片上的 ↑↓ 同一个数），再说新观众占比
+    const prevV = tv.value - tv.delta, rv = prevV > 0 ? tv.value / prevV : 1;
+    const howMany = rv < 0.4 ? 'Far fewer people watched' : rv < 0.65 ? 'About half as many people watched' : rv < 0.9 ? 'Fewer people watched'
+      : rv <= 1.1 ? 'About as many people watched' : rv < 1.6 ? 'More people watched' : rv < 2.5 ? 'About twice as many people watched' : 'Many more people watched';
     const ma = mostActive();
     return {
       cardTitle: 'Viewer summary',
-      key: `${lead} of your viewers were new to you.`,
-      rest: ` They were most active on ${ma.day} ${ma.part}.`,
+      // 2026-11-27 晚 Yanice：结论句 + 正好 2 个要点（一条事实、一条下一步建议），不放链接，洞察块 ≤ 4 行。
+      // 建议只用这一页的数据：最活跃的时间来自 Most active times（mostActive），所以建议「什么时候发」。
+      // 2026-11-27 夜 Yanice：「AI insight 内容太少了，paragraph 是 2–3 句话，bullet point 1–2 就行」——段落补上「是谁」和「为什么」
+      key: `${howMany}, and ${lead.toLowerCase()} were new to you.`,
+      rest: [audienceLine(VIEWER_INSIGHTS, 'Their', true), lagLine(range)].filter(Boolean).join(' '),
+      bullets: [`They're most active ${ma.day} around ${hourLabel(ma.peak)}.`, 'Schedule your next post for then.'],
+      next: null,
       info: [
         { ic: 'people', t: 'New viewers', lines: [`${Math.round(nv.value).toLocaleString('en-US')} of ${Math.round(tv.value).toLocaleString('en-US')} viewers were new.`, `${rangeLabel(range, VIEWERS_LAG)}.`] },
         { ic: 'clock', t: 'Most active times', lines: [`${ma.day} had the most activity.`, `${rangeLabel({ key: '7' })}.`] },
@@ -638,16 +697,27 @@ export function buildAudience(tab, range = { key: '7' }) {
     };
   }
   const [, net] = followerKpis(range);
-  const prev = net.value - net.delta, diff = net.value - prev;
+  const prev = net.value - net.delta;
   const f = Object.fromEntries(FOLLOWER_INSIGHTS.Gender);
   const women = f.Female;
   const womenLine = women >= 0.6 && women < 0.7 ? 'Two in three of your followers are women.' : `${Math.round(women * 100)}% of your followers are women.`;
   const { s, e } = rangeIdx(range), len = e - s + 1;
   const prevLabel = `${monDay(dayDate(s - len))} – ${monDay(dayDate(s - 1))}`;
+  const prevWord = days === 7 ? 'the week before' : `the ${span} before`;
+  // 2026-11-27 晚 Yanice：不说 net；结论 = 粉丝数这段时间涨了多少（和 Net followers 卡同一个数），和上一段比。
+  // 第二个要点是建议：接着上一条（粉丝多是女性），去 Studio 的 Inspiration（Followers viewed）看她们在看什么，写成建议，不做链接。
+  const N = (x) => Math.round(x).toLocaleString('en-US');
+  const n = net.value, when = days === 7 ? 'this week' : `in the last ${span}`;
+  const vsPrev = prev === n ? `the same as ${prevWord}` : prev > 0 ? `${prev > n ? 'down' : 'up'} from ${N(prev)} ${prevWord}` : prev < 0 ? `after losing ${N(-prev)} ${prevWord}` : `after no change ${prevWord}`;
+  const key = n > 0 ? `Your followers grew by ${N(n)} ${when}, ${vsPrev}.`
+    : n === 0 ? `Your follower count didn't change ${when}.`
+    : `You lost ${N(-n)} follower${n === -1 ? '' : 's'} ${when}.`;
   return {
     cardTitle: 'Follower summary',
-    key: `${net.value >= 0 ? `Your followers grew by ${net.value}` : `You lost ${-net.value} followers`} in the last ${span}, ${diff === 0 ? `the same as the ${span} before` : `${Math.abs(diff)} ${diff < 0 ? 'fewer' : 'more'} than the ${span} before`}.`,
-    rest: ` ${womenLine}`,
+    key,
+    rest: [topFollowLine(range), audienceLine(FOLLOWER_INSIGHTS, 'Your followers’', true)].filter(Boolean).join(' '),
+    bullets: [womenLine, women >= 0.5 ? 'See what these women watch in Inspiration.' : 'See what your followers watch in Inspiration.'],
+    next: null,
     info: [
       { ic: 'follow', t: 'Net followers', lines: ['Followers gained minus followers lost.', `${rangeLabel(range)}: ${net.value}.`, `${prevLabel}: ${prev}.`] },
       { ic: 'pie', t: 'Follower gender', lines: [`Female ${Math.round(f.Female * 100)}%, male ${Math.round(f.Male * 100)}%, other ${Math.round(f.Other * 100)}%.`] },

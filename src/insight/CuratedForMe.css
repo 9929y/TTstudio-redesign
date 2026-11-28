@@ -31,10 +31,21 @@
 /* Home: carousel of cards */
 .cfm-track { display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; margin-right: -12px; padding-right: 12px; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
 .cfm-track::-webkit-scrollbar { display: none; }
-.cfm-card { position: relative; flex: none; box-sizing: border-box; width: 300px; height: 128px; border-radius: 8px; overflow: hidden; box-shadow: inset 0 0 0 0.5px #dcdce0; padding: 12px 104px 12px 12px; display: flex; flex-direction: column; align-items: flex-start; cursor: pointer; scroll-snap-align: start; text-align: left; }
+.cfm-card { position: relative; flex: none; box-sizing: border-box; width: 300px; height: 128px; border-radius: 8px; overflow: hidden; box-shadow: inset 0 0 0 0.5px #dcdce0; padding: 12px 104px 12px 12px; display: flex; flex-direction: column; align-items: flex-start; scroll-snap-align: start; text-align: left; transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1); }
 .cfm-card-text { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 4px; font-size: 15px; }
 .cfm-card-cta-wrap { margin-top: auto; }
-.cfm-card-cta { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 8px; background: #ffffff; color: #161823; font-size: 13px; line-height: 16px; font-weight: 600; box-shadow: inset 0 0 0 0.5px #dcdce0; }
+.cfm-card-cta { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 8px; background: #161823; color: #ffffff; font-size: 13px; line-height: 16px; font-weight: 600; }
+/* 2026-11-27 E1：整张卡 = Create。卡片底层是整卡按钮，文字、插画和 Create 提示都不接点击（穿透到整卡按钮）；
+   Learn more 在右上角单独接点击，点击区 44 高。按整卡时卡片缩到 0.98；按 Learn more 只有文字变淡，卡片不动。 */
+.cfm-card-hit { position: absolute; inset: 0; z-index: 0; appearance: none; border: 0; margin: 0; padding: 0; background: transparent; cursor: pointer; border-radius: inherit; -webkit-tap-highlight-color: transparent; }
+.cfm-card > .cfm-card-text, .cfm-card > .cfm-card-cta-wrap, .cfm-card > .cfm-illo { pointer-events: none; }
+.cfm-card:has(> .cfm-card-hit:active) { transform: scale(0.98); }
+.cfm-card-more { position: absolute; z-index: 3; top: 6px; right: 8px; height: 28px; padding: 0 4px; appearance: none; border: 0; margin: 0; background: transparent; cursor: pointer; display: inline-flex; align-items: center; gap: 2px; font-family: inherit; font-size: 12px; line-height: 16px; font-weight: 400; color: #161823; transition: opacity 160ms ease-out; -webkit-tap-highlight-color: transparent; }
+.cfm-card-more::before { content: ''; position: absolute; left: -12px; right: -8px; top: -6px; bottom: -10px; }
+.cfm-card-more:active { opacity: 0.5; transition: none; }
+.cfm-card-cta .cfm-plus, .cfm-cta-full.is-dark .cfm-plus { background: #ffffff; }
+.cfm-card-cta .cfm-plus svg, .cfm-cta-full.is-dark .cfm-plus svg { stroke: #161823; }
+@media (prefers-reduced-motion: reduce) { .cfm-card:has(> .cfm-card-hit:active) { transform: none; opacity: 0.8; } }
 .cfm-card .cfm-illo { right: 0; bottom: 0; width: 104px; height: 128px; }
 .cfm-dots { display: flex; justify-content: center; gap: 4px; padding-top: 12px; }
 .cfm-dots span { display: block; width: 4px; height: 4px; border-radius: 2px; background: #d4d4d8; transition: width 200ms ease, background-color 200ms ease; }
@@ -71,6 +82,9 @@
 .cfm-why.lg .cfm-why-t { font-size: 14px; }
 
 .cfm-cta-full { position: relative; z-index: 1; box-sizing: border-box; width: 100%; height: 46px; border-radius: 8px; background: #ffffff; box-shadow: inset 0 0 0 0.5px #dcdce0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; line-height: 20px; font-weight: 600; color: #161823; }
+/* Details 面板的 Create 与首页卡片一致：深色实底；按下缩到 0.97（画板 im-press），不变淡 */
+.cfm-cta-full.is-dark { background: #161823; color: #ffffff; box-shadow: none; transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1); }
+.cfm-cta-full.is-dark:active { transform: scale(0.97); }
 
 /* Details sheet: portalled into the phone screen (.screen-root) */
 .cfm-scrim { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 600; }

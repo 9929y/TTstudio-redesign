@@ -6,7 +6,14 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { buildModuleA, askA, askB } from './build.js';
 import { AskRow } from './AskAssistant.jsx';
-import { CardHead, KeyBlock, CARD_STYLE } from './CardParts.jsx';
+import { placeLabel, LAB_GAP } from './labelFit.js';
+import { CardHead, KeyBlock, CARD_STYLE, AiStar } from './CardParts.jsx';
+import { useEntering, segIn, labDelay, isMouse } from './entrance.js';
+// 刻度线样式（2026-11-27 方案比较）：'gap' = 白色切缝；'tone' = 同色系加深（色块里用加深一档的蓝，灰底轨上用浅灰）
+// 2026-11-27 夜 Yanice：「那三条白线不要了」——刻度线整体关掉（保留代码，改回 true 即恢复）
+const SHOW_TIERS = false;
+const TIER_STYLE = 'gap';
+const shade = (hex, k = 0.72) => '#' + [1, 3, 5].map((j) => Math.round(parseInt(hex.slice(j, j + 2), 16) * k).toString(16).padStart(2, '0')).join('');
 import './ModuleA.css';
 
 const FONT = "var(--font, 'TikTok Sans', -apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif)";
@@ -15,6 +22,7 @@ const r2 = (n) => Math.round(n * 100) / 100;
 // 动效（2026-11-26 精修）：选中/切换是页面里的状态变化，按 Emil 的规则用强 ease-out、220–240ms；离场更快（120–160ms）
 const EASE_OUT = [0.23, 1, 0.32, 1];
 const T_GROW = { duration: 0.24, ease: EASE_OUT };
+
 
 // ---------- 几何（dc 脚本 renderVals 里的同名函数） ----------
 function geometry(G) {
@@ -32,17 +40,14 @@ function geometry(G) {
 export const GEO_FULL = {
   CX: 172.5, CY: 126, H: 258, RI: 54, RO: 86,
   span: (i, n, gap) => { const step = 360 / n; return [-90 + step * i + gap, -90 + step * (i + 1) - gap]; },
-  // Final：名称行在上、分数在名称文字正下方居中；块挨着扇区外沿、按块中心对齐锚点；选中的扇区外扩 1.1 倍，标签跟着外移
-  labelAt: (i, n, G, P, on) => {
-    const step = 360 / n, r = on ? G.RO * 1.1 + 6 : G.RO + 4;
-    const m = -90 + step * i + step / 2, q = P(r, m), c = Math.cos(m * Math.PI / 180);
-    if (Math.abs(c) < 0.2) return { left: (q[0] - 60) + 'px', width: '120px', top: q[1] + 'px', tf: 'none', items: 'center' };
-    if (c > 0) return { left: q[0] + 'px', width: (2 * G.CX - q[0]) + 'px', top: q[1] + 'px', tf: 'translateY(-50%)', items: 'flex-start' };
-    return { left: '0px', width: q[0] + 'px', top: q[1] + 'px', tf: 'translateY(-50%)', items: 'flex-end' };
+  // 2026-11-27 Yanice：标签离圆环一样远、选中时同步外移；规则见 labelFit.js
+  labelAt: (i, n, G, P, on, name) => {
+    const step = 360 / n, l = placeLabel(-90 + step * i + step / 2, (on ? G.RO * 1.1 : G.RO) + LAB_GAP, G.CX, G.CY, 2 * G.CX, name);
+    return { left: l.left + 'px', width: l.width + 'px', top: l.top + 'px', tf: 'translateY(-50%)', items: l.align };
   },
   firstSep: true,
   labelValue: (x) => x.you,
-  centerTop: 126, centerTf: 'translateY(-50%)', centerFont: 48, centerLine: 52, centerPad: '8px',
+  centerTop: 126, centerTf: 'translateY(-50%)', centerFont: 34, centerLine: 38, centerPad: '8px',
 };
 
 // ---------- 图标（dc 抽屉里的 10 个，20×20 描边 1.8） ----------
@@ -64,11 +69,7 @@ const DrawerIcon = ({ name }) => (
   </svg>
 );
 
-const SparkMark = () => (
-  <svg width="16" height="16" viewBox="0 0 256 256" fill="#1e7ce8" aria-hidden="true" style={{ flex: 'none' }}>
-    <path d="M208,144a15.78,15.78,0,0,1-10.42,14.94L146,178l-19,51.62a15.92,15.92,0,0,1-29.88,0L78,178l-51.62-19a15.92,15.92,0,0,1,0-29.88L78,110l19-51.62a15.92,15.92,0,0,1,29.88,0L146,110l51.62,19A15.78,15.78,0,0,1,208,144ZM152,48h16V64a8,8,0,0,0,16,0V48h16a8,8,0,0,0,0-16H184V16a8,8,0,0,0-16,0V32H152a8,8,0,0,0,0,16Zm88,32h-8V72a8,8,0,0,0-16,0v8h-8a8,8,0,0,0,0,16h8v8a8,8,0,0,0,16,0V96h8a8,8,0,0,0,0-16Z" />
-  </svg>
-);
+const SparkMark = () => <AiStar />;
 
 function InfoButton({ label, onClick, act }) {
   return (
@@ -140,6 +141,8 @@ export function RoseCard({ geo: G, act, ca = 'row', title, insight: D, onAsk, on
   const pick = (i) => setTip((t) => (t === i ? -1 : i));
   const reduce = useReducedMotion();
   const tGrow = reduce ? { duration: 0 } : T_GROW;
+  const entering = useEntering(1100); // 首次出现：卡片淡入、扇区从内圈依次长出（entrance.js）
+  const [hov, setHov] = useState(-1);  // 鼠标悬停预览：悬停的区保持，其余变淡（只在有鼠标时）
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
   const firstRun = useRef(true);
@@ -188,7 +191,7 @@ export function RoseCard({ geo: G, act, ca = 'row', title, insight: D, onAsk, on
         <span style={{ fontSize: G.centerFont, lineHeight: G.centerLine + 'px', fontWeight: 600, letterSpacing: '-0.02em', color: '#161823' }}>{cval}</span>
         <span style={{ fontSize: 13, lineHeight: '18px', color: '#6d6e73' }}>{cmax}</span>
       </span>
-      <span style={{ marginTop: 2, padding: '1px 6px', borderRadius: 999, background: chipBg, fontSize: 12, lineHeight: '16px', fontWeight: 600, color: chipCol }}>{chip}</span>
+      <span style={{ marginTop: 2, padding: '1px 6px', borderRadius: 999, background: chipBg, fontSize: 12, lineHeight: '16px', fontWeight: 600, color: chipCol, whiteSpace: 'nowrap' }}>{chip}</span>
     </>
   );
 
@@ -196,10 +199,10 @@ export function RoseCard({ geo: G, act, ca = 'row', title, insight: D, onAsk, on
     <div ref={rootRef} data-insight={act} data-tip={tip}
       // 点卡片里的空白处（不是扇区、标签、ⓘ、Ask 行等按钮）恢复默认；抽屉是 portal，事件会冒泡上来，所以只认卡片自己的 DOM
       onClick={(e) => { if (tip >= 0 && rootRef.current?.contains(e.target) && !e.target.closest('button, a, [data-seg]')) setTip(-1); }}
-      style={CARD_STYLE}>
+      className={entering ? 'enter-card' : undefined} style={CARD_STYLE}>
       {/* Final：标题 + AI 星形 + ⓘ 一行，洞察放在浅蓝块里 */}
       <CardHead title={title || D.cardTitle} infoLabel={ui.infoLabel} act={`${act}-info`} onInfo={() => setDrawer(true)} />
-      <KeyBlock k={D.key} rest={D.rest} />
+      <KeyBlock k={D.key} rest={D.rest} bullets={D.bullets} next={D.next} />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ position: 'relative', height: G.H, width: 345, maxWidth: '100%', alignSelf: 'center' }}>
@@ -208,14 +211,24 @@ export function RoseCard({ geo: G, act, ca = 'row', title, insight: D, onAsk, on
               // Final：选中的扇区只向外长（外径 ×1.1，灰轨一起），带一层阴影；其他扇区 25%；不再整体放大
               const s = G.span(i, n, 0), on = tip === i, mx = x.max || 100;
               const RX = on ? G.RO * 1.1 : G.RO, radX = (v) => G.RI + (RX - G.RI) * v / mx;
-              const op = tip < 0 || on ? 1 : 0.25;
+              // 悬停预览：未选中时悬停的区保持、其余降到 55%；已选中时悬停其他区提到 45%（提示可以切过去）
+              const op = tip < 0 ? (hov >= 0 && hov !== i ? 0.55 : 1) : on ? 1 : hov === i ? 0.45 : 0.25;
+              const seed = sector(G.RI, G.RI + 0.5, s[0], s[1]);
               return (
                 // 扇区本身也能点（点色块和点标签同效）；0 分也留 6% 的细弧，数字照实显示
-                <g key={i} aria-hidden="true" data-seg={i} onClick={(e) => { e.stopPropagation(); pick(i); }} style={{ cursor: 'pointer' }}>
-                  {/* 外扩用路径插值，从当前形状长出去，再点或切走时从当前形状缩回（可打断） */}
-                  <motion.path initial={false} animate={{ d: sector(G.RI, RX, s[0], s[1]) }} transition={tGrow} fill="#f1f1f2" stroke="none" />
-                  <motion.path className="rose-seg" initial={false} animate={{ d: sector(G.RI, radX(Math.max(x.you, mx * 0.06)), s[0], s[1]) }} transition={tGrow} fill={D.colors[i]} stroke="none"
+                <g key={i} aria-hidden="true" data-seg={i} onClick={(e) => { e.stopPropagation(); pick(i); }} style={{ cursor: 'pointer' }}
+                  onPointerEnter={(e) => isMouse(e) && setHov(i)} onPointerLeave={() => setHov(-1)}>
+                  {/* 外扩用路径插值，从当前形状长出去，再点或切走时从当前形状缩回（可打断）；首次出现从内圈长出 */}
+                  <motion.path initial={entering ? { d: seed } : false} animate={{ d: sector(G.RI, RX, s[0], s[1]) }} transition={entering ? segIn(i) : tGrow} fill="#f1f1f2" stroke="none" />
+                  <motion.path className="rose-seg" initial={entering ? { d: seed } : false} animate={{ d: sector(G.RI, radX(Math.max(x.you, mx * 0.06)), s[0], s[1]) }} transition={entering ? segIn(i, 0.04) : tGrow} fill={D.colors[i]} stroke="none"
                     style={{ fillOpacity: op, filter: on ? 'drop-shadow(0px 1px 3px rgba(22, 24, 35, 0.28))' : 'drop-shadow(0px 1px 3px rgba(22, 24, 35, 0))' }} />
+                  {/* 刻度（2026-11-27 Yanice）：只画里面两条（1/3、2/3），不画最外圈；画在色块上面，白色晕边 + 深色细线，深蓝、浅蓝、灰底上都看得见；跟着扇区外扩 */}
+                  {/* 2026-11-27 夜 Yanice：选中的那一块不画刻度线，只留前 7 天的虚线 */}
+                  {SHOW_TIERS && !on && [1 / 3, 2 / 3].map((t) => {
+                    const inFill = t * mx <= x.you;
+                    const stroke = TIER_STYLE === 'gap' ? '#ffffff' : inFill ? shade(D.colors[i]) : '#cfcfd4';
+                    return <motion.path key={t} initial={entering ? { d: arc(G.RI + 0.5, s[0] + 1.5, s[1] - 1.5) } : false} animate={{ d: arc(G.RI + (RX - G.RI) * t, s[0] + 1.5, s[1] - 1.5) }} transition={entering ? segIn(i) : tGrow} fill="none" stroke={stroke} strokeWidth={TIER_STYLE === 'gap' ? 1 : 1} pointerEvents="none" />;
+                  })}
                 </g>
               );
             })}
@@ -234,9 +247,9 @@ export function RoseCard({ geo: G, act, ca = 'row', title, insight: D, onAsk, on
           </svg>
           <div style={{ position: 'absolute', left: 0, right: 0, top: G.centerTop, transform: G.centerTf, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
             {/* 中央始终是同一个按钮（未选中时不可点）；数字换的时候用 2px 模糊交叉淡入，旧数字 120ms 先走 */}
-            <button type="button" className="rose-center" aria-label={ui.resetLabel} aria-hidden={!hasTip} tabIndex={hasTip ? 0 : -1} data-act={`${act}-center`}
+            <button type="button" className={`rose-center${entering ? ' enter-center' : ''}`} aria-label={ui.resetLabel} aria-hidden={!hasTip} tabIndex={hasTip ? 0 : -1} data-act={`${act}-center`}
               onClick={(e) => { e.stopPropagation(); setTip(-1); }}
-              style={{ ...BTN, pointerEvents: hasTip ? 'auto' : 'none', cursor: hasTip ? 'pointer' : 'default', display: 'grid', placeItems: 'center', padding: hasTip ? G.centerPad : 0 }}>
+              style={{ ...BTN, pointerEvents: hasTip ? 'auto' : 'none', cursor: hasTip ? 'pointer' : 'default', display: 'grid', placeItems: 'center', padding: hasTip ? G.centerPad : 0, animationDelay: entering ? '0.2s' : undefined }}>
               <AnimatePresence mode="popLayout" initial={false}>
                 <motion.span key={tip} style={{ gridArea: '1 / 1', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
                   initial={reduce ? { opacity: 0 } : { opacity: 0, filter: 'blur(2px)', transform: 'scale(0.97)' }}
@@ -250,16 +263,16 @@ export function RoseCard({ geo: G, act, ca = 'row', title, insight: D, onAsk, on
           </div>
           {areas.map((x, i) => {
             const on = i === tip;
-            const l = G.labelAt(i, n, G, P, on);
+            const l = G.labelAt(i, n, G, P, on, x.name);
             return (
-              <button key={i} type="button" className="rose-press rose-lab" aria-pressed={on} data-act={`${act}-area-${i}`}
+              <button key={i} type="button" className={`rose-press rose-lab${entering ? ' enter-fade' : ''}`} aria-pressed={on} data-act={`${act}-area-${i}`}
                 onClick={(e) => { e.stopPropagation(); pick(i); }}
-                style={{ ...BTN, position: 'absolute', left: l.left, width: l.width, top: l.top, transform: l.tf, boxSizing: 'border-box', minHeight: 44, padding: '2px 0px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: l.items, textAlign: 'center' }}>
+                onPointerEnter={(e) => isMouse(e) && setHov(i)} onPointerLeave={() => setHov(-1)}
+                style={{ ...BTN, animationDelay: entering ? labDelay(i) : undefined, position: 'absolute', left: l.left, width: l.width, top: l.top, transform: l.tf, boxSizing: 'border-box', minHeight: 44, padding: '2px 0px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: l.items, textAlign: 'center' }}>
                 <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <span className="rose-fade" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, lineHeight: '18px', fontWeight: on ? 600 : 400, color: tip < 0 ? '#57585e' : (on ? '#161823' : '#6d6e73') }}>
-                    <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: D.colors[i], opacity: tip < 0 || on ? 1 : 0.25, transition: 'opacity 200ms ease' }} />{x.name}
+                  <span className="rose-fade" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, lineHeight: '18px', fontWeight: 400, whiteSpace: 'nowrap', color: tip < 0 ? '#57585e' : (on ? '#161823' : '#6d6e73') }}>
+                    <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: D.colors[i], opacity: tip < 0 ? (hov >= 0 && hov !== i ? 0.55 : 1) : on ? 1 : hov === i ? 0.45 : 0.25, transition: 'opacity 200ms ease' }} />{x.name}
                   </span>
-                  <span className="rose-fade" style={{ paddingLeft: 13, fontSize: 15, lineHeight: '20px', fontWeight: 600, color: tip < 0 || on ? '#161823' : '#6d6e73' }}>{G.labelValue(x)}</span>
                 </span>
               </button>
             );
@@ -281,6 +294,13 @@ export function RoseCard({ geo: G, act, ca = 'row', title, insight: D, onAsk, on
               </motion.div>
             )}
           </AnimatePresence>
+          {/* V1（2026-11-27 Yanice 定）：默认不再显示「Tap an area…」提示；说明句只在选中时带高度动画出现 */}
+          <AnimatePresence initial={false}>
+          {hasTip && (
+          <motion.div key="note" style={{ overflow: 'hidden' }}
+            initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0, transition: { duration: reduce ? 0 : 0.16, ease: EASE_OUT } }}
+            transition={{ duration: reduce ? 0 : 0.22, ease: EASE_OUT }}>
           <div aria-live="polite" style={{ position: 'relative', minHeight: 36, display: 'grid', alignItems: 'start', justifyItems: 'center', textAlign: 'center', padding: '0 8px' }}>
             {/* 文字换文字不做交叉淡入（两句叠在一起会重影）：旧句 90ms 先淡出，新句再上浮进来 */}
             <AnimatePresence mode="wait" initial={false}>
@@ -293,15 +313,16 @@ export function RoseCard({ geo: G, act, ca = 'row', title, insight: D, onAsk, on
                   <span style={{ fontSize: 13, lineHeight: '18px', color: '#161823' }}>
                     <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', marginRight: 6, verticalAlign: '1px', background: D.colors[tip] }} />
                     {/* Final 单句（2026-11-26 确认）：{维度} + 一句话；没有 sentence 的旧数据仍按原来的行显示 */}
-                    <span style={{ fontWeight: 600 }}>{sx.name}</span> {sx.sentence || (sx.lines ? sx.lines[0] : sx.note)}
+                    <span style={{ fontWeight: 400, color: '#161823' }}>{sx.name}</span> {sx.sentence || (sx.lines ? sx.lines[0] : sx.note)}
                     {!sx.sentence && sx.lines && sx.lines.slice(1).map((ln) => <span key={ln} style={{ display: 'block', color: '#57585e' }}>{ln}</span>)}
                   </span>
-                ) : (
-                  <span style={{ fontSize: 12, lineHeight: '16px', color: '#6d6e73' }}>{ui.hint}</span>
-                )}
+                ) : null}
               </motion.span>
             </AnimatePresence>
           </div>
+          </motion.div>
+          )}
+          </AnimatePresence>
         </div>
       </div>
 

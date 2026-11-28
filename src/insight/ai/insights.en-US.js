@@ -1,9 +1,15 @@
 // AI-generated insight lines for the prototype (English).
-// Written by prompt pack（未包含在本仓库） on the prototype's own data (build.js).
+// Written by _research/20_redesign/prompt_pack/scripts/export_prototype.js on the prototype's own data (build.js).
 // Do not edit by hand: re-run the script after the data or the prompts change.
+// 2026-11-27 hand edit (Yanice): the five KeyBlock surfaces (performance_summary, content_summary, topic_search,
+// post_overview, other_post) now carry key + exactly 2 bullets (fact, then a next-step suggestion), rest "" and next null.
+// Second pass (reviewer fixes): performance_summary bullets follow the likes finding; content_summary no longer repeats it.
+// Port these to the prompt pack before the next export, or they will be overwritten.
+// 2026-11-27 night hand edit (Yanice: "paragraph 2–3 sentences, 1–2 bullets"): five KeyBlock surfaces rewritten from pack .8 output; no links, no semicolons.
+// 2026-11-27 night: performance_summary = raw model output, pack .8 live run 1 (Yanice chose it over the hand edit).
 export default {
-  "generated_at": "2026-11-27T00:57:13.832Z",
-  "pack_version": "2026-11-26.16",
+  "generated_at": "2026-11-27T23:54:05.039Z",
+  "pack_version": "2026-11-27.6",
   "model": "claude-opus-5-5",
   "locale": "en-US",
   "surfaces": {
@@ -12,15 +18,27 @@ export default {
       "source": "model",
       "output": {
         "story": "carrier_mix",
-        "basis": "carrier_mix Kyoto at dusk 50% of views, 33% of likes, likes per view about half of your other posts",
-        "key": "Kyoto at dusk got half your views, at half your usual likes per view.",
-        "lever": "detail",
-        "rest": "Itinerary tops its comments, so show your route.",
+        "basis": "carrier_mix Kyoto at dusk 50% of views, 33% of likes, about half the likes per view, still most liked",
+        "key": "Kyoto at dusk brought half your views but only a third of your likes.",
+        "lever": "series",
+        "rest": "It got 260 of your 783 likes, still your most liked post. Its viewers liked it about half as often as viewers of your other posts.",
+        "bullets": [
+          "Itinerary is the top word in its comments.",
+          "Post Kyoto Part 2 Thursday around 6 PM."
+        ],
         "refs": [
           "post:p44",
-          "area:Engagement"
+          "area:Views",
+          "area:Engagement",
+          "area:Shares"
         ],
-        "safety_flag": "none"
+        "safety_flag": "none",
+        "next": null
+      },
+      "made": {
+        "pack_version": "2026-11-27.8",
+        "module": "account_overview 1.6.0",
+        "date": "2026-11-27"
       }
     },
     "content_summary": {
@@ -28,16 +46,26 @@ export default {
       "source": "model",
       "output": {
         "story": "strongest_weakest",
-        "basis": "follow_conversion_fell true: net followers ↓ 24.0% vs views ↓ 10.6%; top post Kyoto 45% of new followers",
-        "key": "Net followers fell 24.0% while views fell only 10.6%.",
+        "basis": "net_followers_change ↓ 24.0% vs views_change ↓ 10.6%, follow_conversion_fell true; Kyoto at dusk 27 of 60 followers",
+        "key": "Kyoto at dusk brought 27 of your 60 new followers, more than any other post.",
         "lever": "series",
-        "rest": "Turn Kyoto at dusk into a series viewers can return to.",
+        "rest": "Your Positano post brought 15 more. You gained fewer followers than the week before, while views only dipped a little.",
+        "bullets": [
+          "Follow it up with Kyoto Part 2."
+        ],
         "refs": [
           "area:Followers",
           "area:Views",
-          "post:p44"
+          "post:p44",
+          "post:p41"
         ],
-        "safety_flag": "none"
+        "safety_flag": "none",
+        "next": null
+      },
+      "made": {
+        "pack_version": "2026-11-27.8",
+        "module": "content_summary 1.6.0",
+        "date": "2026-11-27"
       }
     },
     "topic_search": {
@@ -45,16 +73,26 @@ export default {
       "source": "model",
       "output": {
         "story": "verdict",
-        "basis": "demand high, fit high, room wide, worth_exploring true; angle sub:2 closest to travel content",
-        "key": "This topic fits you and has room for your honest reviews.",
+        "basis": "worth_exploring true, fit high, proof carry-on finds about twice usual views, room wide, advice angle sub:2",
+        "key": "Your carry-on finds got about twice your usual views, so this topic fits you.",
         "lever": "angle",
-        "rest": "Try Tech & home finds, the angle closest to travel.",
+        "rest": "Tech & home finds is the closest match to your travel posts. Few creators post it yet.",
+        "bullets": [
+          "Try Tech & home finds as an honest review."
+        ],
         "refs": [
           "score:Relevance",
-          "score:Competition",
-          "sub:2"
+          "post:p33",
+          "sub:2",
+          "sub:1"
         ],
-        "safety_flag": "none"
+        "safety_flag": "none",
+        "next": null
+      },
+      "made": {
+        "pack_version": "2026-11-27.8",
+        "module": "topic_search 1.7.0",
+        "date": "2026-11-27"
       }
     },
     "post_overview": {
@@ -62,16 +100,25 @@ export default {
       "source": "model",
       "output": {
         "story": "largest_gap",
-        "basis": "largest_metric_gap Likes per 1K views 35.8 vs 80.1, Reach 93 well above, key_moment 0:01 37% vs 33%",
-        "key": "This post reached far more people, but likes per view fell by half.",
-        "lever": "hook",
-        "rest": "37% left at 0:01 against 33%, so open faster.",
+        "basis": "Reach 93 almost 3 times; gap Likes/1K 35.8 vs 80.1; 260 vs 210 likes; comments/1K 2.7 vs 2.1",
+        "key": "About 3 times your usual viewers saw Kyoto at dusk, but a smaller share of them liked it.",
+        "lever": "series",
+        "rest": "It still got 260 likes, against about 210 on a usual post. 37% left in the first second, a little more than the 33% who usually do.",
+        "bullets": [
+          "Open Kyoto Part 2 on the lanterns.",
+          "Post it Thursday around 6 PM."
+        ],
         "refs": [
           "area:Reach",
-          "area:Likes",
-          "moment:0:01"
+          "area:Likes"
         ],
-        "safety_flag": "none"
+        "safety_flag": "none",
+        "next": null
+      },
+      "made": {
+        "pack_version": "2026-11-27.8",
+        "module": "post_overview 1.5.0",
+        "date": "2026-11-27"
       }
     },
     "other_post": {
@@ -79,15 +126,26 @@ export default {
       "source": "model",
       "output": {
         "story": "largest_gap",
-        "basis": "largest_rate_gap Comments per 1K views 3.8 vs 2.2, 1.7×; top topic itinerary 32%",
-        "key": "Per view, its biggest lead is Comments per 1K views, at 1.7×.",
+        "basis": "largest_rate_gap Comments 3.8 vs 2.2; itinerary 32% of comments; your_match Amalfi, itinerary",
+        "key": "People comment on @budgetroutes' post much more often than on yours.",
         "lever": "detail",
-        "rest": "Share your full itinerary, the top ask at 32%.",
+        "rest": "About a third of its comments ask for the itinerary. Itinerary is also the top word on your Amalfi post.",
+        "bullets": [
+          "Post your Amalfi itinerary with the budget.",
+          "Post it Thursday around 6 PM."
+        ],
         "refs": [
           "row:comments",
-          "topic:itinerary"
+          "topic:itinerary",
+          "post:p28"
         ],
-        "safety_flag": "none"
+        "safety_flag": "none",
+        "next": null
+      },
+      "made": {
+        "pack_version": "2026-11-27.8",
+        "module": "other_post 1.6.0",
+        "date": "2026-11-27"
       }
     },
     "curated_past": {
@@ -97,11 +155,6 @@ export default {
         "topic": "Kyoto at dusk: a one-day itinerary",
         "rows": [
           {
-            "ref": "fact:views",
-            "icon": "play",
-            "text": "7.3K views since Nov 21, best this week."
-          },
-          {
             "ref": "fact:word",
             "icon": "chat",
             "text": "Top word in comments: itinerary."
@@ -109,64 +162,84 @@ export default {
           {
             "ref": "fact:median",
             "icon": "chart",
-            "text": "Median views: Kyoto posts 5.1K, the rest 3.5K."
+            "text": "Kyoto posts get 5.1K views, the rest 3.5K."
+          },
+          {
+            "ref": "fact:time",
+            "icon": "chart",
+            "text": "Viewers most active Thursday around 6 PM."
           }
         ],
         "safety_flag": "none"
+      },
+      "made": {
+        "pack_version": "2026-11-27.6",
+        "module": "topic_card 1.2.0",
+        "date": "2026-11-27"
       }
     },
     "curated_similar": {
       "subject": null,
       "source": "model",
       "output": {
-        "topic": "Amalfi by ferry: your full budget breakdown",
+        "topic": "Amalfi by ferry: full itinerary and budget",
         "rows": [
           {
             "ref": "fact:gap",
             "icon": "chart",
-            "text": "A similar post got 1.7× your comments per view."
+            "text": "@budgetroutes' post got comments 1.7× as often."
           },
           {
             "ref": "fact:ask",
             "icon": "chat",
-            "text": "Its viewers ask for the itinerary and budget."
+            "text": "Their viewers ask for the itinerary and budget."
           },
           {
             "ref": "fact:own",
             "icon": "play",
-            "text": "Amalfi by ferry: 7.7K views, median post 3.5K."
+            "text": "Your Amalfi by ferry: 7.7K views, usual 3.5K."
           }
         ],
         "safety_flag": "none"
+      },
+      "made": {
+        "pack_version": "2026-11-27.6",
+        "module": "topic_card 1.2.0",
+        "date": "2026-11-27"
       }
     },
     "curated_trend": {
       "subject": null,
       "source": "model",
       "output": {
-        "topic": "Travel tech finds: an honest review",
+        "topic": "Honest review: travel tech worth packing",
         "rows": [
           {
             "icon": "trend",
-            "text": "Popularity 62: in demand right now."
+            "text": "In demand right now."
           },
           {
             "icon": "target",
-            "text": "Relevance to you 78: fits your content."
+            "text": "Close to your carry-on finds."
           },
           {
             "icon": "similar",
-            "text": "Competition 36: room for new creators."
+            "text": "Room for new creators."
           }
         ],
         "safety_flag": "none"
+      },
+      "made": {
+        "pack_version": "2026-11-27.6",
+        "module": "topic_card 1.2.0",
+        "date": "2026-11-27"
       }
     },
     "weekly_report": {
       "subject": null,
       "source": "model",
       "output": {
-        "insight": "New followers fell furthest from your last 4 weeks, down 74.3%.",
+        "insight": "Fewer people followed you than in a usual week.",
         "post_lines": [
           {
             "ref": "post:p44",
@@ -176,36 +249,51 @@ export default {
         "refs": [
           "m:followers",
           "post:p44"
+        ],
+        "bullets": [
+          "Kyoto at dusk got 7.3K views.",
+          "Post Kyoto Part 2 Thursday around 6 PM."
         ]
+      },
+      "made": {
+        "pack_version": "2026-11-27.6",
+        "module": "weekly_report 1.4.0",
+        "date": "2026-11-27"
       }
     },
     "creator_assistant": {
       "subject": "How can I get more people to react?",
       "source": "model",
       "output": {
-        "insight": "Engagement fell the most, and your Kyoto post pulled the rate down.",
+        "insight": "Your likes and comments fell the most, mostly tied to one big post.",
         "bullets": [
-          "Kyoto at dusk brought 50% of your views but only 33% of your likes.",
-          "Its likes per view were about half of your other posts'.",
-          "It is still your most liked post, and itinerary is its top comment word.",
-          "Worth testing: show your Kyoto itinerary on screen and ask which stop to skip."
+          "Likes fell 38.2% and comments 25.5% from the previous 7 days.",
+          "Kyoto at dusk, when the lanterns come on brought 50% of views, 33% of likes.",
+          "For every view, it got about half the likes your other posts get.",
+          "Itinerary is its top comment word, so try a follow-up that lays out the route."
         ],
         "module": {
-          "id": "top_posts"
+          "id": "key_metrics"
         },
         "follow_ups": [
-          "Why did my rewards drop?",
-          "Compare this week with last week"
+          "Which post did best this week?",
+          "Why are my shares doing well?"
         ],
         "start_creating": null,
         "refs": [
           "area:Engagement",
           "m:Engagement:0",
+          "m:Engagement:1",
           "d:Engagement",
           "d:Views",
           "post:p44"
         ],
         "safety_flag": "none"
+      },
+      "made": {
+        "pack_version": "2026-11-27.6",
+        "module": "creator_assistant 1.2.0",
+        "date": "2026-11-27"
       }
     }
   }

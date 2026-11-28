@@ -1,6 +1,6 @@
 // V4 子流程补充：官方帮助 / Creator Academy（2026-08）写明、但美国录屏没拍到的子流程
 // - Creator Assistant（CA6）：Home / Analytics Overview / 作品详情的内嵌卡片 → 欢迎页（第一次）→ 对话页；首次打开后常驻 Inbox
-// - Creator Weekly Report（CA7）：2026-11-26 按要求从原型删除
+// - Creator Weekly Report（CA7）：2026-11-26 按 Yanice 要求从原型删除
 // - 作品改隐私 / 删除、评论删除（H1 Manage）
 // - 评论 AI 话题总结（H1 Insights、H12 Comment insights）+ 设置 Privacy → Comments 两个开关（H12）
 // 界面视觉为按 Studio 现有组件推断的样式，证据等级记在覆盖表里，界面内不写。
@@ -13,6 +13,7 @@ import { I } from '../ui/Icons.jsx';
 import { POSTS, POST_BY_ID, INSPIRATION, ACCOUNT, ACTIVE_DAYS, activeHours, DAILY, PERIOD_END } from '../data/seed.js';
 import { fmt, fmtFull, fmtMoney, overviewKpis, topPosts, trafficSources } from '../data/agg.js';
 import { ASSISTANT_DEMO } from '../insight/demo/assistant.js';
+import { AiStar } from '../insight/CardParts.jsx';
 import { AssistantWelcome, AssistantAnswer } from '../insight/AssistantAnswer.jsx';
 import { mostActive, commentTopics, dropMoment, videoAnswer, summaryAnswer, buildModuleA, buildModuleB, buildModuleD, buildModuleE, otherPostTopics, postName, rewardsSplit } from '../insight/build.js';
 import '../insight/assistant.css';
@@ -246,7 +247,7 @@ function placeholderFor(params) {
 // 设计稿没有模块的问题：没问过的现有问题 + 两个设计稿里有回答的问题
 const CA_MORE = [CA_KINDS.next.question, summaryAnswer()?.question].filter(Boolean);
 
-// 点示例问题后的回复（2026-11-26 按要求）：原型里 Creator Assistant 只作设计参考，不生成回答
+// 点示例问题后的回复（2026-11-26 按 Yanice 要求）：原型里 Creator Assistant 只作设计参考，不生成回答
 const PREVIEW_REPLY = 'This prototype presents Creator Assistant as a design reference. Live answers rely on backend services and agent orchestration, including secure access to account data, tool calls and response checks, which are outside the scope of this build. The rest of the prototype runs on sample data.';
 
 export function CreatorAssistantScreen({ params }) {
@@ -486,7 +487,7 @@ export function DescIdeasSheet({ onPick }) {
   const ideas = ['Weekend trip in 48 hours — save this for your next long weekend ✈️ #weekendtrip #traveltips', 'The one trick that makes this city feel empty. Would you try it? #travelhacks #hiddengems', 'POV: you finally found the view everyone keeps asking about ✨ #travel #traveltok'];
   return (
     <SheetFrame title="Description ideas">
-      <div className="di-sub"><I.spark size={13} /> Generated from your post. Edit anything before posting.</div>
+      <div className="di-sub"><AiStar size={13} /> Generated from your post. Edit anything before posting.</div>
       {loading ? <div className="di-list">{[0, 1, 2].map((i) => <div key={i} className="di-skel"><i /><i /></div>)}</div> : (
         <div className="di-list">{ideas.map((t, i) => <button key={i} className="di-item" data-act={`desc-idea-${i}`} onClick={() => { onPick?.(t); close(); }}>{t}</button>)}</div>
       )}

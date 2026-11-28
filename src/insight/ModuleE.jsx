@@ -7,15 +7,20 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import demo from './demo/moduleE.js';
 import './ModuleE.css';
 import { AskRow } from './AskAssistant.jsx';
-import { CardHead, KeyBlock, CARD_STYLE } from './CardParts.jsx';
+import { placeLabel, LAB_GAP } from './labelFit.js';
+import { CardHead, KeyBlock, CARD_STYLE, AiStar } from './CardParts.jsx';
+import { useEntering, segIn, labDelay, isMouse } from './entrance.js';
+// 刻度线样式（2026-11-27 方案比较）：'gap' = 白色切缝；'tone' = 同色系加深（色块里用加深一档的蓝，灰底轨上用浅灰）
+// 2026-11-27 夜 Yanice：「那三条白线不要了」——刻度线整体关掉（保留代码，改回 true 即恢复）
+const SHOW_TIERS = false;
+const TIER_STYLE = 'gap';
+const shade = (hex, k = 0.72) => '#' + [1, 3, 5].map((j) => Math.round(parseInt(hex.slice(j, j + 2), 16) * k).toString(16).padStart(2, '0')).join('');
 
 export const IM_FONT = "'TikTok Sans', -apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif";
 export const IM_BTN = { appearance: 'none', border: 0, margin: 0, padding: 0, background: 'transparent', font: 'inherit', color: 'inherit', textAlign: 'inherit', cursor: 'pointer' };
 
 // AI mark beside the insight sentence
-export const AiMark = () => (
-  <svg width="16" height="16" viewBox="0 0 256 256" fill="#1e7ce8" aria-hidden="true" style={{ flex: 'none' }}><path d="M208,144a15.78,15.78,0,0,1-10.42,14.94L146,178l-19,51.62a15.92,15.92,0,0,1-29.88,0L78,178l-51.62-19a15.92,15.92,0,0,1,0-29.88L78,110l19-51.62a15.92,15.92,0,0,1,29.88,0L146,110l51.62,19A15.78,15.78,0,0,1,208,144ZM152,48h16V64a8,8,0,0,0,16,0V48h16a8,8,0,0,0,0-16H184V16a8,8,0,0,0-16,0V32H152a8,8,0,0,0,0,16Zm88,32h-8V72a8,8,0,0,0-16,0v8h-8a8,8,0,0,0,0,16h8v8a8,8,0,0,0,16,0V96h8a8,8,0,0,0,0-16Z" /></svg>
-);
+export const AiMark = () => <AiStar />;
 
 export function InfoButton({ label, onClick, act }) {
   return (
@@ -89,11 +94,10 @@ const sector = (ri, ro, a0, a1) => {
 };
 const rad = (v, max) => RI + (RO - RI) * v / max;
 // Final：块按中心对锚点；名称行在上、分数在名称文字正下方居中；选中的扇区外扩 1.1 倍，标签跟着外移
-function labelAt(i, r, step) {
-  const m = -90 + step * i + step / 2, q = P(r, m), c = Math.cos(m * Math.PI / 180);
-  if (Math.abs(c) < 0.2) return { left: q[0] - 60, width: 120, top: q[1], transform: 'none', alignItems: 'center' };
-  if (c > 0) return { left: q[0], width: 2 * CX - q[0], top: q[1], transform: 'translateY(-50%)', alignItems: 'flex-start' };
-  return { left: 0, width: q[0], top: q[1], transform: 'translateY(-50%)', alignItems: 'flex-end' };
+// 与模块 A 同一套标签规则（labelFit.js）：离圆环外沿固定 12pt，选中外扩时同步外移，放不下就沿圆弧滑
+function labelAt(i, r, step, name) {
+  const l = placeLabel(-90 + step * i + step / 2, r, CX, CY, 2 * CX, name);
+  return { left: l.left, width: l.width, top: l.top, transform: 'translateY(-50%)', alignItems: l.align };
 }
 
 function CaLogo({ size, id }) {
@@ -119,6 +123,8 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
   const reduce = useReducedMotion();
   const EASE_OUT = [0.23, 1, 0.32, 1];
   const tGrow = reduce ? { duration: 0 } : { duration: 0.24, ease: EASE_OUT };
+  const entering = useEntering(1100); // 首次出现：卡片淡入、扇区从内圈依次长出（entrance.js）
+  const [hov, setHov] = useState(-1);  // 鼠标悬停预览
   const [drawer, setDrawer] = useState('');
   const gid = `ime-ca-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const tip = tipState >= 0 && tipState < areas.length ? tipState : -1;
@@ -139,19 +145,19 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
   const centre = (
     <>
       <span style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
-        <span style={{ fontSize: 48, lineHeight: '52px', fontWeight: 600, letterSpacing: '-0.02em', color: '#161823' }}>{cval}</span>
+        <span style={{ fontSize: 34, lineHeight: '38px', fontWeight: 600, letterSpacing: '-0.02em', color: '#161823' }}>{cval}</span>
         <span style={{ fontSize: 13, lineHeight: '18px', color: '#6d6e73' }}>{cmax}</span>
       </span>
-      <span style={{ marginTop: 2, padding: '1px 6px', borderRadius: 999, background: chipBg, fontSize: 12, lineHeight: '16px', fontWeight: 600, color: chipCol }}>{chip}</span>
+      <span style={{ marginTop: 2, padding: '1px 6px', borderRadius: 999, background: chipBg, fontSize: 12, lineHeight: '16px', fontWeight: 600, color: chipCol, whiteSpace: 'nowrap' }}>{chip}</span>
     </>
   );
 
   return (
-    <div ref={rootRef} data-insight="E" data-tip={tip} style={CARD_STYLE}
+    <div ref={rootRef} data-insight="E" data-tip={tip} className={entering ? 'enter-card' : undefined} style={CARD_STYLE}
       onClick={(e) => { if (tip >= 0 && rootRef.current?.contains(e.target) && !e.target.closest('button, a, [data-seg]')) setTip(-1); }}>
       {/* Final：标题 Post summary + AI 星形 + ⓘ，洞察在浅蓝块里 */}
       <CardHead title={D.cardTitle || 'Post summary'} infoLabel={ui.infoLabel || 'How this is worked out'} act="insight-e-info" onInfo={() => setDrawer('info')} />
-      <KeyBlock k={D.key} rest={D.rest} />
+      <KeyBlock k={D.key} rest={D.rest} bullets={D.bullets} next={D.next} />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ position: 'relative', height: 258 }}>
@@ -160,10 +166,18 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
               const a0 = -90 + step * i, a1 = -90 + step * (i + 1), max = x.max || 100, on = tip === i;
               const RX = on ? RO * 1.1 : RO, radX = (v) => RI + (RX - RI) * v / max;
               return (
-                <g key={i} data-seg={i} onClick={(e) => { e.stopPropagation(); pick(i); }} style={{ cursor: 'pointer' }}>
-                  <motion.path initial={false} animate={{ d: sector(RI, RX, a0, a1) }} transition={tGrow} fill="#f1f1f2" stroke="none" />
-                  <motion.path className="ime-seg" initial={false} animate={{ d: sector(RI, radX(Math.max(x.you, max * 0.06)), a0, a1) }} transition={tGrow} fill={colors[i]} stroke="none"
-                    style={{ fillOpacity: !hasTip || on ? 1 : 0.25, filter: on ? 'drop-shadow(0px 1px 3px rgba(22, 24, 35, 0.28))' : 'drop-shadow(0px 1px 3px rgba(22, 24, 35, 0))' }} />
+                <g key={i} data-seg={i} onClick={(e) => { e.stopPropagation(); pick(i); }} style={{ cursor: 'pointer' }}
+                  onPointerEnter={(e) => isMouse(e) && setHov(i)} onPointerLeave={() => setHov(-1)}>
+                  <motion.path initial={entering ? { d: sector(RI, RI + 0.5, a0, a1) } : false} animate={{ d: sector(RI, RX, a0, a1) }} transition={entering ? segIn(i) : tGrow} fill="#f1f1f2" stroke="none" />
+                  <motion.path className="ime-seg" initial={entering ? { d: sector(RI, RI + 0.5, a0, a1) } : false} animate={{ d: sector(RI, radX(Math.max(x.you, max * 0.06)), a0, a1) }} transition={entering ? segIn(i, 0.04) : tGrow} fill={colors[i]} stroke="none"
+                    style={{ fillOpacity: !hasTip ? (hov >= 0 && hov !== i ? 0.55 : 1) : on ? 1 : hov === i ? 0.45 : 0.25, filter: on ? 'drop-shadow(0px 1px 3px rgba(22, 24, 35, 0.28))' : 'drop-shadow(0px 1px 3px rgba(22, 24, 35, 0))' }} />
+                  {/* 刻度（2026-11-27 Yanice）：只画里面两条（1/3、2/3），不画最外圈；画在色块上面，白色晕边 + 深色细线，深蓝、浅蓝、灰底上都看得见；跟着扇区外扩 */}
+                  {/* 2026-11-27 夜 Yanice：选中的那一块不画刻度线，只留前 7 天的虚线 */}
+                  {SHOW_TIERS && !on && [1 / 3, 2 / 3].map((t) => {
+                    const inFill = t * max <= x.you;
+                    const stroke = TIER_STYLE === 'gap' ? '#ffffff' : inFill ? shade(colors[i]) : '#cfcfd4';
+                    return <motion.path key={t} initial={entering ? { d: arc(RI + 0.5, a0 + 1.5, a1 - 1.5) } : false} animate={{ d: arc(RI + (RX - RI) * t, a0 + 1.5, a1 - 1.5) }} transition={entering ? segIn(i) : tGrow} fill="none" stroke={stroke} strokeWidth={TIER_STYLE === 'gap' ? 1 : 1} pointerEvents="none" />;
+                  })}
                 </g>
               );
             })}
@@ -175,9 +189,9 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
             })()}
           </svg>
           <div style={{ position: 'absolute', left: 0, right: 0, top: 126, transform: 'translateY(-50%)', display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
-            <button type="button" className="ime-center" aria-label="Show overall score" aria-hidden={!hasTip} tabIndex={hasTip ? 0 : -1} data-act="insight-e-reset"
+            <button type="button" className={`ime-center${entering ? ' enter-center' : ''}`} aria-label="Show overall score" aria-hidden={!hasTip} tabIndex={hasTip ? 0 : -1} data-act="insight-e-reset"
               onClick={(e) => { e.stopPropagation(); setTip(-1); }}
-              style={{ ...IM_BTN, pointerEvents: hasTip ? 'auto' : 'none', cursor: hasTip ? 'pointer' : 'default', display: 'grid', placeItems: 'center', padding: hasTip ? 8 : 0 }}>
+              style={{ ...IM_BTN, pointerEvents: hasTip ? 'auto' : 'none', cursor: hasTip ? 'pointer' : 'default', display: 'grid', placeItems: 'center', padding: hasTip ? 8 : 0, animationDelay: entering ? '0.2s' : undefined }}>
               <AnimatePresence mode="popLayout" initial={false}>
                 <motion.span key={tip} style={{ gridArea: '1 / 1', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
                   initial={reduce ? { opacity: 0 } : { opacity: 0, filter: 'blur(2px)', transform: 'scale(0.97)' }}
@@ -190,16 +204,16 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
             </button>
           </div>
           {areas.map((x, i) => {
-            const on = i === tip, pos = labelAt(i, on ? RO * 1.1 + 6 : RO + 4, step);
+            const on = i === tip, pos = labelAt(i, (on ? RO * 1.1 : RO) + LAB_GAP, step, x.name);
             return (
-              <button key={i} type="button" className="ime-press ime-lab" aria-pressed={on} data-act={`insight-e-area-${i}`}
+              <button key={i} type="button" className={`ime-press ime-lab${entering ? ' enter-fade' : ''}`} aria-pressed={on} data-act={`insight-e-area-${i}`}
                 onClick={(e) => { e.stopPropagation(); pick(i); }}
-                style={{ ...IM_BTN, position: 'absolute', left: pos.left, width: pos.width, top: pos.top, transform: pos.transform, boxSizing: 'border-box', minHeight: 44, padding: '2px 0px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: pos.alignItems, textAlign: 'center' }}>
+                onPointerEnter={(e) => isMouse(e) && setHov(i)} onPointerLeave={() => setHov(-1)}
+                style={{ ...IM_BTN, animationDelay: entering ? labDelay(i) : undefined, position: 'absolute', left: pos.left, width: pos.width, top: pos.top, transform: pos.transform, boxSizing: 'border-box', minHeight: 44, padding: '2px 0px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: pos.alignItems, textAlign: 'center' }}>
                 <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <span className="ime-fade" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, lineHeight: '18px', fontWeight: on ? 600 : 400, color: !hasTip ? '#57585e' : (on ? '#161823' : '#6d6e73') }}>
-                    <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: colors[i], opacity: !hasTip || on ? 1 : 0.25, transition: 'opacity 200ms ease' }} />{x.name}
+                  <span className="ime-fade" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, lineHeight: '18px', fontWeight: 400, whiteSpace: 'nowrap', color: !hasTip ? '#57585e' : (on ? '#161823' : '#6d6e73') }}>
+                    <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: colors[i], opacity: !hasTip ? (hov >= 0 && hov !== i ? 0.55 : 1) : on ? 1 : hov === i ? 0.45 : 0.25, transition: 'opacity 200ms ease' }} />{x.name}
                   </span>
-                  <span className="ime-fade" style={{ paddingLeft: 13, fontSize: 15, lineHeight: '20px', fontWeight: 600, color: !hasTip || on ? '#161823' : '#6d6e73' }}>{x.you}</span>
                 </span>
               </button>
             );
@@ -220,6 +234,13 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
               </motion.div>
             )}
           </AnimatePresence>
+          {/* V1（2026-11-27 Yanice 定）：默认不再显示「Tap an area…」提示；说明句只在选中时带高度动画出现 */}
+          <AnimatePresence initial={false}>
+          {hasTip && (
+          <motion.div key="note" style={{ overflow: 'hidden' }}
+            initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0, transition: { duration: reduce ? 0 : 0.16, ease: EASE_OUT } }}
+            transition={{ duration: reduce ? 0 : 0.22, ease: EASE_OUT }}>
           <div aria-live="polite" style={{ position: 'relative', minHeight: 36, display: 'grid', alignItems: 'start', justifyItems: 'center', textAlign: 'center', padding: '0 8px' }}>
             {/* 文字换文字不做交叉淡入（两句叠在一起会重影）：旧句 90ms 先淡出，新句再上浮进来 */}
             <AnimatePresence mode="wait" initial={false}>
@@ -232,15 +253,16 @@ export function ModuleE({ ca = 'row', insight = demo, onAsk, askAct = 'assistant
                   <span style={{ fontSize: 13, lineHeight: '18px', color: '#161823' }}>
                     <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', marginRight: 6, verticalAlign: 1, background: colors[tip] }} />
                     {/* Final 单句（2026-11-26 确认）：{维度} + 一句话；没有 sentence 的旧数据仍按原来的行显示 */}
-                    <span style={{ fontWeight: 600 }}>{sx.name}</span> {sx.sentence || (sx.lines ? sx.lines[0] : sx.note)}
+                    <span style={{ fontWeight: 400, color: '#161823' }}>{sx.name}</span> {sx.sentence || (sx.lines ? sx.lines[0] : sx.note)}
                     {!sx.sentence && sx.lines && sx.lines.slice(1).map((ln) => <span key={ln} style={{ display: 'block', color: '#57585e' }}>{ln}</span>)}
                   </span>
-                ) : (
-                  <span style={{ fontSize: 12, lineHeight: '16px', color: '#6d6e73' }}>{ui.hint || 'Tap an area to compare it with your typical post'}</span>
-                )}
+                ) : null}
               </motion.span>
             </AnimatePresence>
           </div>
+          </motion.div>
+          )}
+          </AnimatePresence>
         </div>
       </div>
 

@@ -222,7 +222,7 @@ const WEEK_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
 // Most active times：固定「In the last 7 days」，有自己的日期步进，不跟随日期胶囊（o1g_0117，Q1）
 function MostActive() {
   const [mode, setMode] = useState('Hours');
-  const [off, setOff] = useState(0); // 0 = 最近一天
+  const [off, setOff] = useState(() => 6 - ACTIVE_DAYS.indexOf(Math.max(...ACTIVE_DAYS))); // 打开时停在最活跃的那天（和 Viewer summary 的「Thursday around 6 PM」一致），0 = 最近一天
   const [sel, setSel] = useState(null);
   const day = dayDate(PERIOD_END - off);
   const hours = activeHours(off);

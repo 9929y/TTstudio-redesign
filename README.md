@@ -18,15 +18,15 @@ The redesign adds AI insights where creators already look at their data, and lin
 
 | Area · 范围 | What was designed · 设计内容 |
 | --- | --- |
-| Analytics › Overview | **Performance summary**: five-area score chart, one-line insight, Ask Creator Assistant row · 五维评分图、一句话洞察、Ask 行 |
+| Analytics › Overview | **Performance summary**: five-area score chart, AI insight (a 2–3 sentence paragraph and 1–2 bullets, the last one a next step), Ask Creator Assistant row · 五维评分图、AI 洞察（2–3 句段落 + 1–2 条要点，最后一条是下一步）、Ask 行 |
 | Analytics › Content | **Content summary**: three-area score chart for content performance · 三维评分图 |
-| Analytics › Viewers / Followers | **Viewer / Follower summary**: one-sentence audience insight; date picker moved into Key metrics · 一句话观众洞察；日期选择移到 Key metrics |
+| Analytics › Viewers / Followers | **Viewer / Follower summary**: audience insight in the same paragraph-and-bullets format, Ask Creator Assistant row; date picker moved into Key metrics · 同样格式的观众洞察和 Ask 行；日期选择移到 Key metrics |
 | Post analysis · 作品分析 | **Post summary**: compares a post with your typical post · 和你的典型作品对比 |
 | Post › Engagement | **Comment topics**: what viewers ask or say most · 评论话题 |
 | Another creator's post · 他人作品 | **Compared with your posts**: their metrics against your typical post · 对方数据和你的典型作品对比 |
 | Topic search · 话题搜索 | **Topic scores**: popularity, relevance and competition · 热度、相关度、竞争度 |
 | Home, Create | **Curated for me**: post ideas from your top post, trends and similar creators · 来自你的爆款、趋势和同类创作者的选题推荐 |
-| Creator Assistant | Entry on Home with rotating questions; an Ask row under each AI card whose question follows what you select; chat screen · 首页入口轮播问题；每张 AI 卡底部的 Ask 行随选择换问题；对话页 |
+| Creator Assistant | Entry on Home and at the top of Inbox with rotating questions; an Ask row under each AI card whose question follows what you select; chat screen · 首页和 Inbox 顶部入口轮播问题；每张 AI 卡底部的 Ask 行随选择换问题；对话页 |
 | System · 系统 | One change-colour rule (up blue, down orange, flat grey), shared card frame, TikTok-native press feedback and sheet motion · 统一涨跌色、统一卡片外框、还原 TikTok 原生的按下反馈与弹层动效 |
 
 ### Linked score chart · 评分图联动

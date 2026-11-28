@@ -60,11 +60,14 @@ function Why({ rows, large }) {
 const Plus = () => (
   <span className="cfm-plus"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></span>
 );
+const MoreChev = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6" /></svg>
+);
 const HeadChev = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#161823" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6" /></svg>
 );
 
-// ---- Details sheet (Home · tap a card) ----
+// ---- Details sheet (Home · tap Learn more) ----
 function Details({ card, host, onClose, onCreate }) {
   useEffect(() => {
     const k = (e) => { if (e.key === 'Escape') onClose(); };
@@ -88,7 +91,7 @@ function Details({ card, host, onClose, onCreate }) {
             <span className="cfm-illo"><Illo card={card} /></span>
           </div>
           <Why rows={card.rows} large />
-          <button type="button" className="cfm-cta-full cfm-press" data-act="curated-details-create" onClick={onCreate}><Plus />Create</button>
+          <button type="button" className="cfm-cta-full is-dark" data-act="curated-details-create" onClick={onCreate}><Plus />Create</button>
         </div>
       </div>
     </>,
@@ -164,13 +167,16 @@ export function CuratedForMe({ place = 'home', insight = CURATED, onCreate, onMo
         <button type="button" className="cfm-head cfm-press" data-act="curated-more" onClick={() => (onMore ? onMore() : useApp.getState().switchTab('create'))}><span>{title}</span><HeadChev /></button>
         <div className="cfm-track" onScroll={(e) => { const n = Math.max(0, Math.min(cards.length - 1, Math.round(e.currentTarget.scrollLeft / 308))); if (n !== page) setPage(n); }}>
           {cards.map((r, i) => (
-            <div key={r.k || i} role="button" tabIndex={0} className="cfm-card cfm-press" style={{ background: r.bg }} data-act="curated-card"
-              onClick={() => pick(i)} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pick(i); } }}>
+            // 2026-11-27 Yanice 定 E1：整张卡 = Create（深色按钮只是提示），右上角 Learn more 打开 Details。
+            // 两个点击区互不重叠：卡片底层铺一个整卡按钮，Learn more 是它的兄弟元素而不是子元素，按 Learn more 时卡片不会有按下反馈。
+            <div key={r.k || i} className="cfm-card" style={{ background: r.bg }}>
+              <button type="button" className="cfm-card-hit" data-act="curated-card" aria-label={`Create: ${r.topic}`} onClick={() => create(r)} />
               <span className="cfm-card-text"><span className="cfm-tip">{r.tip}</span><span className="cfm-topic cfm-clamp2">{r.topic}</span></span>
               <span className="cfm-card-cta-wrap">
-                <button type="button" className="cfm-card-cta cfm-press" data-act="curated-create" onClick={(e) => { e.stopPropagation(); create(r); }}><Plus />Create</button>
+                <span className="cfm-card-cta" data-act="curated-create" aria-hidden="true"><Plus />Create</span>
               </span>
               <span className="cfm-illo"><Illo card={r} /></span>
+              <button type="button" className="cfm-card-more" data-act="curated-learn-more" onClick={() => pick(i)}>Learn more<MoreChev /></button>
             </div>
           ))}
         </div>

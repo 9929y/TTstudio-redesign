@@ -1,5 +1,6 @@
-// Creator Assistant 入口（2026-11-26）
-// - AskPill：首页深色头部的主入口。蓝色渐变描边 = AI 按钮；第一次出现时，灰边被品牌渐变沿边框描一圈（见下方 DRAW）。文案每 4.5 秒轮播一条可问的问题。
+// Creator Assistant 入口（2026-11-26；出场光 2026-11-27 二版）
+// - AskPill：首页深色头部的主入口；Inbox 顶部也有一个（tone="light"）。蓝色渐变描边 = AI 按钮；第一次出现时，一道很淡的斜光从左下扫到右上，
+//   连边框一起亮一下（见 AskAssistant.css「出场光」）。文案每 4.5 秒轮播一条可问的问题。
 // - AskRow：模块卡（A / B / E / D）底部的入口行。默认轮播 3–5 条和这张卡相关的问题；用户在图上选中某一项时，文案换成和这一项相关的问题并停止轮播。
 //   第一次出现时，顶部分隔线上走一道蓝色渐变。
 // 文案字重：按设计系统里「建议的问题」样式（Assistant 欢迎页问题行 16/22、追问 chip 14/18，都是 400），不用粗体。
@@ -53,7 +54,7 @@ function Rolling({ text, className }) {
   return (
     <span className={`ask-roll ${className || ''}`}>
       <AnimatePresence mode="popLayout" initial={false}>
-        {/* 换字（2026-11-26 按反馈放慢）：参照搜索框占位词轮播的常见节奏，进场 500ms、出场 420ms，
+        {/* 换字（2026-11-26 按 Yanice 反馈放慢）：参照搜索框占位词轮播的常见节奏，进场 500ms、出场 420ms，
             ease-in-out（在屏幕上移动的元素），位移 8px，不加模糊；旧句先往上走，新句从下方接上，读起来是平稳地滚过去 */}
         <motion.span key={text} className="ask-roll-t"
           initial={reduce ? { opacity: 0 } : { opacity: 0, transform: 'translateY(8px)' }}
@@ -84,13 +85,13 @@ function pillOutline(W, H) {
   return { d, P };
 }
 
-// 首页主入口
-export function AskPill({ prompts, onAsk, act = 'assistant-pop-home', icon }) {
+// 首页主入口（Inbox 顶部也用，传 tone="light"）。2026-11-27 夜 Yanice：入场「还是要改回昨天的版本」——斜光两版都撤掉，回到 11-26 选定的渐变描画
+export function AskPill({ prompts, onAsk, act = 'assistant-pop-home', icon, tone = 'dark' }) {
   const ref = useRef(null);
   const svgRef = useRef(null);
   const anims = useRef([]);
   const reduce = useReducedMotion();
-  const text = useRotatingPrompt(prompts, { interval: 4500, ref });
+  const text = useRotatingPrompt(prompts, { interval: 2500, ref }); // 2026-11-27 夜 Yanice：滚动太慢，4.5s → 2.5s
   const first = useFirstAppearance(act);
   const [intro, setIntro] = useState(first);
   // 在首帧绘制前就挂上动画（fill: both），灰边从第一帧开始，不会先闪一下渐变
@@ -125,10 +126,10 @@ export function AskPill({ prompts, onAsk, act = 'assistant-pop-home', icon }) {
   // 描画途中被点按：直接跳到结束状态，再照常打开 Creator Assistant
   const press = () => { anims.current.forEach((a) => { try { a.finish(); } catch { /* 已结束 */ } }); onAsk(text); };
   return (
-    <button ref={ref} type="button" className="ask-pill" data-act={act} onClick={press}>
+    <button ref={ref} type="button" className={`ask-pill${tone === 'light' ? ' is-light' : ''}`} data-act={act} onClick={press}>
       {intro && (
         <svg ref={svgRef} className="ask-pill-draw" aria-hidden="true" preserveAspectRatio="none">
-          <path pathLength="100" fill="none" stroke="#4a4a4f" strokeWidth="2.5" strokeDasharray="100 100" strokeDashoffset="0" />
+          <path pathLength="100" fill="none" stroke={tone === 'light' ? '#d6d6da' : '#4a4a4f'} strokeWidth="2.5" strokeDasharray="100 100" strokeDashoffset="0" />
           {TIPS.map((t) => <path key={t.len} pathLength="100" fill="none" stroke={t.color} strokeWidth="2.5" style={{ opacity: 0 }} />)}
         </svg>
       )}
@@ -145,7 +146,7 @@ export function AskPill({ prompts, onAsk, act = 'assistant-pop-home', icon }) {
 // 模块卡底部入口行（样式沿用 Final 画板的 Ask 行：高 44、顶部 0.5px 分隔线、图标 22）
 export function AskRow({ prompts, fixed, onAsk, act, icon, seenKey }) {
   const ref = useRef(null);
-  const text = useRotatingPrompt(prompts, { interval: 5000, fixed, ref });
+  const text = useRotatingPrompt(prompts, { interval: 2500, fixed, ref }); // 2026-11-27 夜 Yanice：5s → 2.5s，和胶囊一致
   return (
     <button ref={ref} type="button" className={`ask-row rose-press ${fixed ? 'is-fixed' : ''}`} data-act={act} onClick={() => onAsk(text)}>
       {icon}

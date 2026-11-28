@@ -77,7 +77,7 @@ export const useApp = create((set, get) => ({
   setRange: (range) => set((s) => ({ range, rangeToken: s.rangeToken + 1 })),
   setATab: (aTab) => set({ aTab }),
   kpiSel: { overview: null, viewers: 'viewers', followers: 'followersTotal' },
-  // Overview 默认一张都不选（评分图联动 2026-11-26，已确认）：趋势图仍显示第一张 Post views，选中评分图某一维度时才选中对应的卡
+  // Overview 默认一张都不选（评分图联动 2026-11-26，Yanice 确认）：趋势图仍显示第一张 Post views，选中评分图某一维度时才选中对应的卡
   setKpiSel: (tab, key) => set((s) => ({ kpiSel: { ...s.kpiSel, [tab]: key } })),
   topMetric: 'views',
   topToken: 0,

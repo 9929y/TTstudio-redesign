@@ -127,9 +127,9 @@ function CiTopics() {
 
 // CA5（2026-08）：App 专属的灵感分类 Hot / Similar / Followers viewed / Outliers
 const REC_CHIPS = [{ key: 'similar', label: 'Similar' }, { key: 'followers', label: 'Followers viewed' }, { key: 'outliers', label: 'Outliers' }];
-function CiPosts() {
-  const [mode, setMode] = useState('popular');
-  const [rec, setRec] = useState('similar');
+function CiPosts({ initMode, initRec }) {
+  const [mode, setMode] = useState(initMode || 'popular');
+  const [rec, setRec] = useState(initRec || 'similar');
   const openSheet = useApp((s) => s.openSheet);
   const newAccount = useApp((s) => s.newAccount);
   const chipSel = useApp((s) => s.chipSel);
@@ -190,9 +190,10 @@ function CiCreators() {
   );
 }
 
-export function CreatorInspirationScreen() {
+// params（2026-11-27）：洞察块的「下一步」可以直接打开某个 Tab，例如 Posts › Recommended › Followers viewed
+export function CreatorInspirationScreen({ params } = {}) {
   const seen = useApp((s) => s.seenTagsTip);
-  const [tab, setTab] = useState('topics');
+  const [tab, setTab] = useState(params?.tab || 'topics');
   const ready = useDelay(700, 'first');
   const showTip = ready && !seen;
   return (
@@ -208,7 +209,7 @@ export function CreatorInspirationScreen() {
       <div className="ci-tabs">{CI_TABS.map((t) => <button key={t.key} data-act={`ci-tab-${t.key}`} className={tab === t.key ? 'on' : ''} onClick={() => setTab(t.key)}>{t.label}{tab === t.key && <motion.i layoutId="cit" className="tt-line" />}</button>)}</div>
       <Scroll className="ci-body">
         {!ready ? <div className="ci-skel"><div className="ci-skrow"><Skel w={90} h={28} r={14} /><Skel w={60} h={28} r={14} /></div>{Array.from({ length: 9 }).map((_, i) => <div key={i} className="ci-skrow"><Skel w={16} h={16} /><Skel h={14} /><Skel w={50} h={12} /></div>)}</div>
-          : tab === 'topics' ? <CiTopics /> : tab === 'posts' ? <CiPosts /> : <CiCreators />}
+          : tab === 'topics' ? <CiTopics /> : tab === 'posts' ? <CiPosts initMode={params?.mode} initRec={params?.rec} /> : <CiCreators />}
         <div style={{ height: 90 }} />
       </Scroll>
       <PostNowFab />

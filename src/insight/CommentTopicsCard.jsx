@@ -8,6 +8,7 @@ import { useApp } from '../store.js';
 import { commentTopics } from './build.js';
 import { fmt } from '../data/agg.js';
 import { CARD_STYLE, CardHead } from './CardParts.jsx';
+import { useEntering } from './entrance.js';
 import './ModuleD.css';
 
 const INFO = [
@@ -51,10 +52,11 @@ export function CommentTopicsCard({ seed, comments, onOpen }) {
   const allowed = useApp((s) => s.commentInsightsOn);
   const topics = commentTopics(seed, comments);
   const ref = useRef(null);
+  const entering = useEntering(600);
   const [host, setHost] = useState(null);
   return (
     <div style={{ padding: '8px 8px 0' }}>
-      <div ref={ref} style={CARD_STYLE} data-insight="comment-topics">
+      <div ref={ref} className={entering ? 'enter-card' : undefined} style={CARD_STYLE} data-insight="comment-topics">
         <CardHead title="Comment topics" infoLabel="About comment topics" act="topics-info"
           onInfo={() => setHost(ref.current?.closest('.screen-root') || document.body)} />
         {!allowed ? (
