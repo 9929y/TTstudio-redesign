@@ -1,7 +1,7 @@
 // Shared radar treatment for Performance summary and Post summary.
 // Original roles only (ref NEW_ELEMENT_MAPPING): page tabs, Key metrics tiles, delta chip, chart tooltip box.
 // Numbers come from build.js (accountRadar / postRadar) and radarStats.js; colours from PeerRadarCard.css.
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { CardHead, CARD_STYLE, KeyBlock } from './CardParts.jsx';
 import { TopTabs } from '../ui/kit.jsx';
@@ -42,14 +42,78 @@ const Arrow = ({ up }) => (
 const PT_DELAY = 0.3; // points land as the polygon reaches them
 const ptIn = (i) => ({ duration: 0.26, ease: ENTER_EASE, delay: PT_DELAY + i * 0.05 });
 
+// ---- Axis label placement (2026-11-28 Yanice, same rule as the rose chart's labelFit.js) ----
+// Every label block (its selected outline box included) keeps the same GAP from the outer ring in every direction,
+// so no label can touch the rings, spokes, polygon or points (points never go past the rim).
+//  - Top label: centred on its axis, bottom edge on ring + GAP.
+//  - Side pair and bottom pair: one shared row height per pair (taken from a block centred on the axis direction),
+//    then each block's nearest edge or corner is moved to exactly ring + GAP. The two blocks of a pair therefore sit
+//    on the same row with mirrored inner edges, whatever their widths.
+//  - If a pair does not fit inside the 345pt chart it slides along the arc away from the horizontal (the gap never
+//    shrinks). The radius is the largest that keeps all five blocks inside, preferring no slide.
+const GAP = 10;
+const R_MAX = 92, R_MIN = 56, SLIDE_MAX = 12, SLIDE_COST = 0.5; // slide capped so a label stays next to its own axis
+const AXIS_DEG = [-90, -18, 54, 126, 198];
+const PAIRS = [[1, 4, -1], [2, 3, 1]]; // [right axis, left axis, slide step for the right one (towards the vertical)]
+const EST = { w: 96, h: 46 }; // before the first measurement (layout effect replaces it before paint)
+// Distance from the centre to a w×h box whose centre is t along (c, s).
+const boxDist = (t, c, s, w, h) => Math.hypot(Math.max(0, Math.abs(t * c) - w / 2), Math.max(0, Math.abs(t * s) - h / 2));
+function centreDist(d, c, s, w, h) {
+  let lo = 0, hi = d + w + h;
+  for (let k = 0; k < 40; k++) { const m = (lo + hi) / 2; if (boxDist(m, c, s, w, h) < d) lo = m; else hi = m; }
+  return hi;
+}
+function placeLabels(sizes, W, R) {
+  const d = R + GAP, cx = W / 2, cy = d + sizes[0].h; // top block touches the top of the chart
+  const boxes = [];
+  boxes[0] = { x: cx - sizes[0].w / 2, y: 0, ...sizes[0] };
+  if (boxes[0].x < 0) return null;
+  let slide = 0;
+  for (const [ri, li, step] of PAIRS) {
+    const a = sizes[ri], b = sizes[li], w = (a.w + b.w) / 2, h = Math.max(a.h, b.h);
+    let done = false;
+    for (let k = 0; k <= SLIDE_MAX && !done; k++) {
+      const m = (AXIS_DEG[ri] + k * step) * Math.PI / 180, c = Math.cos(m), s = Math.sin(m);
+      const yc = cy + centreDist(d, c, s, w, h) * s, y = yc - h / 2;
+      const dy = Math.max(0, y - cy, cy - (y + h));
+      if (dy >= d) break;
+      const dx = Math.sqrt(d * d - dy * dy);
+      const R1 = { x: cx + dx, y, ...a }, L1 = { x: cx - dx - b.w, y, ...b };
+      if (R1.x + R1.w <= W && L1.x >= 0) { boxes[ri] = R1; boxes[li] = L1; slide = Math.max(slide, k); done = true; }
+    }
+    if (!done) return null;
+  }
+  for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
+    const a = boxes[i], b = boxes[j];
+    if (a.x < b.x + b.w + 6 && b.x < a.x + a.w + 6 && a.y < b.y + b.h + 6 && b.y < a.y + a.h + 6) return null;
+  }
+  return { R, cx, cy, H: Math.ceil(Math.max(...boxes.map(b => b.y + b.h))), boxes, slide };
+}
+function layoutRadar(sizes, W) {
+  let best = null;
+  for (let R = R_MAX; R >= R_MIN; R--) {
+    const L = placeLabels(sizes, W, R);
+    if (L && (!best || R - SLIDE_COST * L.slide > best.R - SLIDE_COST * best.slide)) best = L;
+  }
+  return best || placeLabels(sizes.map(() => ({ w: 0, h: sizes[0].h })), W, R_MIN);
+}
+
 function Radar({ areas, scope, selected, act, onPick, entering }) {
   const [ref, measured] = useChartWidth();
-  const W = Math.min(345, measured || 345), H = 266, cx = W / 2, cy = 142;
-  const radius = Math.min(92, Math.max(55, (W - 132) / 2));
+  const W = Math.min(345, measured || 345);
+  // Label sizes come from the rendered blocks (same font, chip padding and outline box as on screen).
+  const labRefs = useRef([]);
+  const [sizes, setSizes] = useState(null);
+  useLayoutEffect(() => {
+    const next = areas.map((_, i) => { const el = labRefs.current[i]; return el ? { w: Math.ceil(el.offsetWidth), h: Math.ceil(el.offsetHeight) } : EST; });
+    if (!sizes || next.some((n, i) => n.w !== sizes[i]?.w || n.h !== sizes[i]?.h)) setSizes(next);
+  });
+  const G = useMemo(() => layoutRadar(sizes || areas.map(() => EST), W), [sizes, W, areas.length]);
+  const { R: radius, cx, cy, H } = G;
   const L = LABELS[scope];
   const gid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const xy = (r, i) => {
-    const a = (-90 + i * 72) * Math.PI / 180;
+    const a = AXIS_DEG[i] * Math.PI / 180;
     return [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
   };
   const ownR = a => radius * axisRadius(a.own, a.peer);
@@ -58,12 +122,6 @@ function Radar({ areas, scope, selected, act, onPick, entering }) {
   const grow = { transformOrigin: `${cx}px ${cy}px`, transformBox: 'view-box' };
   // No user selection (default state) = nothing dims; otherwise the non-selected axes recede.
   const dim = i => (selected == null ? '' : selected === i ? ' is-on' : ' is-dim');
-  // Label boxes (name + value · status), anchored outside the rim: top, two sides above their vertex, two bottom.
-  const labels = [
-    { x: cx, y: 0, align: 'middle' }, { x: W, y: cy - radius * 0.31 - 50, align: 'end' },
-    { x: W - 54, y: H - 44, align: 'middle' }, { x: 54, y: H - 44, align: 'middle' },
-    { x: 0, y: cy - radius * 0.31 - 50, align: 'start' },
-  ];
   return <div ref={ref} className="peer-radar-chart" style={{ height: H }}>
     <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${L.selfLabel} and ${L.peerLabel} across five performance areas`}
       data-cx={cx} data-cy={cy} data-r={radius}>
@@ -89,14 +147,14 @@ function Radar({ areas, scope, selected, act, onPick, entering }) {
       {areas.map((a,i) => { const [x,y] = xy(ownR(a),i); return <circle key={a.name} className="peer-radar-pt-hit" cx={x} cy={y} r="14" fill="transparent" data-act={`${act}-point-${i}`} aria-hidden="true" onClick={e => { e.stopPropagation(); onPick(a.key); }}/>; })}
     </svg>
     {areas.map((a, i) => {
-      const l = labels[i], on = selected === i;
-      return <button key={a.name} type="button" className={`peer-radar-hit is-${l.align}${entering ? ' enter-fade' : ''}`} aria-pressed={on}
+      const b = G.boxes[i], on = selected === i;
+      return <button key={a.name} type="button" className={`peer-radar-hit${entering ? ' enter-fade' : ''}`} aria-pressed={on}
         aria-label={`${a.name}: ${a.ownText}, ${a.status.word}, ahead of ${a.rankText} ${L.group}`}
-        data-act={`${act}-axis-${i}`} style={{ left: l.x, top: l.y, animationDelay: entering ? labDelay(i) : undefined }} onClick={e => { e.stopPropagation(); onPick(a.key); }}>
-        <span className={`peer-radar-label${dim(i)}`}>
-          {/* Same classes as a Key metrics tile: .kpi-label, then the .kpi-delta row (.kd-abs number + .kd-pill chip). */}
+        data-act={`${act}-axis-${i}`} style={{ left: b.x, top: b.y, visibility: sizes ? undefined : 'hidden', animationDelay: entering ? labDelay(i) : undefined }} onClick={e => { e.stopPropagation(); onPick(a.key); }}>
+        <span ref={el => { labRefs.current[i] = el; }} className={`peer-radar-label${dim(i)}`}>
+          {/* Two balanced lines, both centred: metric name (.kpi-label) over its status chip (.kd-pill). Values live in the tiles below. */}
           <span className="kpi-label prl-name">{a.name}</span>
-          <span className="kpi-delta prl-sub"><span className="kd-abs prl-val">{a.ownText}</span><span className={`kd-pill ${a.status.tone} prl-status`} data-status={a.status.key}>{a.status.word}</span></span>
+          <span className={`kd-pill ${a.status.tone} prl-status`} data-status={a.status.key}>{a.status.word}</span>
         </span>
       </button>;
     })}
@@ -111,7 +169,9 @@ export function PeerRadarCard({ scope, insight, areas: rawAreas, ca='row', act, 
   //    show the first area with its tiles, the Ask row keeps rotating the page-level questions.
   //  - user-selected (sel = index): a tab, radar point, axis label, or a Key metrics tile passed in as syncTo /
   //    initialArea. That axis gets the box, the others dim, the Ask row shows that area's fixed question.
-  //  Tapping the selected tab keeps it; blank space does nothing.
+  //  Deselect (2026-11-28 Yanice, the rose chart rule): tapping the selected tab / point / label again, tapping blank
+  //  space in the card, or tapping the synced Key metrics tile again (syncTo key null) returns to the default state.
+  //  In the default state the first tab is only shown, not selected: tapping it selects that axis.
   const indexOf = key => areas.findIndex(a => a.key === key || a.name === key);
   const [sel, setSel] = useState(() => { const i = initialArea != null ? indexOf(initialArea) : -1; return i >= 0 ? i : null; });
   const [open, setOpen] = useState(false);
@@ -122,14 +182,15 @@ export function PeerRadarCard({ scope, insight, areas: rawAreas, ca='row', act, 
   const selectRef = useRef(onSelect); selectRef.current = onSelect;
   useEffect(() => {
     if (silent.current) { silent.current = false; return; }
-    if (sel != null) selectRef.current?.(areas[sel].key);
+    selectRef.current?.(sel != null ? areas[sel].key : null); // null = back to default, the page clears its tile
   }, [sel]); // Same KPI linkage as the previous Overview card.
   // Selection made below the card (a Key metrics tile): a user selection too, without echoing back.
   const firstSync = useRef(true);
   useEffect(() => {
     if (firstSync.current) { firstSync.current = false; return; }
-    const i = indexOf(syncTo?.key);
-    if (i >= 0 && i !== selRef.current) { silent.current = true; setSel(i); }
+    // key null = the synced tile was tapped again: back to the default state.
+    const i = syncTo?.key == null ? null : indexOf(syncTo.key);
+    if (i !== -1 && i !== selRef.current) { silent.current = true; setSel(i); }
   }, [syncTo?.n]);
   // Back to the default state when the data changes (date range / post) or the page asks for a reset.
   const firstReset = useRef(true);
@@ -137,15 +198,23 @@ export function PeerRadarCard({ scope, insight, areas: rawAreas, ca='row', act, 
     if (firstReset.current) { firstReset.current = false; return; }
     if (selRef.current != null) { silent.current = true; setSel(null); }
   }, [insight?.key, insight?.period, resetToken]); // by content, so a wrapped insight object ({...insight, cardTitle}) does not reset on every render
+  // Same control again = deselect (sel is null in the default state, so the shown first tab selects on tap).
   const pick = key => {
     const i = areas.findIndex(a => a.key === key);
-    if (i >= 0) setSel(i);
+    if (i >= 0) setSel(i === selRef.current ? null : i);
+  };
+  // Blank space in the card (chart background, insight text, legend) = back to default. Controls, the tiles and
+  // the Ask row keep their own meaning; taps inside the ⓘ sheet (a portal) are not in this card's DOM.
+  const onBlank = e => {
+    if (selRef.current == null || !e.currentTarget.contains(e.target)) return;
+    if (e.target.closest('button, a, input, [data-act], [role="tab"], .peer-radar-kpis')) return;
+    setSel(null);
   };
   const L = LABELS[scope];
   const tabs = areas.map(a => ({key:a.key,label:a.name}));
   const askText = sel != null ? (ask?.byArea?.[area.key] || null) : null;
   const vs = area.vs;
-  return <div data-insight={cardAct} data-tip={sel ?? -1} className={entering ? 'enter-card' : undefined} style={CARD_STYLE}>
+  return <div data-insight={cardAct} data-tip={sel ?? -1} className={entering ? 'enter-card' : undefined} style={CARD_STYLE} onClick={onBlank}>
     <CardHead title={insight.cardTitle || (scope==='post'?'Post summary':'Performance summary')} infoLabel="About this comparison" act={`${act}-info`} onInfo={()=>setOpen(true)}/>
     <KeyBlock k={insight.key} rest={insight.rest} bullets={insight.bullets} next={insight.next}/>
     <div className="peer-radar" data-peer-radar data-state={sel == null ? 'default' : 'selected'}>
